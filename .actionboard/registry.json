@@ -1,0 +1,144 @@
+{
+  "registry_version": "1",
+  "actions": [
+    {
+      "id": "codebase-recon",
+      "name": "Codebase and environment recon",
+      "risk_tier": "T2",
+      "end_condition": "Recon report lists every CLI version, auth state and blocking environment fact",
+      "missions": [
+        "verify-and-release-multi-cli-agent-formation-v1"
+      ],
+      "runs": [
+        {
+          "run_id": "verify-and-release-multi-cli-agent-formation-v1-1",
+          "completed_at": "2026-10-25T13:18:35Z",
+          "mode": "actionlist",
+          "stages": {
+            "orchestrator": true,
+            "data": true,
+            "analysis": true,
+            "action": true,
+            "defense": true
+          },
+          "first_attempt": true,
+          "provenance": "scored",
+          "environment": {
+            "target": "claude"
+          },
+          "notes": "Found OpenCode 2.1.4 plugin-API break; confirmed independently by live opencode runs.",
+          "mission": "verify-and-release-multi-cli-agent-formation-v1"
+        }
+      ]
+    },
+    {
+      "id": "api-integration",
+      "name": "External CLI integration",
+      "risk_tier": "T2",
+      "end_condition": "The CLI runs the formation end to end with Context7 and the guard enforced",
+      "missions": [
+        "verify-and-release-multi-cli-agent-formation-v1"
+      ],
+      "runs": [
+        {
+          "run_id": "verify-and-release-multi-cli-agent-formation-v1-2",
+          "completed_at": "2026-10-25T13:18:35Z",
+          "mode": "actionlist",
+          "stages": {
+            "orchestrator": true,
+            "data": true,
+            "analysis": true,
+            "action": false,
+            "defense": true
+          },
+          "first_attempt": true,
+          "provenance": "scored",
+          "environment": {
+            "target": "codex"
+          },
+          "notes": "Codex mission passed end to end; guard hook denial on Codex not verified live (hooks need /hooks trust), so acceptance unmet.",
+          "mission": "verify-and-release-multi-cli-agent-formation-v1"
+        }
+      ]
+    },
+    {
+      "id": "test-authoring",
+      "name": "Tests and live verification",
+      "risk_tier": "T2",
+      "end_condition": "Every smoke step passes on every CLI, verified independently",
+      "missions": [
+        "verify-and-release-multi-cli-agent-formation-v1"
+      ],
+      "runs": [
+        {
+          "run_id": "verify-and-release-multi-cli-agent-formation-v1-3",
+          "completed_at": "2026-10-25T13:18:35Z",
+          "mode": "actionlist",
+          "stages": {
+            "orchestrator": true,
+            "data": false,
+            "analysis": true,
+            "action": true,
+            "defense": true
+          },
+          "first_attempt": true,
+          "provenance": "scored",
+          "environment": {
+            "target": "all"
+          },
+          "notes": "Round 1: OpenCode invocation assumptions wrong (session id format, run does not expand commands); tests re-run independently by Black.",
+          "mission": "verify-and-release-multi-cli-agent-formation-v1"
+        },
+        {
+          "run_id": "verify-and-release-multi-cli-agent-formation-v1-5",
+          "completed_at": "2026-10-25T13:18:36Z",
+          "mode": "actionlist",
+          "stages": {
+            "orchestrator": true,
+            "data": true,
+            "analysis": true,
+            "action": false,
+            "defense": true
+          },
+          "first_attempt": true,
+          "provenance": "scored",
+          "environment": {
+            "target": "all"
+          },
+          "notes": "Round 2: counts rose and Yellow verification works on all CLIs, but .graphifyignore was skipped when a graph existed and Claude test-authoring failed Data; fixes applied, live re-verification outstanding.",
+          "mission": "verify-and-release-multi-cli-agent-formation-v1"
+        }
+      ]
+    },
+    {
+      "id": "code-implementation",
+      "name": "Plugin code changes",
+      "risk_tier": "T3",
+      "end_condition": "build.py --check passes, CI green on all jobs, manifests at the target version",
+      "missions": [
+        "verify-and-release-multi-cli-agent-formation-v1"
+      ],
+      "runs": [
+        {
+          "run_id": "verify-and-release-multi-cli-agent-formation-v1-4",
+          "completed_at": "2026-10-25T13:18:35Z",
+          "mode": "actionlist",
+          "stages": {
+            "orchestrator": true,
+            "data": true,
+            "analysis": true,
+            "action": true,
+            "defense": true
+          },
+          "first_attempt": true,
+          "provenance": "scored",
+          "environment": {
+            "target": "all"
+          },
+          "notes": "Six round-1 defect fixes and RC 1.0.0; verified by CI (independent) and live re-runs.",
+          "mission": "verify-and-release-multi-cli-agent-formation-v1"
+        }
+      ]
+    }
+  ]
+}

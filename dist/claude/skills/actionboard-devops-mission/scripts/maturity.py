@@ -253,9 +253,14 @@ def summary(args):
     actions = [a for a in data["actions"] if not args.mission or args.mission in a.get("missions", [])]
     rows = []
     for a in actions:
-        run_id = next((r["run_id"] for r in reversed(a.get("runs", []))
-                       if not args.mission or r.get("mission") == args.mission), None)
-        rows.append(progress(a, level, run_id))
+        # One row per scored run of this mission, so two assignments of the same
+        # action type each get their own row; without a mission, the latest run.
+        runs = [r["run_id"] for r in a.get("runs", []) if args.mission and r.get("mission") == args.mission]
+        for run_id in runs or [a["runs"][-1]["run_id"] if a.get("runs") else None]:
+            row = progress(a, level, run_id)
+            if len(runs) > 1:
+                row["name"] = "%s, run `%s`" % (row["name"], run_id)
+            rows.append(row)
     if args.json:
         json.dump({"operator_level": level, "mission": args.mission, "actions": rows}, sys.stdout,
                   indent=2, ensure_ascii=False)

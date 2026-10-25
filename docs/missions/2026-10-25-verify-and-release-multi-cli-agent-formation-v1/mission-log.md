@@ -75,14 +75,41 @@ Files created/changed: `tests/smoke/results-2026-10.md`, `src/commands/start-mis
 `adapters/common/hooks/cli_hook.py`, `tests/build/test_build.py`, `tests/guard/test_cli_hook.py`,
 `README.md`, `dist/` (regenerated).
 
+## Assignment 4 (release candidate) and Assignment 5 (smoke round 2)
+
+- **Assignment 4:** `src/VERSION` set to 1.0.0 and `dist/` rebuilt; every manifest reads 1.0.0; all
+  suites and both CLI validators pass (`53e79c5`).
+- **Round 2:** a second mission of the same kind (`GET /version` plus a unit test) ran on all four
+  CLIs. Every CLI stopped at the gate, built the endpoint, and passed its tests (re-run by me).
+  `code-implementation` reached **2 clean runs** on every CLI. Black Agent re-ran Yellow Agent's
+  exact test command on every CLI; the new verification rule works.
+- **Two defects found in round 2 and fixed in source:**
+  1. Preflight skipped `.graphifyignore` when a graph already existed, so the Antigravity graph
+     still held agent tooling (560 nodes). Preflight now always ensures the file first and rebuilds
+     the graph when it had to add lines.
+  2. Green Agent handed Yellow a `python …` command, but on this Windows machine `python` is a
+     Microsoft Store placeholder; Claude Code scored that Data stage as a fail. Green now confirms
+     the interpreter starts (`python --version`, `py --version`) and hands over the form that works.
+  A build test covers both fixes on all four CLIs. A live re-run of these two fixes is outstanding,
+  so assignment 5 stays active.
+- **Maturity scoring of this mission:** five assignments were scored into the repository's own
+  registry (`.actionboard/registry.json`). `maturity.py` now prints one row per assignment, even when
+  two assignments share an action type. The Mission Report is drafted.
+
+Files created/changed: `src/VERSION`, `src/skills/mission-preflight/SKILL.md`,
+`src/agents/green-agent.md`, `src/skills/actionboard-devops-mission/scripts/maturity.py`,
+`tests/build/test_build.py`, `tests/maturity/test_maturity.py`, `.actionboard/registry.json`,
+`mission-report.md`, `mission-report.jsonld`, this log, `tests/smoke/results-2026-10.md`,
+`CHANGELOG.md`, `dist/` (regenerated).
+
 ## Assignment status
 
 | # | Agent | Assignment | Status | Next step |
 |---|---|---|---|---|
 | 1 | Green | Environment recon | Done | — |
-| 2 | Blue | Codex CLI bring-up | Done | Codex 0.164.0 passed the full mission. |
+| 2 | Blue | Codex CLI bring-up | Active | The full mission passes on Codex 0.164.0; the guard hook's live denial still needs one interactive `/hooks` trust step. |
 | 3 | Yellow | Live smoke round 1 (Claude Code, OpenCode, Antigravity) | Done | All four CLIs pass; six defects fixed. |
-| 4 | Red | Fix defects and cut release candidate | In progress | Defect fixes are in; next: set `src/VERSION` to 1.0.0 and regenerate. |
-| 5 | Yellow | Regression tests, Codex smoke, retest | Waiting on 4 | — |
+| 4 | Red | Fix defects and cut release candidate | Done | RC 1.0.0 (`53e79c5`), CI green. |
+| 5 | Yellow | Regression tests, Codex smoke, retest | Active | Re-run one mission per CLI to verify the two round-2 fixes live; trust Codex hooks with `/hooks` and observe a live denial. |
 | 6 | Red | Release documentation | Waiting on 5 | — |
 | 7 | Blue | Deprecation note on the v0.6.1 repository | Waiting on 6; needs the user's approval before the pull request is created | — |

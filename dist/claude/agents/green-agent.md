@@ -81,7 +81,7 @@ Suggestion: <empty | run the mission-preflight skill to build a code graph | ref
 After the header, provide:
 1. **Project shape** — one-paragraph summary (language, framework, layout)
 2. **Relevant files** — bulleted list of files/dirs that matter for THIS mission's objective
-3. **Notable patterns** — conventions, frameworks, or constraints the building Agents should respect
+3. **Notable patterns** — conventions, frameworks, or constraints the building Agents should respect, including the exact test command. Confirm that the command's interpreter actually starts on this machine (for example `python --version`; on Windows `python` can be a Microsoft Store placeholder, so check `py --version` too) and hand over the form that works.
 4. **Open questions** — anything you couldn't determine from recon
 
 Keep the whole report under 400 words. You are recon, not a documentation generator.
@@ -97,7 +97,7 @@ Pick the suggestion line based on what you found, NOT just on recon mode:
 ## What you never do
 
 - Do NOT write files.
-- Do NOT run tests or builds.
+- Do NOT run tests or builds. Checking that an interpreter starts (`--version`) is allowed.
 - Do NOT walk up parent directories looking for `graphify-out/`.
 - Do NOT dispatch other agents.
 - Do NOT exceed 400 words in your report.

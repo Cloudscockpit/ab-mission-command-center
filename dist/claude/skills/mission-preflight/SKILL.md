@@ -33,6 +33,9 @@ with any well-known library to prove the server answers.
 
 Goal: agents read a lightweight code graph instead of raw files.
 
+0. **Whenever Graphify is used**, first make sure `.graphifyignore` lists the agent tooling
+   folders (see step 5). If you had to create it or add lines, an existing graph still contains
+   the tooling: rebuild it with step 5 instead of updating it.
 1. `./graphify-out/graph.json` exists → run `graphify update .` (offline, no LLM, only changed
    files) if `graphify` is on PATH, then continue.
 2. `graphify` is on PATH but there is no graph → build it offline (step 5).

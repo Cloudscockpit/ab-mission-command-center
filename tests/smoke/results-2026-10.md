@@ -55,8 +55,30 @@ happened before the `.graphifyignore` fix. A re-run will show app-only graphs.
 Earlier in the same session, before this round: the OpenCode 2.x guard plugin rewrite and the
 Antigravity Windows hook-quoting fix (see `docs/capability-matrix.md`, Live verification).
 
+## Round 2 (release candidate 1.0.0)
+
+Second mission of the same kind on every CLI: `add a GET /version endpoint that returns
+{"version": "1.0.0"}, with a unit test`. Round-1 registries were kept so the counts could rise.
+
+| Check | Claude Code | OpenCode | Antigravity | Codex |
+|---|---|---|---|---|
+| Four-part report, stopped at gate | ✅ | ✅ | ✅ | ✅ |
+| `/version` implemented; tests pass (re-run by me) | ✅ 4/4 | ✅ 4/4 | ✅ 4/4 | ✅ 4/4 |
+| `code-implementation` clean runs | 2 | 2 | 2 | 2 |
+| `test-authoring` this run | ❌ Data (see defect 8) | ✅ clean | ✅ clean | ✅ clean |
+| Black re-ran Yellow's exact test command | ✅ | ✅ | ✅ | ✅ (command recorded in registry notes) |
+| `.graphifyignore` present | ✅ | ✅ | ❌ (defect 7) | ❌ (defect 7) |
+
+| # | CLI | Symptom | Root cause | Fix |
+|---|---|---|---|---|
+| 7 | Antigravity, Codex | Graph still held agent tooling (Antigravity: 560 nodes) | Preflight only wrote `.graphifyignore` on a first build; an existing graph took the update path | Preflight always ensures the file first and rebuilds when it had to add lines |
+| 8 | Claude Code | `test-authoring` failed the Data stage | Green handed over `python …`; on this Windows machine `python` is a Store placeholder | Green confirms the interpreter starts (`python --version`, `py --version`) and hands over the working form |
+
+Both fixes ship to all four CLIs (build test `test_round2_fixes_reach_every_target`). A live re-run
+is still outstanding.
+
 ## Still open
 
-- Round 2 (assignment 5): repeat the mission on each CLI to confirm clean-run counts rise
-  (`1/3` → `2/3`) and that `test-authoring` now passes the Action stage under the new rule.
+- Live re-run of defects 7 and 8 (one mission per CLI), and a live guard denial on Codex after
+  trusting its hooks with `/hooks`.
 - Interactive-only checks: the `/` menu entries in each TUI, and Codex's `/hooks` trust prompt.

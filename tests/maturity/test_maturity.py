@@ -163,6 +163,14 @@ class Markdown(Base):
         rows = [line for line in text.splitlines() if line.startswith("|")]
         self.assertEqual(len({line.count("|") for line in rows}), 1)  # aligned table
 
+    def test_one_row_per_assignment_of_the_same_action(self):
+        self.record("m-3", "orchestrator=pass,data=fail,analysis=pass,action=pass,defense=pass")
+        self.record("m-5", "orchestrator=pass,data=pass,analysis=pass,action=fail,defense=pass")
+        rows = self.summary()["actions"]
+        self.assertEqual([r["run_id"] for r in rows], ["m-3", "m-5"])
+        self.assertEqual([r["clean_run"] for r in rows], [False, False])
+        self.assertIn("run `m-3`", rows[0]["name"])
+
     def test_empty_mission_still_renders_section(self):
         text = self.summary(mission="nothing", fmt=None)
         self.assertIn("No actions were scored in this mission", text)

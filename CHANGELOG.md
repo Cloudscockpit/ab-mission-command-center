@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.7.0 — unreleased
+## 1.0.0 — release candidate (unreleased)
 
 Multi-CLI rebuild of ActionBoard V5 Agent Formation (from the Claude-only v0.6.1).
 
@@ -58,6 +58,9 @@ Multi-CLI rebuild of ActionBoard V5 Agent Formation (from the Claude-only v0.6.1
   - Maturity rubric: Yellow Agent's own work is verified by Black Agent re-running Yellow's
     exact test command (it could never pass the Action stage before).
   - README: `opencode run "/start-mission …"` does not expand commands on OpenCode 2.x.
+- **Live smoke round 2:** preflight always ensures `.graphifyignore` (and rebuilds the graph when
+  it adds lines); Green Agent confirms the test command's interpreter starts before handing it over;
+  `maturity.py summary` prints one row per assignment when a mission scores the same action twice.
 - Green Agent's "10–50× cheaper" claim replaced with the measured `graphify benchmark` figure,
   and its `/graphify` suggestions with the offline `graphify update .` / preflight.
 

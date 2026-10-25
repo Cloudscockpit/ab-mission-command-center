@@ -197,6 +197,20 @@ class Lint(unittest.TestCase):
             self.assertIn("## Maturity & Progress Summary", read(
                 skills, "actionboard-devops-mission", "assets", "mission-report-template.md"), t)
 
+    def test_round2_fixes_reach_every_target(self):
+        """Smoke round 2: preflight skipped .graphifyignore when a graph existed, and Green handed
+        over a test command whose interpreter did not start on Windows."""
+        skill_dirs = {"claude": ("claude", "skills"), "opencode": ("opencode", "skills"),
+                      "antigravity": ("antigravity", "skills"), "codex": ("codex", ".agents", "skills")}
+        green = {"claude": ("claude", "agents", "green-agent.md"),
+                 "opencode": ("opencode", "agents", "green-agent.md"),
+                 "antigravity": ("antigravity", "agents", "green-agent.md"),
+                 "codex": ("codex", ".codex", "agents", "green-agent.toml")}
+        for t, parts in skill_dirs.items():
+            preflight = read(DIST, *parts, "mission-preflight", "SKILL.md")
+            self.assertIn("**Whenever Graphify is used**", preflight, t)
+            self.assertIn("py --version", read(DIST, *green[t]), t)
+
     def test_context7_configured_for_every_target(self):
         url = "https://mcp.context7.com/mcp"
         self.assertEqual(json.loads(read(DIST, "claude", ".mcp.json"))["mcpServers"]["context7"],
