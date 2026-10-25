@@ -31,22 +31,46 @@ the same way everywhere: Black Agent plans, stops at the go/no-go gate, and noth
 your project until you reply `go`.
 
 > [!TIP]
-> **🚀 Quick Start (easiest way to get started)**
+> **🚀 Quick Start (Easiest way to get started)**
 >
-> **Claude Code — zero cloning, no installer to run.** Paste these two commands into the Claude Code
-> chat and you are done:
->
-> ```
+> **1. Claude Code (In-Chat / Zero Cloning):**
+> Paste into Claude Code chat:
+> ```sh
 > /plugin marketplace add Cloudscockpit/ab-mission-command-center
 > /plugin install actionboard-v5-agentformation@actionboard-v5-agentformation
 > ```
 >
-> **OpenCode, Codex CLI, Antigravity CLI — one line in a terminal.** Open a terminal in your
-> project folder and paste the one-liner from your CLI's guide below
-> ([OpenCode](#2-opencode) · [Codex CLI](#3-codex-cli) · [Antigravity CLI](#4-antigravity-cli-agy)).
-> It needs Git and Python 3.9+.
+> **2. OpenCode (Terminal One-Liner):**
+> Run in your project folder:
+> ```sh
+> git clone --depth 1 https://github.com/Cloudscockpit/ab-mission-command-center.git && python ab-mission-command-center/scripts/install.py --target opencode --project .
+> ```
 >
-> Then start a mission with `/start-mission <what you want done>` (`$start-mission` on Codex).
+> **3. Antigravity CLI (Terminal One-Liner):**
+> Run in your project folder:
+> ```sh
+> git clone --depth 1 https://github.com/Cloudscockpit/ab-mission-command-center.git && python ab-mission-command-center/scripts/install.py --target antigravity --project .
+> ```
+>
+> **4. Codex CLI (Terminal One-Liner):**
+> Run in your project folder:
+> ```sh
+> git clone --depth 1 https://github.com/Cloudscockpit/ab-mission-command-center.git && python ab-mission-command-center/scripts/install.py --target codex --project .
+> ```
+>
+> *(After installing, start a mission with `/start-mission <objective>`, or `$start-mission` on Codex)*
+
+> [!NOTE]
+> **💡 Pro-Tips for Terminal & One-Liner Users:**
+>
+> 1. **Git & Code-Graph Cleanliness:** Add `ab-mission-command-center/` to your `.gitignore` and `.graphifyignore` so the local installer clone is neither committed to your repo nor indexed by Graphify.
+> 2. **One-Command Updates & Removal:** Easily pull updates or uninstall later without re-cloning:
+>    ```sh
+>    git -C ab-mission-command-center pull && python ab-mission-command-center/scripts/install.py --target <cli> --project .
+>    # To uninstall:
+>    python ab-mission-command-center/scripts/install.py --target <cli> --project . --uninstall
+>    ```
+> 3. **Windows Users (`python` vs `py`):** If running `python` launches the Microsoft Store on Windows, simply use `py` instead.
 
 ### 1. Claude Code
 
