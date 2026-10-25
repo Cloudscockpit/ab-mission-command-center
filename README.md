@@ -40,35 +40,42 @@ your project until you reply `go`.
 > /plugin install actionboard-v5-agentformation@actionboard-v5-agentformation
 > ```
 >
-> **2. OpenCode (Terminal One-Liner):**
-> Run in your project folder:
+> **2. OpenCode CLI (npx, nothing left behind):**
+> Run in your project folder (needs Node 18+ and Python 3.9+):
 > ```sh
-> git clone --depth 1 https://github.com/Cloudscockpit/ab-mission-command-center.git && python ab-mission-command-center/scripts/install.py --target opencode --project .
+> npx @actionboard/install --target opencode
 > ```
 >
-> **3. Antigravity CLI (Terminal One-Liner):**
-> Run in your project folder:
+> **3. Antigravity CLI (npx, nothing left behind):**
+> Run in your project folder (needs Node 18+ and Python 3.9+):
 > ```sh
-> git clone --depth 1 https://github.com/Cloudscockpit/ab-mission-command-center.git && python ab-mission-command-center/scripts/install.py --target antigravity --project .
+> npx @actionboard/install --target antigravity
 > ```
 >
-> **4. Codex CLI (Terminal One-Liner):**
-> Run in your project folder:
+> **4. Codex CLI (npx, nothing left behind):**
+> Run in your project folder (needs Node 18+ and Python 3.9+):
 > ```sh
-> git clone --depth 1 https://github.com/Cloudscockpit/ab-mission-command-center.git && python ab-mission-command-center/scripts/install.py --target codex --project .
+> npx @actionboard/install --target codex
 > ```
+>
+> **No Node?** Use uv: `uvx --from "git+https://github.com/Cloudscockpit/ab-mission-command-center#subdirectory=packages/installer-py" actionboard-install --target <cli>`, or the git one-liner, which deletes its own clone:
+> ```sh
+> git clone --depth 1 https://github.com/Cloudscockpit/ab-mission-command-center.git && python ab-mission-command-center/scripts/install.py --target <opencode|antigravity|codex> --project . --cleanup
+> ```
+>
+> Until v1.1.0 is tagged and published, `npx` and `uvx` answer "tag not published yet"; use the git one-liner until then.
 >
 > *(After installing, start a mission with `/start-mission <objective>`, or `$start-mission` on Codex)*
 
 > [!NOTE]
 > **💡 Pro-Tips for Terminal & One-Liner Users:**
 >
-> 1. **Git & Code-Graph Cleanliness:** Add `ab-mission-command-center/` to your `.gitignore` and `.graphifyignore` so the local installer clone is neither committed to your repo nor indexed by Graphify.
-> 2. **One-Command Updates & Removal:** Easily pull updates or uninstall later without re-cloning:
+> 1. **Zero footprint:** the `npx`, `uvx` and `--cleanup` paths leave no `ab-mission-command-center/` folder behind, so there is nothing to add to `.gitignore` or `.graphifyignore`. The installed files do not depend on the installer; they only reference your Python interpreter.
+> 2. **Update & Removal:** re-run the install command to update. To remove, run the standalone uninstaller the installer left in your project; it needs no clone and deletes only unchanged files it created:
 >    ```sh
->    git -C ab-mission-command-center pull && python ab-mission-command-center/scripts/install.py --target <cli> --project .
->    # To uninstall:
->    python ab-mission-command-center/scripts/install.py --target <cli> --project . --uninstall
+>    python .codex/actionboard/actionboard_uninstall.py                                         # Codex
+>    python .opencode/actionboard/actionboard_uninstall.py                                      # OpenCode
+>    python .agents/plugins/actionboard-v5-agentformation/actionboard_uninstall.py              # Antigravity
 >    ```
 > 3. **Windows Users (`python` vs `py`):** If running `python` launches the Microsoft Store on Windows, simply use `py` instead.
 
@@ -127,22 +134,43 @@ claude plugin uninstall actionboard-v5-agentformation@actionboard-v5-agentformat
 
 ### 2. OpenCode
 
-**Requirements:** OpenCode 2.x (tested with 2.1.4; 1.x gets a legacy guard plugin), Python 3.9+,
-Git.
+**Requirements:** OpenCode 2.x (tested with 2.1.4; 1.x gets a legacy guard plugin), Python 3.9+
+(the install wrappers delegate to `scripts/install.py`), Node 18+ for `npx`, Git only for the
+clone paths.
 
-**Installation (one-liner)** — open a terminal in your project folder and paste:
+**Installation (npx, recommended)** — open a terminal in your project folder and run:
 
 ```sh
-git clone --depth 1 https://github.com/Cloudscockpit/ab-mission-command-center.git && python ab-mission-command-center/scripts/install.py --target opencode --project .
+npx @actionboard/install --target opencode
 ```
 
-This leaves the clone in `ab-mission-command-center/` inside your project. Keep it for updates
-and removal, and add `ab-mission-command-center/` to `.gitignore` and `.graphifyignore` so it is
-not committed or indexed into the code graph. On Windows, if `python` opens the Microsoft Store,
-use `py` instead. Running the one-liner a second time fails because the folder exists; use the
-update steps below instead.
+This downloads the installer into a temporary folder, installs into your project, and deletes the
+temporary folder again, so nothing but OpenCode's own files lands in your project: there is no
+clone to ignore, commit or index. Add `--global` to install for your user instead of the current
+project. It needs Node 18+ for `npx` and Python 3.9+ on PATH, because the wrapper hands the work to
+`scripts/install.py`. Until v1.1.0 is tagged and published, `npx` and `uvx` answer "tag not
+published yet"; use the git one-liner below in the meantime.
 
-**Installation (step by step)** — if you prefer to keep the clone outside your project:
+**Installation (uvx, if you have uv but not Node):**
+
+```sh
+uvx --from "git+https://github.com/Cloudscockpit/ab-mission-command-center#subdirectory=packages/installer-py" actionboard-install --target opencode
+```
+
+**Installation (git one-liner, no Node or uv):**
+
+```sh
+git clone --depth 1 https://github.com/Cloudscockpit/ab-mission-command-center.git && python ab-mission-command-center/scripts/install.py --target opencode --project . --cleanup
+```
+
+`--cleanup` deletes the clone again once the install succeeded. It refuses, and leaves the clone
+and the install untouched, unless the clone is a subfolder of your project, is a clean checkout of
+`Cloudscockpit/ab-mission-command-center` (no edits, no untracked or ignored files, nothing
+unpushed), and no `--config` file lives inside it. On Windows, if `python` opens the Microsoft
+Store, use `py` instead. If you would rather keep a checkout for updates, leave `--cleanup` off
+and see the step-by-step install below.
+
+**Installation (step by step)** — if you prefer to keep a checkout, outside or inside your project, for updates:
 
 ```sh
 git clone https://github.com/Cloudscockpit/ab-mission-command-center
@@ -185,7 +213,16 @@ skill: `/mission-brief`, `/mission-plan`, `/mission-report`, `/mission-preflight
 `agentformation.config.example.json` to `agentformation.config.json`, edit the `opencode`
 entry, and install with `--config agentformation.config.json`.
 
-**Update / remove** — from your project folder, if you used the one-liner:
+**Update / remove** — re-run the install command to update. To remove, no clone is needed:
+
+```sh
+npx @actionboard/install --target opencode --uninstall
+python .opencode/actionboard/actionboard_uninstall.py
+```
+
+The installer leaves `actionboard_uninstall.py` next to its manifest, so the second command works
+with nothing but Python (add `--global` to the npx form for a user-level install). If you keep a
+checkout instead, from your project folder:
 
 ```sh
 git -C ab-mission-command-center pull
@@ -203,22 +240,43 @@ it lets a plain `openshell …` command reach the agents' ask rules and denies a
 
 ### 3. Codex CLI
 
-**Requirements:** Codex CLI (tested with 0.164.0), signed in with `codex login`. Python 3.9+,
-Git.
+**Requirements:** Codex CLI (tested with 0.164.0), signed in with `codex login`. Python 3.9+
+(the install wrappers delegate to `scripts/install.py`), Node 18+ for `npx`, Git only for the
+clone paths.
 
-**Installation (one-liner)** — open a terminal in your project folder and paste:
+**Installation (npx, recommended)** — open a terminal in your project folder and run:
 
 ```sh
-git clone --depth 1 https://github.com/Cloudscockpit/ab-mission-command-center.git && python ab-mission-command-center/scripts/install.py --target codex --project .
+npx @actionboard/install --target codex
 ```
 
-This leaves the clone in `ab-mission-command-center/` inside your project. Keep it for updates
-and removal, and add `ab-mission-command-center/` to `.gitignore` and `.graphifyignore` so it is
-not committed or indexed into the code graph. On Windows, if `python` opens the Microsoft Store,
-use `py` instead. Running the one-liner a second time fails because the folder exists; use the
-update steps below instead.
+This downloads the installer into a temporary folder, installs into your project, and deletes the
+temporary folder again, so nothing but Codex's own files lands in your project: there is no
+clone to ignore, commit or index. Add `--global` to install for your user instead of the current
+project. It needs Node 18+ for `npx` and Python 3.9+ on PATH, because the wrapper hands the work to
+`scripts/install.py`. Until v1.1.0 is tagged and published, `npx` and `uvx` answer "tag not
+published yet"; use the git one-liner below in the meantime.
 
-**Installation (step by step)** — if you prefer to keep the clone outside your project:
+**Installation (uvx, if you have uv but not Node):**
+
+```sh
+uvx --from "git+https://github.com/Cloudscockpit/ab-mission-command-center#subdirectory=packages/installer-py" actionboard-install --target codex
+```
+
+**Installation (git one-liner, no Node or uv):**
+
+```sh
+git clone --depth 1 https://github.com/Cloudscockpit/ab-mission-command-center.git && python ab-mission-command-center/scripts/install.py --target codex --project . --cleanup
+```
+
+`--cleanup` deletes the clone again once the install succeeded. It refuses, and leaves the clone
+and the install untouched, unless the clone is a subfolder of your project, is a clean checkout of
+`Cloudscockpit/ab-mission-command-center` (no edits, no untracked or ignored files, nothing
+unpushed), and no `--config` file lives inside it. On Windows, if `python` opens the Microsoft
+Store, use `py` instead. If you would rather keep a checkout for updates, leave `--cleanup` off
+and see the step-by-step install below.
+
+**Installation (step by step)** — if you prefer to keep a checkout, outside or inside your project, for updates:
 
 ```sh
 git clone https://github.com/Cloudscockpit/ab-mission-command-center
@@ -261,7 +319,16 @@ them from `/skills`.
 `agentformation.config.example.json` to `agentformation.config.json`, edit the `codex` entry,
 and install with `--config agentformation.config.json`.
 
-**Update / remove** — from your project folder, if you used the one-liner:
+**Update / remove** — re-run the install command to update. To remove, no clone is needed:
+
+```sh
+npx @actionboard/install --target codex --uninstall
+python .codex/actionboard/actionboard_uninstall.py
+```
+
+The installer leaves `actionboard_uninstall.py` next to its manifest, so the second command works
+with nothing but Python (add `--global` to the npx form for a user-level install). If you keep a
+checkout instead, from your project folder:
 
 ```sh
 git -C ab-mission-command-center pull
@@ -280,21 +347,42 @@ asks. Codex has no per-agent tool limits, so read-only roles rely on their instr
 
 ### 4. Antigravity CLI (`agy`)
 
-**Requirements:** Antigravity CLI (tested with 1.4.7). Python 3.9+, Git.
+**Requirements:** Antigravity CLI (tested with 1.4.7). Python 3.9+ (the install wrappers
+delegate to `scripts/install.py`), Node 18+ for `npx`, Git only for the clone paths.
 
-**Installation (one-liner)** — open a terminal in your project folder and paste:
+**Installation (npx, recommended)** — open a terminal in your project folder and run:
 
 ```sh
-git clone --depth 1 https://github.com/Cloudscockpit/ab-mission-command-center.git && python ab-mission-command-center/scripts/install.py --target antigravity --project .
+npx @actionboard/install --target antigravity
 ```
 
-This leaves the clone in `ab-mission-command-center/` inside your project. Keep it for updates
-and removal, and add `ab-mission-command-center/` to `.gitignore` and `.graphifyignore` so it is
-not committed or indexed into the code graph. On Windows, if `python` opens the Microsoft Store,
-use `py` instead. Running the one-liner a second time fails because the folder exists; use the
-update steps below instead.
+This downloads the installer into a temporary folder, installs into your project, and deletes the
+temporary folder again, so nothing but Antigravity's own files lands in your project: there is no
+clone to ignore, commit or index. Add `--global` to install for your user instead of the current
+project. It needs Node 18+ for `npx` and Python 3.9+ on PATH, because the wrapper hands the work to
+`scripts/install.py`. Until v1.1.0 is tagged and published, `npx` and `uvx` answer "tag not
+published yet"; use the git one-liner below in the meantime.
 
-**Installation (step by step)** — if you prefer to keep the clone outside your project:
+**Installation (uvx, if you have uv but not Node):**
+
+```sh
+uvx --from "git+https://github.com/Cloudscockpit/ab-mission-command-center#subdirectory=packages/installer-py" actionboard-install --target antigravity
+```
+
+**Installation (git one-liner, no Node or uv):**
+
+```sh
+git clone --depth 1 https://github.com/Cloudscockpit/ab-mission-command-center.git && python ab-mission-command-center/scripts/install.py --target antigravity --project . --cleanup
+```
+
+`--cleanup` deletes the clone again once the install succeeded. It refuses, and leaves the clone
+and the install untouched, unless the clone is a subfolder of your project, is a clean checkout of
+`Cloudscockpit/ab-mission-command-center` (no edits, no untracked or ignored files, nothing
+unpushed), and no `--config` file lives inside it. On Windows, if `python` opens the Microsoft
+Store, use `py` instead. If you would rather keep a checkout for updates, leave `--cleanup` off
+and see the step-by-step install below.
+
+**Installation (step by step)** — if you prefer to keep a checkout, outside or inside your project, for updates:
 
 ```sh
 git clone https://github.com/Cloudscockpit/ab-mission-command-center
@@ -333,7 +421,16 @@ gate and waits for `go`.
 `agentformation.config.example.json` to `agentformation.config.json`, edit the `antigravity`
 entry, and install with `--config agentformation.config.json`.
 
-**Update / remove** — from your project folder, if you used the one-liner:
+**Update / remove** — re-run the install command to update. To remove, no clone is needed:
+
+```sh
+npx @actionboard/install --target antigravity --uninstall
+python .agents/plugins/actionboard-v5-agentformation/actionboard_uninstall.py
+```
+
+The installer leaves `actionboard_uninstall.py` next to its manifest, so the second command works
+with nothing but Python (add `--global` to the npx form for a user-level install). If you keep a
+checkout instead, from your project folder:
 
 ```sh
 git -C ab-mission-command-center pull
@@ -427,8 +524,10 @@ adds a **Maturity & Progress Summary** to the mission report:
 | OpenCode 2.x | `opencode run "/start-mission …"` does not expand commands; the text goes to the default `build` agent, which implements directly with no go/no-go gate | Use `/start-mission` in the interactive TUI. For scripts, run `opencode run --agent black-agent "<objective and the start-mission text>"`. |
 | OpenCode 1.x | Plugins cannot "ask" | OpenCode 2.x asks natively through its permission hook. On 1.x (legacy plugin) an ask is let through only for a plain `openshell …` command that the agents' `permission.bash` ask patterns catch; otherwise it is denied. |
 | Codex | Hooks cannot "ask" | Same, with `.codex/rules/actionboard.rules` (`prompt`). `--add-endpoint …:full` is denied rather than asked. |
+| Codex | Context7 tools are deferred | Codex may need a nudge ("use Context7") before it finds the deferred Context7 tools in a mission. |
+| OpenCode 2.x | A guard denial shows a generic message | The agent sees "Permission denied: shell" without the guard's reason; the reason is in the guard audit log. |
 | Codex | No per-agent tool restriction | Read-only roles are enforced by instructions only. |
-| Codex | Project hooks run only after a one-time `/hooks` trust | Until you trust them, the guard is off on Codex; the `.rules` prompts still apply. |
+| Codex | Project hooks run only after a one-time `/hooks` trust | Until you trust them, the hook-layer guard is off on Codex; the rules layer (`.rules` prompts) is verified live and still applies. |
 | Antigravity | `toolPermission: always-proceed` approves even a hook's `force_ask` | The guard denies its "ask" commands under that setting; run them yourself or switch to `request-review`. Runs started with `--mode auto` or `--dangerously-skip-permissions` may approve asks (denies still block). |
 | Codex | No custom commands | `/start-mission` is the `$start-mission` skill; the session plays Black Agent. |
 | Antigravity | No custom commands | `/start-mission` is a skill; the session plays Black Agent (also available as `agy --agent black-agent`). |

@@ -1,0 +1,53 @@
+name: release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    env:
+      NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          registry-url: https://registry.npmjs.org
+
+      - name: Verify package version matches tag
+        run: |
+          pkg_version="$(node -p "require('./packages/installer/package.json').version")"
+          tag_version="${GITHUB_REF_NAME#v}"
+          if [ "$pkg_version" != "$tag_version" ]; then
+            echo "::error::packages/installer/package.json version ($pkg_version) != tag ($tag_version)"
+            exit 1
+          fi
+
+      - name: Pack tarball
+        working-directory: packages/installer
+        run: npm pack
+
+      - name: Publish to npm
+        if: ${{ env.NPM_TOKEN != '' }}
+        working-directory: packages/installer
+        run: npm publish --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Skip npm publish notice
+        if: ${{ env.NPM_TOKEN == '' }}
+        run: echo "::notice::NPM_TOKEN secret not set; skipping npm publish."
+
+      - name: Create GitHub release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release create "$GITHUB_REF_NAME" packages/installer/*.tgz \
+            --title "$GITHUB_REF_NAME" --generate-notes

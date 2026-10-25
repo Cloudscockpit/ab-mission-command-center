@@ -6,3 +6,7 @@ __pycache__/
 /actionboard-build-mission-pipeline/
 graphify-out/
 .actionboard/preferences.json
+
+# uvx-from-path packaging leftovers
+packages/installer-py/build/
+*.egg-info/
