@@ -30,6 +30,24 @@ Pick your CLI and follow only that guide; each one is complete on its own. Every
 the same way everywhere: Black Agent plans, stops at the go/no-go gate, and nothing changes in
 your project until you reply `go`.
 
+> [!TIP]
+> **🚀 Quick Start (easiest way to get started)**
+>
+> **Claude Code — zero cloning, no installer to run.** Paste these two commands into the Claude Code
+> chat and you are done:
+>
+> ```
+> /plugin marketplace add Cloudscockpit/ab-mission-command-center
+> /plugin install actionboard-v5-agentformation@actionboard-v5-agentformation
+> ```
+>
+> **OpenCode, Codex CLI, Antigravity CLI — one line in a terminal.** Open a terminal in your
+> project folder and paste the one-liner from your CLI's guide below
+> ([OpenCode](#2-opencode) · [Codex CLI](#3-codex-cli) · [Antigravity CLI](#4-antigravity-cli-agy)).
+> It needs Git and Python 3.9+.
+>
+> Then start a mission with `/start-mission <what you want done>` (`$start-mission` on Codex).
+
 ### 1. Claude Code
 
 **Requirements:** Claude Code (tested with 2.1.310). Python 3.9+ on PATH for the OpenShell guard
@@ -88,7 +106,19 @@ claude plugin uninstall actionboard-v5-agentformation@actionboard-v5-agentformat
 **Requirements:** OpenCode 2.x (tested with 2.1.4; 1.x gets a legacy guard plugin), Python 3.9+,
 Git.
 
-**Installation** — in a terminal:
+**Installation (one-liner)** — open a terminal in your project folder and paste:
+
+```sh
+git clone --depth 1 https://github.com/Cloudscockpit/ab-mission-command-center.git && python ab-mission-command-center/scripts/install.py --target opencode --project .
+```
+
+This leaves the clone in `ab-mission-command-center/` inside your project. Keep it for updates
+and removal, and add `ab-mission-command-center/` to `.gitignore` and `.graphifyignore` so it is
+not committed or indexed into the code graph. On Windows, if `python` opens the Microsoft Store,
+use `py` instead. Running the one-liner a second time fails because the folder exists; use the
+update steps below instead.
+
+**Installation (step by step)** — if you prefer to keep the clone outside your project:
 
 ```sh
 git clone https://github.com/Cloudscockpit/ab-mission-command-center
@@ -131,13 +161,16 @@ skill: `/mission-brief`, `/mission-plan`, `/mission-report`, `/mission-preflight
 `agentformation.config.example.json` to `agentformation.config.json`, edit the `opencode`
 entry, and install with `--config agentformation.config.json`.
 
-**Update / remove** — from the cloned repository:
+**Update / remove** — from your project folder, if you used the one-liner:
 
 ```sh
-git pull
-python scripts/install.py --target opencode --project /path/to/your-project            # update
-python scripts/install.py --target opencode --project /path/to/your-project --uninstall
+git -C ab-mission-command-center pull
+python ab-mission-command-center/scripts/install.py --target opencode --project .              # update
+python ab-mission-command-center/scripts/install.py --target opencode --project . --uninstall  # remove
 ```
+
+If you installed step by step, run the same commands from the clone with `git pull` and
+`--project /path/to/your-project`.
 
 Uninstall removes only the files the installer created, and only if you did not change them.
 
@@ -149,7 +182,19 @@ it lets a plain `openshell …` command reach the agents' ask rules and denies a
 **Requirements:** Codex CLI (tested with 0.164.0), signed in with `codex login`. Python 3.9+,
 Git.
 
-**Installation** — in a terminal:
+**Installation (one-liner)** — open a terminal in your project folder and paste:
+
+```sh
+git clone --depth 1 https://github.com/Cloudscockpit/ab-mission-command-center.git && python ab-mission-command-center/scripts/install.py --target codex --project .
+```
+
+This leaves the clone in `ab-mission-command-center/` inside your project. Keep it for updates
+and removal, and add `ab-mission-command-center/` to `.gitignore` and `.graphifyignore` so it is
+not committed or indexed into the code graph. On Windows, if `python` opens the Microsoft Store,
+use `py` instead. Running the one-liner a second time fails because the folder exists; use the
+update steps below instead.
+
+**Installation (step by step)** — if you prefer to keep the clone outside your project:
 
 ```sh
 git clone https://github.com/Cloudscockpit/ab-mission-command-center
@@ -192,13 +237,16 @@ them from `/skills`.
 `agentformation.config.example.json` to `agentformation.config.json`, edit the `codex` entry,
 and install with `--config agentformation.config.json`.
 
-**Update / remove** — from the cloned repository:
+**Update / remove** — from your project folder, if you used the one-liner:
 
 ```sh
-git pull
-python scripts/install.py --target codex --project /path/to/your-project               # update
-python scripts/install.py --target codex --project /path/to/your-project --uninstall
+git -C ab-mission-command-center pull
+python ab-mission-command-center/scripts/install.py --target codex --project .              # update
+python ab-mission-command-center/scripts/install.py --target codex --project . --uninstall  # remove
 ```
+
+If you installed step by step, run the same commands from the clone with `git pull` and
+`--project /path/to/your-project`.
 
 After an update, trust the changed hooks again with `/hooks`.
 
@@ -210,7 +258,19 @@ asks. Codex has no per-agent tool limits, so read-only roles rely on their instr
 
 **Requirements:** Antigravity CLI (tested with 1.4.7). Python 3.9+, Git.
 
-**Installation** — in a terminal:
+**Installation (one-liner)** — open a terminal in your project folder and paste:
+
+```sh
+git clone --depth 1 https://github.com/Cloudscockpit/ab-mission-command-center.git && python ab-mission-command-center/scripts/install.py --target antigravity --project .
+```
+
+This leaves the clone in `ab-mission-command-center/` inside your project. Keep it for updates
+and removal, and add `ab-mission-command-center/` to `.gitignore` and `.graphifyignore` so it is
+not committed or indexed into the code graph. On Windows, if `python` opens the Microsoft Store,
+use `py` instead. Running the one-liner a second time fails because the folder exists; use the
+update steps below instead.
+
+**Installation (step by step)** — if you prefer to keep the clone outside your project:
 
 ```sh
 git clone https://github.com/Cloudscockpit/ab-mission-command-center
@@ -249,13 +309,16 @@ gate and waits for `go`.
 `agentformation.config.example.json` to `agentformation.config.json`, edit the `antigravity`
 entry, and install with `--config agentformation.config.json`.
 
-**Update / remove** — from the cloned repository:
+**Update / remove** — from your project folder, if you used the one-liner:
 
 ```sh
-git pull
-python scripts/install.py --target antigravity --project /path/to/your-project         # update
-python scripts/install.py --target antigravity --project /path/to/your-project --uninstall
+git -C ab-mission-command-center pull
+python ab-mission-command-center/scripts/install.py --target antigravity --project .              # update
+python ab-mission-command-center/scripts/install.py --target antigravity --project . --uninstall  # remove
 ```
+
+If you installed step by step, run the same commands from the clone with `git pull` and
+`--project /path/to/your-project`.
 
 **Notes for Antigravity:** the guard asks with `force_ask`. If your agy `toolPermission` is
 `always-proceed`, agy approves even that, so the guard **denies** its "ask" commands instead; run
