@@ -1,0 +1,1029 @@
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Project",
+      "@id": "urn:voltron:mission:zero-footprint-installer-npx-zero-clone-v1-1-0",
+      "name": "Zero-Footprint Installer and NPX Zero-Clone Package (v1.1.0)",
+      "description": "Eliminate installation clutter from the user's project for Codex CLI, Antigravity CLI and OpenCode: the git-clone one-liner removes its own clone after installing, uninstall works without the clone, and a new npx/uvx wrapper installs from a release bundle downloaded to the OS temp directory, so no repository is ever left in the project.",
+      "identifier": "zero-footprint-installer-npx-zero-clone-v1-1-0",
+      "startDate": "2026-10-26",
+      "member": [
+        {
+          "@id": "urn:voltron:lion:green"
+        },
+        {
+          "@id": "urn:voltron:lion:red"
+        },
+        {
+          "@id": "urn:voltron:lion:blue"
+        },
+        {
+          "@id": "urn:voltron:lion:yellow"
+        }
+      ],
+      "subjectOf": [
+        {
+          "@id": "urn:voltron:mission:zero-footprint-installer-npx-zero-clone-v1-1-0:plan"
+        }
+      ]
+    },
+    {
+      "@type": "Report",
+      "@id": "urn:voltron:mission:zero-footprint-installer-npx-zero-clone-v1-1-0:plan",
+      "name": "Mission Plan — Zero-Footprint Installer and NPX Zero-Clone Package (v1.1.0)",
+      "about": {
+        "@id": "urn:voltron:mission:zero-footprint-installer-npx-zero-clone-v1-1-0"
+      },
+      "datePublished": "2026-10-26",
+      "creator": {
+        "@id": "urn:voltron:lion:main"
+      },
+      "abstract": "6 assignments, 12 skills-gap entries, 14 risks. Awaiting go/no-go.",
+      "mainEntity": {
+        "@type": "ItemList",
+        "itemListElement": [
+          {
+            "@id": "urn:voltron:mission:zero-footprint-installer-npx-zero-clone-v1-1-0:assignment:1"
+          },
+          {
+            "@id": "urn:voltron:mission:zero-footprint-installer-npx-zero-clone-v1-1-0:assignment:2"
+          },
+          {
+            "@id": "urn:voltron:mission:zero-footprint-installer-npx-zero-clone-v1-1-0:assignment:3"
+          },
+          {
+            "@id": "urn:voltron:mission:zero-footprint-installer-npx-zero-clone-v1-1-0:assignment:4"
+          },
+          {
+            "@id": "urn:voltron:mission:zero-footprint-installer-npx-zero-clone-v1-1-0:assignment:5"
+          },
+          {
+            "@id": "urn:voltron:mission:zero-footprint-installer-npx-zero-clone-v1-1-0:assignment:6"
+          },
+          {
+            "@id": "urn:voltron:mission:zero-footprint-installer-npx-zero-clone-v1-1-0:gap:1"
+          },
+          {
+            "@id": "urn:voltron:mission:zero-footprint-installer-npx-zero-clone-v1-1-0:gap:2"
+          },
+          {
+            "@id": "urn:voltron:mission:zero-footprint-installer-npx-zero-clone-v1-1-0:gap:3"
+          },
+          {
+            "@id": "urn:voltron:mission:zero-footprint-installer-npx-zero-clone-v1-1-0:gap:4"
+          },
+          {
+            "@id": "urn:voltron:mission:zero-footprint-installer-npx-zero-clone-v1-1-0:gap:5"
+          },
+          {
+            "@id": "urn:voltron:mission:zero-footprint-installer-npx-zero-clone-v1-1-0:gap:6"
+          },
+          {
+            "@id": "urn:voltron:mission:zero-footprint-installer-npx-zero-clone-v1-1-0:gap:7"
+          },
+          {
+            "@id": "urn:voltron:mission:zero-footprint-installer-npx-zero-clone-v1-1-0:gap:8"
+          },
+          {
+            "@id": "urn:voltron:mission:zero-footprint-installer-npx-zero-clone-v1-1-0:gap:9"
+          },
+          {
+            "@id": "urn:voltron:mission:zero-footprint-installer-npx-zero-clone-v1-1-0:gap:10"
+          },
+          {
+            "@id": "urn:voltron:mission:zero-footprint-installer-npx-zero-clone-v1-1-0:gap:11"
+          },
+          {
+            "@id": "urn:voltron:mission:zero-footprint-installer-npx-zero-clone-v1-1-0:gap:12"
+          },
+          {
+            "@id": "urn:voltron:mission:zero-footprint-installer-npx-zero-clone-v1-1-0:risk:1"
+          },
+          {
+            "@id": "urn:voltron:mission:zero-footprint-installer-npx-zero-clone-v1-1-0:risk:2"
+          },
+          {
+            "@id": "urn:voltron:mission:zero-footprint-installer-npx-zero-clone-v1-1-0:risk:3"
+          },
+          {
+            "@id": "urn:voltron:mission:zero-footprint-installer-npx-zero-clone-v1-1-0:risk:4"
+          },
+          {
+            "@id": "urn:voltron:mission:zero-footprint-installer-npx-zero-clone-v1-1-0:risk:5"
+          },
+          {
+            "@id": "urn:voltron:mission:zero-footprint-installer-npx-zero-clone-v1-1-0:risk:6"
+          },
+          {
+            "@id": "urn:voltron:mission:zero-footprint-installer-npx-zero-clone-v1-1-0:risk:7"
+          },
+          {
+            "@id": "urn:voltron:mission:zero-footprint-installer-npx-zero-clone-v1-1-0:risk:8"
+          },
+          {
+            "@id": "urn:voltron:mission:zero-footprint-installer-npx-zero-clone-v1-1-0:risk:9"
+          },
+          {
+            "@id": "urn:voltron:mission:zero-footprint-installer-npx-zero-clone-v1-1-0:risk:10"
+          },
+          {
+            "@id": "urn:voltron:mission:zero-footprint-installer-npx-zero-clone-v1-1-0:risk:11"
+          },
+          {
+            "@id": "urn:voltron:mission:zero-footprint-installer-npx-zero-clone-v1-1-0:risk:12"
+          },
+          {
+            "@id": "urn:voltron:mission:zero-footprint-installer-npx-zero-clone-v1-1-0:risk:13"
+          },
+          {
+            "@id": "urn:voltron:mission:zero-footprint-installer-npx-zero-clone-v1-1-0:risk:14"
+          }
+        ]
+      }
+    },
+    {
+      "@type": "Organization",
+      "@id": "urn:voltron:lion:main",
+      "additionalType": "https://schema.org/SoftwareApplication",
+      "name": "Black Agent",
+      "description": "Mission commander (Black Agent). Plans, delegates, gates, reports."
+    },
+    {
+      "@type": "Organization",
+      "@id": "urn:voltron:lion:green",
+      "additionalType": "https://schema.org/SoftwareApplication",
+      "name": "Green Agent",
+      "description": "Recon specialist. Inventories the project and environment, read-only.",
+      "additionalProperty": {
+        "@type": "PropertyValue",
+        "name": "specialty",
+        "value": "recon"
+      }
+    },
+    {
+      "@type": "Organization",
+      "@id": "urn:voltron:lion:red",
+      "additionalType": "https://schema.org/SoftwareApplication",
+      "name": "Red Agent",
+      "description": "Rapid execution specialist. Writes code, scaffolds features.",
+      "additionalProperty": {
+        "@type": "PropertyValue",
+        "name": "specialty",
+        "value": "rapid-execution"
+      }
+    },
+    {
+      "@type": "Organization",
+      "@id": "urn:voltron:lion:blue",
+      "additionalType": "https://schema.org/SoftwareApplication",
+      "name": "Blue Agent",
+      "description": "Data and integrations specialist. APIs, downloads, packaging and external service wiring.",
+      "additionalProperty": {
+        "@type": "PropertyValue",
+        "name": "specialty",
+        "value": "integrations"
+      }
+    },
+    {
+      "@type": "Organization",
+      "@id": "urn:voltron:lion:yellow",
+      "additionalType": "https://schema.org/SoftwareApplication",
+      "name": "Yellow Agent",
+      "description": "Quality and defense specialist. Tests, verification, security review.",
+      "additionalProperty": {
+        "@type": "PropertyValue",
+        "name": "specialty",
+        "value": "quality-defense"
+      }
+    },
+    {
+      "@type": "Action",
+      "@id": "urn:voltron:mission:zero-footprint-installer-npx-zero-clone-v1-1-0:assignment:1",
+      "name": "Environment and release recon",
+      "description": "Read-only inventory for this mission: versions and auth state of codex, agy and opencode plus their non-interactive modes; node, npm, npx, python and uv versions; whether the npm scope @actionboard exists and who owns it (currently `npm view @actionboard/install` returns E404); git tags and GitHub releases on Cloudscockpit/ab-mission-command-center (none found at plan time); freshness of ./graphify-out/ against HEAD; and a walk of scripts/install.py that lists every place the installed output, the manifest or the uninstall path depends on files inside the clone (REPO, HERE, dist/, build).",
+      "agent": {
+        "@id": "urn:voltron:lion:green"
+      },
+      "actionStatus": "https://schema.org/PotentialActionStatus",
+      "result": {
+        "@type": "DefinedTerm",
+        "name": "acceptance",
+        "description": "A recon report with a table of tool | version | authenticated, a yes/no answer for npm scope ownership, the tag and release list, the graph freshness verdict, and a list of every clone-dependent reference in scripts/install.py with its line number. Files created/changed: none."
+      }
+    },
+    {
+      "@type": "Action",
+      "@id": "urn:voltron:mission:zero-footprint-installer-npx-zero-clone-v1-1-0:assignment:2",
+      "name": "Self-cleaning installer and clone-free uninstall",
+      "description": "Add a `--cleanup` flag to scripts/install.py that, only after a fully successful install, removes the installer's own checkout. It must refuse (and say why, exiting 0 with the install intact) unless every guard holds: the checkout is a strict subdirectory of --project and never equal to it or an ancestor of it; it is a git work tree whose origin is Cloudscockpit/ab-mission-command-center; `git status --porcelain` is empty; and no --config file lives inside it. Deletion must clear the read-only bit on .git object files so it succeeds on Windows. Separately, copy a self-contained, standard-library-only uninstaller (scripts/actionboard_uninstall.py) next to the install manifest for every target, so `python <target>/actionboard/actionboard_uninstall.py` removes exactly the manifest's unchanged files with no clone present. Existing commands without `--cleanup` behave exactly as in 1.0.0.",
+      "agent": {
+        "@id": "urn:voltron:lion:red"
+      },
+      "actionStatus": "https://schema.org/PotentialActionStatus",
+      "result": {
+        "@type": "DefinedTerm",
+        "name": "acceptance",
+        "description": "In a scratch project, the one-liner `git clone --depth 1 <repo> && python ab-mission-command-center/scripts/install.py --target <cli> --project . --cleanup` leaves no ab-mission-command-center/ directory for each of codex, antigravity and opencode on Windows; running the copied uninstaller afterwards removes every installed file and the manifest; running with a dirty clone, or with --project pointing at the clone itself, prints a refusal and deletes nothing."
+      },
+      "object": [
+        {
+          "@id": "urn:voltron:file:scripts/install.py"
+        },
+        {
+          "@id": "urn:voltron:file:scripts/actionboard_uninstall.py"
+        }
+      ],
+      "additionalProperty": [
+        {
+          "@type": "PropertyValue",
+          "name": "dependsOn",
+          "value": "urn:voltron:mission:zero-footprint-installer-npx-zero-clone-v1-1-0:assignment:1"
+        }
+      ]
+    },
+    {
+      "@type": "Action",
+      "@id": "urn:voltron:mission:zero-footprint-installer-npx-zero-clone-v1-1-0:assignment:3",
+      "name": "npx and uvx zero-clone wrappers",
+      "description": "Create packages/installer/ as the npm package @actionboard/install (zero runtime dependencies, bin `actionboard-install`, version 1.1.0). bin/install.js parses `--target <codex|antigravity|opencode> [--global] [--project <dir>] [--uninstall] [--dry-run] [--yes]`, resolves a Python 3.9+ interpreter (python3, python, py -3), downloads the tagged source tarball for its own version from codeload.github.com over HTTPS into a fresh fs.mkdtemp directory under os.tmpdir(), extracts it with Python's tarfile using the 'data' filter (no path traversal), runs scripts/install.py from there against the absolute project path, and removes the temp directory in a finally block on success, failure or Ctrl-C. An ACTIONBOARD_BUNDLE environment variable (local path or URL) overrides the download for testing. Mirror the same flow in packages/installer-py/ as a standard-library Python package with a console script so `uvx --from git+https://github.com/Cloudscockpit/ab-mission-command-center#subdirectory=packages/installer-py actionboard-install --target <cli>` works without PyPI. Add a tag-triggered release workflow that runs `npm publish --access public` from packages/installer/ only when an NPM_TOKEN secret is present.",
+      "agent": {
+        "@id": "urn:voltron:lion:blue"
+      },
+      "actionStatus": "https://schema.org/PotentialActionStatus",
+      "result": {
+        "@type": "DefinedTerm",
+        "name": "acceptance",
+        "description": "With ACTIONBOARD_BUNDLE pointing at a local `git archive` tarball, `npx <packed .tgz> --target opencode` and the uvx command each install into a scratch project, exit 0, and leave nothing in the project except the CLI's own directories (.opencode/, .codex/ plus .agents/, or .agents/plugins/) and the files the 1.0.0 installer already writes there; the temp directory under os.tmpdir() no longer exists afterwards; `npm pack --dry-run` lists only package.json, bin/install.js and README.md."
+      },
+      "object": [
+        {
+          "@id": "urn:voltron:file:packages/installer/package.json"
+        },
+        {
+          "@id": "urn:voltron:file:packages/installer/bin/install.js"
+        },
+        {
+          "@id": "urn:voltron:file:packages/installer/README.md"
+        },
+        {
+          "@id": "urn:voltron:file:packages/installer-py/pyproject.toml"
+        },
+        {
+          "@id": "urn:voltron:file:packages/installer-py/actionboard_install/__init__.py"
+        },
+        {
+          "@id": "urn:voltron:file:packages/installer-py/actionboard_install/__main__.py"
+        },
+        {
+          "@id": "urn:voltron:file:.github/workflows/release.yml"
+        }
+      ],
+      "additionalProperty": [
+        {
+          "@type": "PropertyValue",
+          "name": "dependsOn",
+          "value": "urn:voltron:mission:zero-footprint-installer-npx-zero-clone-v1-1-0:assignment:2"
+        }
+      ]
+    },
+    {
+      "@type": "Action",
+      "@id": "urn:voltron:mission:zero-footprint-installer-npx-zero-clone-v1-1-0:assignment:4",
+      "name": "Regression tests and security review",
+      "description": "Extend tests/install/test_install.py with failing-before/passing-after cases: a project install with --cleanup leaves zero leftover clone folders for each of the three targets; each cleanup guard refuses and deletes nothing (dirty tree, foreign origin, checkout equals or contains the project, --config inside the clone); the copied standalone uninstaller removes everything after the clone is gone; installs without --cleanup are byte-for-byte unchanged from 1.0.0. Add tests/installer/install.test.mjs for the npx wrapper using a local fixture tarball and no network: temp-dir removal on success and on failure, argument passthrough, missing-Python error. Wire both into CI. Security-review the download, extract and delete paths.",
+      "agent": {
+        "@id": "urn:voltron:lion:yellow"
+      },
+      "actionStatus": "https://schema.org/PotentialActionStatus",
+      "result": {
+        "@type": "DefinedTerm",
+        "name": "acceptance",
+        "description": "`python -m unittest discover -s tests/install -v` and `node --test tests/installer/install.test.mjs` pass locally; the new tests fail when run against the 1.0.0 scripts/install.py; CI on the pushed branch is green on Windows, macOS and Linux; the security review lists zero open High findings for path traversal, deletion outside the clone, or unpinned downloads."
+      },
+      "object": [
+        {
+          "@id": "urn:voltron:file:tests/install/test_install.py"
+        },
+        {
+          "@id": "urn:voltron:file:tests/installer/install.test.mjs"
+        },
+        {
+          "@id": "urn:voltron:file:.github/workflows/ci.yml"
+        }
+      ],
+      "additionalProperty": [
+        {
+          "@type": "PropertyValue",
+          "name": "dependsOn",
+          "value": "urn:voltron:mission:zero-footprint-installer-npx-zero-clone-v1-1-0:assignment:2"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "dependsOn",
+          "value": "urn:voltron:mission:zero-footprint-installer-npx-zero-clone-v1-1-0:assignment:3"
+        }
+      ]
+    },
+    {
+      "@type": "Action",
+      "@id": "urn:voltron:mission:zero-footprint-installer-npx-zero-clone-v1-1-0:assignment:5",
+      "name": "Live smoke runs on Codex, Antigravity and OpenCode",
+      "description": "In three fresh scratch projects (one per CLI), install through (a) the git-clone one-liner with --cleanup and (b) the packed npx wrapper with ACTIONBOARD_BUNDLE set to a local tarball, since the v1.1.0 tag does not exist yet. After each install, list the project tree and confirm only the CLI's own directories were added, then run one short mission prompt in each CLI's non-interactive mode to prove the formation still loads and the guard and Context7 still work. Uninstall with the standalone uninstaller and confirm the project returns to its pre-install file list. Record results; do not fix defects.",
+      "agent": {
+        "@id": "urn:voltron:lion:yellow"
+      },
+      "actionStatus": "https://schema.org/PotentialActionStatus",
+      "result": {
+        "@type": "DefinedTerm",
+        "name": "acceptance",
+        "description": "results-2026-10-v1.1.md has one row per CLI per install path with CLI version, the before/after directory listing, pass/fail for install, mission load, guard, Context7 and uninstall, and a transcript excerpt for every failure."
+      },
+      "object": [
+        {
+          "@id": "urn:voltron:file:tests/smoke/results-2026-10-v1.1.md"
+        }
+      ],
+      "additionalProperty": [
+        {
+          "@type": "PropertyValue",
+          "name": "dependsOn",
+          "value": "urn:voltron:mission:zero-footprint-installer-npx-zero-clone-v1-1-0:assignment:4"
+        }
+      ]
+    },
+    {
+      "@type": "Action",
+      "@id": "urn:voltron:mission:zero-footprint-installer-npx-zero-clone-v1-1-0:assignment:6",
+      "name": "Release documentation and version bump",
+      "description": "Make the npx command the default install path for Codex, Antigravity and OpenCode in the README Quick Start and per-CLI guides, with the uvx command and the git-clone one-liner (now with --cleanup) as fallbacks; replace the .gitignore/.graphifyignore pro-tip with the zero-footprint explanation and document the standalone uninstaller; keep the manual clone path documented for users who keep a checkout for updates. Write the 1.1.0 CHANGELOG entry. Bump src/VERSION to 1.1.0 as the last step and regenerate dist/ and the marketplace so every plugin.json reads 1.1.0.",
+      "agent": {
+        "@id": "urn:voltron:lion:red"
+      },
+      "actionStatus": "https://schema.org/PotentialActionStatus",
+      "result": {
+        "@type": "DefinedTerm",
+        "name": "acceptance",
+        "description": "`python scripts/build.py --check` prints 'dist/ is up to date'; every plugin.json and packages/installer/package.json read 1.1.0; the README Quick Start shows an npx command for each of the three CLIs and still shows the manual clone path; CHANGELOG has a dated 1.1.0 section; every failing smoke row links a fix or a stated reason."
+      },
+      "object": [
+        {
+          "@id": "urn:voltron:file:README.md"
+        },
+        {
+          "@id": "urn:voltron:file:CHANGELOG.md"
+        },
+        {
+          "@id": "urn:voltron:file:src/VERSION"
+        },
+        {
+          "@id": "urn:voltron:file:dist/"
+        },
+        {
+          "@id": "urn:voltron:file:.claude-plugin/marketplace.json"
+        }
+      ],
+      "additionalProperty": [
+        {
+          "@type": "PropertyValue",
+          "name": "dependsOn",
+          "value": "urn:voltron:mission:zero-footprint-installer-npx-zero-clone-v1-1-0:assignment:5"
+        }
+      ]
+    },
+    {
+      "@type": "SoftwareSourceCode",
+      "@id": "urn:voltron:file:scripts/install.py",
+      "name": "scripts/install.py",
+      "codeRepository": "https://github.com/Cloudscockpit/ab-mission-command-center"
+    },
+    {
+      "@type": "SoftwareSourceCode",
+      "@id": "urn:voltron:file:scripts/actionboard_uninstall.py",
+      "name": "scripts/actionboard_uninstall.py",
+      "codeRepository": "https://github.com/Cloudscockpit/ab-mission-command-center"
+    },
+    {
+      "@type": "SoftwareSourceCode",
+      "@id": "urn:voltron:file:packages/installer/package.json",
+      "name": "packages/installer/package.json",
+      "codeRepository": "https://github.com/Cloudscockpit/ab-mission-command-center"
+    },
+    {
+      "@type": "SoftwareSourceCode",
+      "@id": "urn:voltron:file:packages/installer/bin/install.js",
+      "name": "packages/installer/bin/install.js",
+      "codeRepository": "https://github.com/Cloudscockpit/ab-mission-command-center"
+    },
+    {
+      "@type": "SoftwareSourceCode",
+      "@id": "urn:voltron:file:packages/installer/README.md",
+      "name": "packages/installer/README.md",
+      "codeRepository": "https://github.com/Cloudscockpit/ab-mission-command-center"
+    },
+    {
+      "@type": "SoftwareSourceCode",
+      "@id": "urn:voltron:file:packages/installer-py/pyproject.toml",
+      "name": "packages/installer-py/pyproject.toml",
+      "codeRepository": "https://github.com/Cloudscockpit/ab-mission-command-center"
+    },
+    {
+      "@type": "SoftwareSourceCode",
+      "@id": "urn:voltron:file:packages/installer-py/actionboard_install/__init__.py",
+      "name": "packages/installer-py/actionboard_install/__init__.py",
+      "codeRepository": "https://github.com/Cloudscockpit/ab-mission-command-center"
+    },
+    {
+      "@type": "SoftwareSourceCode",
+      "@id": "urn:voltron:file:packages/installer-py/actionboard_install/__main__.py",
+      "name": "packages/installer-py/actionboard_install/__main__.py",
+      "codeRepository": "https://github.com/Cloudscockpit/ab-mission-command-center"
+    },
+    {
+      "@type": "SoftwareSourceCode",
+      "@id": "urn:voltron:file:.github/workflows/release.yml",
+      "name": ".github/workflows/release.yml",
+      "codeRepository": "https://github.com/Cloudscockpit/ab-mission-command-center"
+    },
+    {
+      "@type": "SoftwareSourceCode",
+      "@id": "urn:voltron:file:tests/install/test_install.py",
+      "name": "tests/install/test_install.py",
+      "codeRepository": "https://github.com/Cloudscockpit/ab-mission-command-center"
+    },
+    {
+      "@type": "SoftwareSourceCode",
+      "@id": "urn:voltron:file:tests/installer/install.test.mjs",
+      "name": "tests/installer/install.test.mjs",
+      "codeRepository": "https://github.com/Cloudscockpit/ab-mission-command-center"
+    },
+    {
+      "@type": "SoftwareSourceCode",
+      "@id": "urn:voltron:file:.github/workflows/ci.yml",
+      "name": ".github/workflows/ci.yml",
+      "codeRepository": "https://github.com/Cloudscockpit/ab-mission-command-center"
+    },
+    {
+      "@type": "SoftwareSourceCode",
+      "@id": "urn:voltron:file:tests/smoke/results-2026-10-v1.1.md",
+      "name": "tests/smoke/results-2026-10-v1.1.md",
+      "codeRepository": "https://github.com/Cloudscockpit/ab-mission-command-center"
+    },
+    {
+      "@type": "SoftwareSourceCode",
+      "@id": "urn:voltron:file:README.md",
+      "name": "README.md",
+      "codeRepository": "https://github.com/Cloudscockpit/ab-mission-command-center"
+    },
+    {
+      "@type": "SoftwareSourceCode",
+      "@id": "urn:voltron:file:CHANGELOG.md",
+      "name": "CHANGELOG.md",
+      "codeRepository": "https://github.com/Cloudscockpit/ab-mission-command-center"
+    },
+    {
+      "@type": "SoftwareSourceCode",
+      "@id": "urn:voltron:file:src/VERSION",
+      "name": "src/VERSION",
+      "codeRepository": "https://github.com/Cloudscockpit/ab-mission-command-center"
+    },
+    {
+      "@type": "SoftwareSourceCode",
+      "@id": "urn:voltron:file:dist/",
+      "name": "dist/",
+      "codeRepository": "https://github.com/Cloudscockpit/ab-mission-command-center"
+    },
+    {
+      "@type": "SoftwareSourceCode",
+      "@id": "urn:voltron:file:.claude-plugin/marketplace.json",
+      "name": ".claude-plugin/marketplace.json",
+      "codeRepository": "https://github.com/Cloudscockpit/ab-mission-command-center"
+    },
+    {
+      "@type": "DefinedTerm",
+      "@id": "urn:voltron:mission:zero-footprint-installer-npx-zero-clone-v1-1-0:gap:1",
+      "name": "Environment and release recon",
+      "additionalProperty": [
+        {
+          "@type": "PropertyValue",
+          "name": "status",
+          "value": "covered"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "notes",
+          "value": "codebase-recon -> green-agent; graphify skill used if ./graphify-out/ is fresh against HEAD"
+        }
+      ]
+    },
+    {
+      "@type": "DefinedTerm",
+      "@id": "urn:voltron:mission:zero-footprint-installer-npx-zero-clone-v1-1-0:gap:2",
+      "name": "Installer cleanup and standalone uninstaller (Python)",
+      "additionalProperty": [
+        {
+          "@type": "PropertyValue",
+          "name": "status",
+          "value": "covered"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "notes",
+          "value": "code-implementation -> red-agent"
+        }
+      ]
+    },
+    {
+      "@type": "DefinedTerm",
+      "@id": "urn:voltron:mission:zero-footprint-installer-npx-zero-clone-v1-1-0:gap:3",
+      "name": "npm wrapper package, download and temp-dir extraction",
+      "additionalProperty": [
+        {
+          "@type": "PropertyValue",
+          "name": "status",
+          "value": "covered"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "notes",
+          "value": "api-integration -> blue-agent; Node built-ins only, extraction delegated to Python tarfile"
+        }
+      ]
+    },
+    {
+      "@type": "DefinedTerm",
+      "@id": "urn:voltron:mission:zero-footprint-installer-npx-zero-clone-v1-1-0:gap:4",
+      "name": "uvx entry point from a git subdirectory",
+      "additionalProperty": [
+        {
+          "@type": "PropertyValue",
+          "name": "status",
+          "value": "covered"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "notes",
+          "value": "api-integration -> blue-agent; precondition: uv installed for the smoke run (Green confirms)"
+        }
+      ]
+    },
+    {
+      "@type": "DefinedTerm",
+      "@id": "urn:voltron:mission:zero-footprint-installer-npx-zero-clone-v1-1-0:gap:5",
+      "name": "Current docs for npm bin/npx, uv tool entry points, Node https and fs.mkdtemp",
+      "additionalProperty": [
+        {
+          "@type": "PropertyValue",
+          "name": "status",
+          "value": "use-existing-skill:context7-mcp"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "notes",
+          "value": "Agents query Context7 before writing package metadata"
+        }
+      ]
+    },
+    {
+      "@type": "DefinedTerm",
+      "@id": "urn:voltron:mission:zero-footprint-installer-npx-zero-clone-v1-1-0:gap:6",
+      "name": "Installer regression tests and Node wrapper tests",
+      "additionalProperty": [
+        {
+          "@type": "PropertyValue",
+          "name": "status",
+          "value": "covered"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "notes",
+          "value": "test-authoring -> yellow-agent"
+        }
+      ]
+    },
+    {
+      "@type": "DefinedTerm",
+      "@id": "urn:voltron:mission:zero-footprint-installer-npx-zero-clone-v1-1-0:gap:7",
+      "name": "Security review of download, extract and delete",
+      "additionalProperty": [
+        {
+          "@type": "PropertyValue",
+          "name": "status",
+          "value": "covered"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "notes",
+          "value": "security-review -> yellow-agent"
+        }
+      ]
+    },
+    {
+      "@type": "DefinedTerm",
+      "@id": "urn:voltron:mission:zero-footprint-installer-npx-zero-clone-v1-1-0:gap:8",
+      "name": "Live CLI smoke runs (codex exec, agy -p, opencode run)",
+      "additionalProperty": [
+        {
+          "@type": "PropertyValue",
+          "name": "status",
+          "value": "covered"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "notes",
+          "value": "test-authoring -> yellow-agent via Bash; costs model tokens; precondition: each CLI authenticated (Green confirms)"
+        }
+      ]
+    },
+    {
+      "@type": "DefinedTerm",
+      "@id": "urn:voltron:mission:zero-footprint-installer-npx-zero-clone-v1-1-0:gap:9",
+      "name": "Version bump and dist regeneration",
+      "additionalProperty": [
+        {
+          "@type": "PropertyValue",
+          "name": "status",
+          "value": "covered"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "notes",
+          "value": "code-implementation -> red-agent"
+        }
+      ]
+    },
+    {
+      "@type": "DefinedTerm",
+      "@id": "urn:voltron:mission:zero-footprint-installer-npx-zero-clone-v1-1-0:gap:10",
+      "name": "npm publish under the @actionboard scope",
+      "additionalProperty": [
+        {
+          "@type": "PropertyValue",
+          "name": "status",
+          "value": "needs-new-skill"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "notes",
+          "value": "No registry action; proposed release-publish skill. Precondition NOT met: the scope is unregistered (E404) and no NPM_TOKEN secret exists. User step after the report"
+        }
+      ]
+    },
+    {
+      "@type": "DefinedTerm",
+      "@id": "urn:voltron:mission:zero-footprint-installer-npx-zero-clone-v1-1-0:gap:11",
+      "name": "Git tag v1.1.0 and GitHub release",
+      "additionalProperty": [
+        {
+          "@type": "PropertyValue",
+          "name": "status",
+          "value": "needs-new-skill"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "notes",
+          "value": "Same proposed release-publish skill (still unregistered since v1.0.0). The npx wrapper downloads this tag, so it is a user step before the npx command works for anyone"
+        }
+      ]
+    },
+    {
+      "@type": "DefinedTerm",
+      "@id": "urn:voltron:mission:zero-footprint-installer-npx-zero-clone-v1-1-0:gap:12",
+      "name": "Registry record and Maturity & Progress Summary",
+      "additionalProperty": [
+        {
+          "@type": "PropertyValue",
+          "name": "status",
+          "value": "use-existing-skill:mission-report"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "notes",
+          "value": "mission-report-authoring -> black-agent; requires this plan (met once written) and Agent reports"
+        }
+      ]
+    },
+    {
+      "@type": "Thing",
+      "@id": "urn:voltron:mission:zero-footprint-installer-npx-zero-clone-v1-1-0:risk:1",
+      "additionalType": "Risk",
+      "name": "--cleanup deletes a directory that is not the throwaway clone, such as a developer checkout or the user's own project",
+      "additionalProperty": [
+        {
+          "@type": "PropertyValue",
+          "name": "category",
+          "value": "data-loss"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "severity",
+          "value": "H"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "mitigation",
+          "value": "Delete only a strict subdirectory of --project that is a git work tree with the expected origin; refuse when the path equals or contains the project; tests cover every refusal."
+        }
+      ]
+    },
+    {
+      "@type": "Thing",
+      "@id": "urn:voltron:mission:zero-footprint-installer-npx-zero-clone-v1-1-0:risk:2",
+      "additionalType": "Risk",
+      "name": "Cleanup removes a clone holding local edits or the user's agentformation.config.json",
+      "additionalProperty": [
+        {
+          "@type": "PropertyValue",
+          "name": "category",
+          "value": "data-loss"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "severity",
+          "value": "M"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "mitigation",
+          "value": "Refuse when `git status --porcelain` is non-empty or --config resolves inside the clone; print why and leave the clone."
+        }
+      ]
+    },
+    {
+      "@type": "Thing",
+      "@id": "urn:voltron:mission:zero-footprint-installer-npx-zero-clone-v1-1-0:risk:3",
+      "additionalType": "Risk",
+      "name": "rmtree fails on Windows because .git object files are read-only, leaving a half-deleted clone",
+      "additionalProperty": [
+        {
+          "@type": "PropertyValue",
+          "name": "category",
+          "value": "technical"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "severity",
+          "value": "M"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "mitigation",
+          "value": "Use an onerror handler that clears the read-only bit and retries; on any remaining failure print the path and exit 0 since the install itself succeeded."
+        }
+      ]
+    },
+    {
+      "@type": "Thing",
+      "@id": "urn:voltron:mission:zero-footprint-installer-npx-zero-clone-v1-1-0:risk:4",
+      "additionalType": "Risk",
+      "name": "The @actionboard npm scope is not owned, so `npx @actionboard/install` cannot be published as named",
+      "additionalProperty": [
+        {
+          "@type": "PropertyValue",
+          "name": "category",
+          "value": "integration"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "severity",
+          "value": "H"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "mitigation",
+          "value": "User registers the scope or chooses another name before publishing; fallback is `npx <release .tgz URL>` attached to the GitHub release; the README states which command is live."
+        }
+      ]
+    },
+    {
+      "@type": "Thing",
+      "@id": "urn:voltron:mission:zero-footprint-installer-npx-zero-clone-v1-1-0:risk:5",
+      "additionalType": "Risk",
+      "name": "No git tags or releases exist, so the wrapper's download returns 404 until v1.1.0 is tagged",
+      "additionalProperty": [
+        {
+          "@type": "PropertyValue",
+          "name": "category",
+          "value": "integration"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "severity",
+          "value": "H"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "mitigation",
+          "value": "Wrapper reports a clear error naming the missing tag; ACTIONBOARD_BUNDLE override for tests and smoke; tag and release are a listed user step."
+        }
+      ]
+    },
+    {
+      "@type": "Thing",
+      "@id": "urn:voltron:mission:zero-footprint-installer-npx-zero-clone-v1-1-0:risk:6",
+      "additionalType": "Risk",
+      "name": "npx users without Python 3.9+ cannot run the wrapper, since it delegates to scripts/install.py",
+      "additionalProperty": [
+        {
+          "@type": "PropertyValue",
+          "name": "category",
+          "value": "technical"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "severity",
+          "value": "M"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "mitigation",
+          "value": "Wrapper detects python3, python and py -3 and exits with an install hint; accept the dependency rather than porting the installer to Node this mission."
+        }
+      ]
+    },
+    {
+      "@type": "Thing",
+      "@id": "urn:voltron:mission:zero-footprint-installer-npx-zero-clone-v1-1-0:risk:7",
+      "additionalType": "Risk",
+      "name": "Tarball extraction allows path traversal or differs across platforms",
+      "additionalProperty": [
+        {
+          "@type": "PropertyValue",
+          "name": "category",
+          "value": "technical"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "severity",
+          "value": "M"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "mitigation",
+          "value": "Extract with Python tarfile using the 'data' filter, available on every supported Python patch release; Yellow security-reviews."
+        }
+      ]
+    },
+    {
+      "@type": "Thing",
+      "@id": "urn:voltron:mission:zero-footprint-installer-npx-zero-clone-v1-1-0:risk:8",
+      "additionalType": "Risk",
+      "name": "Remote code is downloaded and executed without integrity checks",
+      "additionalProperty": [
+        {
+          "@type": "PropertyValue",
+          "name": "category",
+          "value": "integration"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "severity",
+          "value": "M"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "mitigation",
+          "value": "Pin the download to the wrapper's own version tag over HTTPS; accept and monitor for 1.1.0, with a SHA-256 manifest proposed for the next release."
+        }
+      ]
+    },
+    {
+      "@type": "Thing",
+      "@id": "urn:voltron:mission:zero-footprint-installer-npx-zero-clone-v1-1-0:risk:9",
+      "additionalType": "Risk",
+      "name": "Existing users who keep a clone for updates see changed behaviour",
+      "additionalProperty": [
+        {
+          "@type": "PropertyValue",
+          "name": "category",
+          "value": "integration"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "severity",
+          "value": "M"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "mitigation",
+          "value": "--cleanup is opt-in and only the new one-liner passes it; old commands behave as in 1.0.0; a regression test asserts identical output without the flag."
+        }
+      ]
+    },
+    {
+      "@type": "Thing",
+      "@id": "urn:voltron:mission:zero-footprint-installer-npx-zero-clone-v1-1-0:risk:10",
+      "additionalType": "Risk",
+      "name": "Projects installed with 1.0.0 have no standalone uninstaller once their clone is deleted",
+      "additionalProperty": [
+        {
+          "@type": "PropertyValue",
+          "name": "category",
+          "value": "data-loss"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "severity",
+          "value": "L"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "mitigation",
+          "value": "The manifest location is unchanged, so `npx @actionboard/install --uninstall` and a fresh clone both still uninstall them; documented in the README."
+        }
+      ]
+    },
+    {
+      "@type": "Thing",
+      "@id": "urn:voltron:mission:zero-footprint-installer-npx-zero-clone-v1-1-0:risk:11",
+      "additionalType": "Risk",
+      "name": "The temp directory is left behind when the wrapper is interrupted",
+      "additionalProperty": [
+        {
+          "@type": "PropertyValue",
+          "name": "category",
+          "value": "technical"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "severity",
+          "value": "L"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "mitigation",
+          "value": "Remove it in a finally block and on SIGINT; temp dirs live under os.tmpdir(), which the OS reclaims."
+        }
+      ]
+    },
+    {
+      "@type": "Thing",
+      "@id": "urn:voltron:mission:zero-footprint-installer-npx-zero-clone-v1-1-0:risk:12",
+      "additionalType": "Risk",
+      "name": "PyPI publishing, a Node port of the installer, and signed bundles creep into this mission",
+      "additionalProperty": [
+        {
+          "@type": "PropertyValue",
+          "name": "category",
+          "value": "scope"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "severity",
+          "value": "M"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "mitigation",
+          "value": "Out of scope: uvx runs from the git subdirectory, the installer stays Python, signing is deferred."
+        }
+      ]
+    },
+    {
+      "@type": "Thing",
+      "@id": "urn:voltron:mission:zero-footprint-installer-npx-zero-clone-v1-1-0:risk:13",
+      "additionalType": "Risk",
+      "name": "The registry is credited with an autonomous-mode unlock the run history does not support",
+      "additionalProperty": [
+        {
+          "@type": "PropertyValue",
+          "name": "category",
+          "value": "scope"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "severity",
+          "value": "L"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "mitigation",
+          "value": "Maturity comes from the scored run history in the report, never asserted in advance."
+        }
+      ]
+    },
+    {
+      "@type": "Thing",
+      "@id": "urn:voltron:mission:zero-footprint-installer-npx-zero-clone-v1-1-0:risk:14",
+      "additionalType": "Risk",
+      "name": "Live smoke runs fail on CLI authentication or cost more tokens than expected",
+      "additionalProperty": [
+        {
+          "@type": "PropertyValue",
+          "name": "category",
+          "value": "technical"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "severity",
+          "value": "L"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "mitigation",
+          "value": "Green confirms auth first; one short prompt per CLI; failures are recorded, not retried in a loop."
+        }
+      ]
+    }
+  ]
+}

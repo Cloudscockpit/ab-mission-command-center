@@ -1,0 +1,74 @@
+# Mission Report — Zero-Footprint Installer and NPX Zero-Clone Package (v1.1.0)
+
+Mission: `urn:voltron:mission:zero-footprint-installer-npx-zero-clone-v1-1-0` · Report date: 2026-10-26 · Status: **built and verified locally; release pending** · Operator level: L4
+
+## Outcome
+
+The git-clone one-liner now cleans up after itself with `--cleanup`, uninstall no longer needs the clone, and a new npx/uvx wrapper installs from a release bundle in the OS temp directory, so Codex, Antigravity and OpenCode installs leave nothing in the project but the CLI's own directories. Live smoke runs on all three CLIs proved it, after one uninstall defect (D1) was found and fixed. Five of six assignments are complete; the regression-test assignment stays active because its CI-on-a-pushed-branch acceptance has not run. The npx command will not work for anyone until v1.1.0 is tagged and published, which is the user's step.
+
+| # | Agent | Assignment | Status | Result |
+|---|---|---|---|---|
+| 1 | Green | Environment and release recon | Completed | Recon delivered: codex 0.164.0 (logged in), agy 1.4.7, opencode 2.1.4, Node 24.16, uv 0.11.21, Python only via `py -3`. npm not logged in and @actionboard scope unconfirmed; no tags or releases; codeload tarballs public. Listed every clone dependency in scripts/install.py with line numbers. |
+| 2 | Red | Self-cleaning installer and clone-free uninstall | Completed | `--cleanup` (opt-in) removes the clone only when it is a strict subdirectory of the project with the expected origin, a clean tree, no unpushed commits, no stash and no ignored files other than __pycache__. Uninstall logic moved to the standard-library scripts/actionboard_uninstall.py, which is copied next to the manifest. Two follow-up rounds: guard hardening from the security review, and D1 (uninstall left runtime __pycache__) from live smoke. Verified on a real `git clone --depth 1` from GitHub. |
+| 3 | Blue | npx and uvx zero-clone wrappers | Completed | packages/installer (@actionboard/install 1.1.0, zero dependencies) and packages/installer-py (uvx from the git subdirectory) download the tagged tarball over HTTPS into a temp dir, extract safely, run install.py with a persistent Python and always delete the temp dir. release.yml publishes only when NPM_TOKEN exists. Second round fixed a Medium symlink-chain escape in the legacy extractor (verified on Linux), skipped venv Pythons and closed error-path streams. |
+| 4 | Yellow | Regression tests and security review | Active | tests/install 55, tests/installer 23 (py) and 28+1 skipped (node) pass on Windows; 52/23/29 pass on Linux (WSL). New tests fail against the 1.0.0 installer. CI gains an npx-installer job on three OSes. Outstanding: acceptance requires CI green on a pushed branch, and nothing has been pushed, so macOS has never run. |
+| 5 | Yellow | Live smoke runs on Codex, Antigravity and OpenCode | Completed | tests/smoke/results-2026-10-v1.1.md: six rows (three CLIs by one-liner and npx). Install, no-leftover, mission load and Context7 pass everywhere; guard passes (Codex via rules layer only, D2). Uninstall failed on four rows (D1); after Red's fix all four were retested and pass. D3 to D5 recorded. |
+| 6 | Red | Release documentation and version bump | Completed | README makes npx the default for Codex, Antigravity and OpenCode with uvx and the --cleanup one-liner as fallbacks, keeps the manual checkout path, and states npx returns 'tag not published yet' until release. CHANGELOG 1.1.0 dated 2026-10-26. src/VERSION 1.1.0, dist/ regenerated, build --check clean, every manifest reads 1.1.0. |
+
+## Mission Log
+
+1. **Recon** found no tags, an unconfirmed npm scope, and that `install.py`'s uninstall was blocked only by a module-level `import build`.
+2. **Red** built `--cleanup` and the standalone uninstaller.
+3. **Blue** built the npx and uvx wrappers and the release workflow.
+4. **Yellow** wrote the regression suites and a security review: a Medium symlink-chain escape in the legacy extractor (Blue fixed), cleanup could delete unpushed work (Red hardened), and the Node wrapper accepted venv Pythons (Blue fixed). Re-run green on Windows and Linux.
+5. **Live smoke** on Codex, Antigravity and OpenCode passed install, no-leftover, mission load and Context7; uninstall left runtime `__pycache__` (D1) on four rows.
+6. **Red** fixed D1 and wrote the release docs and version bump; **Yellow** added D1 regression tests and retested the four rows (all pass, no model calls).
+7. **Black** re-ran every suite (Python suites OK, Node 37 pass and 1 skipped), confirmed a real GitHub shallow clone passes the cleanup guards, and recorded six scored runs.
+
+Detail: `tests/smoke/results-2026-10-v1.1.md`.
+
+## Success Criteria
+
+No mission brief was written; these criteria come from the mission objective and deliverables.
+
+| Criterion | Met? | Evidence |
+|---|---|---|
+| No clone folder left in the project for Codex, Antigravity and OpenCode | Met | Six live smoke installs left only the CLI's own directories and nothing in %TEMP%; ZeroLeftoverClone tests per target |
+| Uninstall works without the clone | Met | Standalone uninstaller restored the pre-install listing on all six rows after the D1 fix; PycacheOnUninstall and StandaloneUninstaller tests |
+| `npx @actionboard/install --target <cli> [--global]` installs from a temp-dir bundle | Partly | Works offline with ACTIONBOARD_BUNDLE on all three CLIs; not usable by anyone until v1.1.0 is tagged and the package is published |
+| Regression tests for zero leftover clone folders | Met | tests/install 55 pass; new tests fail on 1.0.0 (36 failures/errors) |
+| Live smoke runs on Codex, Antigravity and OpenCode | Met | tests/smoke/results-2026-10-v1.1.md, including the D1 retest |
+| README, version 1.1.0, registry record, mission report | Met | README and CHANGELOG updated; build --check clean; six runs recorded in .actionboard/registry.json; this report |
+| Backwards compatibility for manual git-clone installs | Met | --cleanup is opt-in; test asserts Claude output byte-identical without it; existing round-trip tests unchanged |
+
+## Follow-ups
+
+- Push the branch and confirm CI is green on Windows, macOS and Linux (closes assignment 4).
+- `npm login`, confirm the @actionboard scope, add the NPM_TOKEN secret, then push tag v1.1.0 so release.yml publishes and creates the GitHub release. Until then npx and uvx print 'tag not published yet'.
+- Pin bundle integrity (Medium, open): embed the release tarball's SHA-256 in the package and verify before extract.
+- Codex live hook denial (carried from v1.0.0, D2): trust hooks with /hooks interactively, then try `openshell sandbox delete --all`.
+- Codex Context7 discovery needs prompting (D3) and OpenCode shows a generic 'Permission denied: shell' (D4); both documented as known gaps.
+- D5: the smoke runs added two scratch-project `trust_level = "trusted"` entries to ~/.codex/config.toml; left for the user to decide.
+- Nothing is committed. next-plan.md (the Bengali draft) is still untracked.
+
+## Maturity & Progress Summary
+
+Mission `zero-footprint-installer-npx-zero-clone-v1-1-0` · Operator L4 · Scoring window: last 20 runs within 90 days · Source: `.actionboard/registry.json` via `gate_check.py`.
+
+Stage cells show this run's result, then the stage's pass rate across the scoring window.
+
+| Action | Tier (threshold) | Orchestrator | Data | Analysis | Action | Defense/Audit | Clean Run | Clean runs | Execution mode | Next milestone |
+|---|---|---|---|---|---|---|---|---|---|---|
+| Codebase and environment recon (`codebase-recon`) | T2 (≥90%) | ✅ pass · 100% | ✅ pass · 100% | ✅ pass · 100% | ✅ pass · 100% | ✅ pass · 100% | Yes | 2/5 | Guided → **Actionlist** → Autonomous | 3 more clean run(s) (2/5) to unlock Autonomous. |
+| External CLI integration (`api-integration`) | T2 (≥90%) | ✅ pass · 100% | ✅ pass · 100% | ✅ pass · 100% | ❌ fail · 0% | ✅ pass · 100% | No — failed: Action | 0/5 | Guided → **Actionlist** → Autonomous | Raise Action 0% → 90% (≈18 more passing run(s)), then reach 5 clean runs to unlock Autonomous. |
+| Tests and live verification, run `zero-footprint-installer-npx-zero-clone-v1-1-0-4` (`test-authoring`) | T2 (≥90%) | ✅ pass · 100% | ✅ pass · 75% | ✅ pass · 100% | ❌ fail · 50% | ✅ pass · 100% | No — failed: Action | 1/5 | Guided → **Actionlist** → Autonomous | Raise Action 50% → 90% (≈16 more passing run(s)); Data 75% → 90% (≈6 more passing run(s)), then reach 5 clean runs to unlock Autonomous. |
+| Tests and live verification, run `zero-footprint-installer-npx-zero-clone-v1-1-0-5` (`test-authoring`) | T2 (≥90%) | ✅ pass · 100% | ✅ pass · 75% | ✅ pass · 100% | ✅ pass · 50% | ✅ pass · 100% | Yes | 1/5 | Guided → **Actionlist** → Autonomous | Raise Action 50% → 90% (≈16 more passing run(s)); Data 75% → 90% (≈6 more passing run(s)), then reach 5 clean runs to unlock Autonomous. |
+| Plugin code changes, run `zero-footprint-installer-npx-zero-clone-v1-1-0-2` (`code-implementation`) | T3 (≥95%) | ✅ pass · 75% | ✅ pass · 100% | ✅ pass · 100% | ❌ fail · 75% | ✅ pass · 100% | No — failed: Action | 2/10 | Guided → **Actionlist** → Autonomous | Raise Orchestrator 75% → 95% (≈16 more passing run(s)); Action 75% → 95% (≈16 more passing run(s)), then reach 10 clean runs to unlock Autonomous. |
+| Plugin code changes, run `zero-footprint-installer-npx-zero-clone-v1-1-0-6` (`code-implementation`) | T3 (≥95%) | ✅ pass · 75% | ✅ pass · 100% | ✅ pass · 100% | ✅ pass · 75% | ✅ pass · 100% | Yes | 2/10 | Guided → **Actionlist** → Autonomous | Raise Orchestrator 75% → 95% (≈16 more passing run(s)); Action 75% → 95% (≈16 more passing run(s)), then reach 10 clean runs to unlock Autonomous. |
+
+How to read it: the two `--retried` runs (Red's installer work and Blue's wrappers) met acceptance first time but needed a second round after review and smoke found defects, so the scoring rule fails their Action stage. The regression-test run fails Action because CI on a pushed branch has not happened. Plugin code changes are T3 and need 10 clean runs at 95% plus operator level L6 to run autonomously; the operator is L4, so a human go/no-go stays in place.
+
+## Files created/changed
+
+- **Added:** `scripts/actionboard_uninstall.py`, `packages/installer/`, `packages/installer-py/`, `.github/workflows/release.yml`, `tests/installer/`, `tests/smoke/results-2026-10-v1.1.md`, this mission directory.
+- **Changed:** `scripts/install.py`, `tests/install/test_install.py`, `.github/workflows/ci.yml`, `.gitignore`, `README.md`, `CHANGELOG.md`, `src/VERSION`, `dist/` (three manifests), `.claude-plugin/marketplace.json`, `.actionboard/registry.json`.
