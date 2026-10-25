@@ -76,6 +76,19 @@ def permission(src, agent):
     return p
 
 
+def skill_command(skill):
+    meta = OrderedDict(description=skill.meta["description"])
+    claude = skill.meta.get("x-claude") or {}
+    if claude.get("context") == "fork" and claude.get("agent"):
+        meta["agent"] = claude["agent"]  # run in that agent as a separate task
+        meta["subtask"] = True
+    body = ("\nLoad the `%s` skill with the `skill` tool and follow its instructions.\n\n"
+            "Request: $ARGUMENTS\n\n"
+            "If the request is empty and the skill needs one, ask the user before acting.\n"
+            % skill.name)
+    return frontmatter.join(meta, body)
+
+
 def build(src, out, models):
     models = dict(MODELS, **models)
     vals = {"tool:" + k: t for k, t in TOOLS.items()}
@@ -101,12 +114,17 @@ def build(src, out, models):
         out.add("commands/%s.md" % c.name,
                 frontmatter.join(meta, render_text(c.body, NAME, vals, "commands/" + c.name)))
 
+    commands = {c.name for c in src.commands}
     for s in src.skills:
         if not s.for_target(NAME):
             continue
         text, files = plain_skill(s, NAME, TOOLS)
         out.add("skills/%s/SKILL.md" % s.name, text)
         out.add_tree("skills/%s/" % s.name, files)
+        # OpenCode does not list skills in the / menu; Claude does. Give every
+        # user-invocable skill a thin command that loads it.
+        if s.meta.get("invocation") != "model" and s.name not in commands:
+            out.add("commands/%s.md" % s.name, skill_command(s))
 
     out.add("plugins/actionboard-guard.ts", adapter_file("opencode", "plugins", "actionboard-guard.ts"))
     out.add_tree("actionboard/hooks/core/", src.hooks_core)

@@ -10,6 +10,10 @@ Multi-CLI rebuild of ActionBoard V5 Agent Formation (from the Claude-only v0.6.1
 - `scripts/install.py` with CLI detection, project/global scope, manifest-tracked uninstall.
 - Python hook core (`src/hooks/core/`) replacing the bash hooks; runs on Windows, macOS, Linux.
 - `actionboard-kb` skill (the former `kb/mission-knowledge-format.md`).
+- OpenCode: a `/command` for every user-invocable skill (`/mission-brief`, `/mission-plan`, …),
+  since OpenCode does not list skills in the `/` menu. `/mission-harness` runs in
+  `sandbox-warden` as a subtask, as on Claude Code.
+- `sandbox-warden` may load skills (needed to run `/mission-harness`).
 - CI: guard, build/drift/lint, installer, and OpenCode plugin tests on 3 OSes × Python 3.9–3.12.
 
 ### Changed

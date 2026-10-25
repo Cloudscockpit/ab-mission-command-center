@@ -62,3 +62,4 @@ This formation was written for several CLIs. On Antigravity CLI, use these tools
 | Find files by name | `find_by_name`, `list_dir` |
 | Search file contents | `grep_search` |
 | Run a shell command | `run_command` |
+| Load a skill | `/skill-name` or `view_file` on its SKILL.md |

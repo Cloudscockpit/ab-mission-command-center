@@ -13,7 +13,7 @@ permission:
   webfetch: deny
   websearch: deny
   task: deny
-  skill: deny
+  skill: allow
 ---
 
 You are the sandbox warden. Agents ask you for an environment; you return a `Ready`
@@ -69,3 +69,4 @@ This formation was written for several CLIs. On OpenCode, use these tools:
 | Find files by name | `glob` |
 | Search file contents | `grep` |
 | Run a shell command | `bash` |
+| Load a skill | `skill` |

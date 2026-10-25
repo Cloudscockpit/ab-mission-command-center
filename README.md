@@ -20,6 +20,20 @@ Same mission flow on every supported CLI:
 | Codex CLI | `$start-mission <objective>` | Supported, built from docs (Codex not tested live) |
 | Antigravity CLI (`agy`) | `/start-mission <objective>` | Supported, `agy plugin validate --strict` passes |
 
+### Slash commands
+
+Besides `/start-mission`, each user-facing skill is a command of its own:
+`/mission-brief`, `/mission-plan`, `/mission-report`, `/skills-registry`,
+`/actionboard-devops-mission`, `/mission-harness`, `/sandbox-up`, `/sandbox-status`,
+`/sandbox-down`, `/policy-widen` (and `/browser-actions` on Claude Code).
+
+| CLI | How they appear |
+|---|---|
+| Claude Code | Skills are listed in the `/` menu natively. |
+| OpenCode | OpenCode does not list skills in `/`, so the build generates one thin command per skill in `.opencode/commands/` that loads it. |
+| Antigravity CLI | Every skill is a `/command` natively (internal ones such as `/openshell-admin` show too). |
+| Codex CLI | Skills are invoked as `$mission-brief`, … or picked from `/skills`. |
+
 ## Install
 
 Requires **Python 3.9+** (hooks and installer use the standard library only).

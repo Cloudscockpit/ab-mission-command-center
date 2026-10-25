@@ -142,6 +142,26 @@ class Lint(unittest.TestCase):
                 self.assertTrue(set(values) <= {"allow", "ask", "deny"}, (path, key))
         cmd, _ = frontmatter.split(read(DIST, "opencode", "commands", "start-mission.md"))
         self.assertEqual(cmd["agent"], "black-agent")
+        for path in walk(os.path.join(DIST, "opencode", "commands"), ".md"):
+            meta, _ = frontmatter.split(read(path))
+            self.assertLessEqual(set(meta), {"description", "agent", "subtask"}, path)
+
+    def test_opencode_skill_commands(self):
+        """Every user-invocable skill is in the / menu, and its agent may load skills."""
+        cmds = os.path.join(DIST, "opencode", "commands")
+        for s in Source().skills:
+            exists = os.path.exists(os.path.join(cmds, s.name + ".md"))
+            wanted = s.for_target("opencode") and s.meta.get("invocation") != "model"
+            self.assertEqual(exists, wanted, s.name)
+            if exists:
+                meta, body = frontmatter.split(read(cmds, s.name + ".md"))
+                self.assertIn("`%s` skill" % s.name, body)
+                agent = meta.get("agent")
+                if agent:
+                    ameta, _ = frontmatter.split(read(DIST, "opencode", "agents", agent + ".md"))
+                    self.assertEqual(ameta["permission"]["skill"], "allow", agent)
+        for name in ("mission-brief", "mission-plan", "mission-report"):
+            self.assertTrue(os.path.exists(os.path.join(cmds, name + ".md")), name)
 
     def test_codex_agents(self):
         try:

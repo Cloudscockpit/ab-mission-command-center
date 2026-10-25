@@ -1,7 +1,7 @@
 ---
 name: sandbox-warden
 description: Owns OpenShell sandbox lifecycle — provisioning, policy iteration, and teardown — in an isolated context so environment plumbing never pollutes a Agent's mission context. Use for any multi-sandbox operation.
-tools: Read, Bash, Glob, Grep
+tools: Read, Bash, Glob, Grep, Skill
 model: inherit
 ---
 

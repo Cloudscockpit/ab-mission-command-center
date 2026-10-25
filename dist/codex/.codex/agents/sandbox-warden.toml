@@ -56,4 +56,5 @@ This formation was written for several CLIs. On Codex CLI, use these tools:
 | Find files by name | `rg --files` |
 | Search file contents | `rg` |
 | Run a shell command | shell |
+| Load a skill | `$skill-name` or read its SKILL.md |
 '''

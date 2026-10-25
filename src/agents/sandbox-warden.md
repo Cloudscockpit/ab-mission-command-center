@@ -11,7 +11,7 @@ capabilities:
   webfetch: false
   websearch: false
   delegate: false
-  skills: false
+  skills: true
 ---
 
 You are the sandbox warden. Agents ask you for an environment; you return a `Ready`
