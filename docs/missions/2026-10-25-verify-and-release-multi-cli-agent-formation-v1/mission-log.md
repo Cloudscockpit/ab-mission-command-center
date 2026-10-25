@@ -136,14 +136,28 @@ Files created/changed: `adapters/common/hooks/cli_hook.py`, `tests/guard/test_cl
 `mission-report.md`, `mission-report.jsonld`, `deprecation-pr.md`, `deprecation-pr-body.md`, this
 log; in the v0.6.1 checkout, `README.md` on a local branch.
 
+## Assignment 7 opened, mission closed (2026-10-26)
+
+- The user made `Cloudscockpit/ab-mission-command-center` public (checked: signed-out request
+  returns 200) and approved option 1.
+- Pushed `docs/point-to-multi-cli-successor` to the v0.6.1 repository and opened https://github.com/Cloudscockpit/actionboard-build-mission-pipeline/pull/2: open,
+  mergeable, `README.md` only. Left for the user to merge.
+- Assignment 7 is complete. It was not scored for maturity: the actions map has no action type for
+  repository housekeeping (a Skills Gap for a later mission).
+- The user closed the mission. Assignments 2 and 5 close as partly met; the Codex live guard denial
+  is carried as a follow-up. Mission report regenerated with `endDate` 2026-10-26.
+
+Files created/changed: `mission-report.md`, `mission-report.jsonld`, `deprecation-pr.md`, this log,
+`PLAN.md`; branch `docs/point-to-multi-cli-successor` pushed to the v0.6.1 repository.
+
 ## Assignment status
 
 | # | Agent | Assignment | Status | Next step |
 |---|---|---|---|---|
 | 1 | Green | Environment recon | Done | — |
-| 2 | Blue | Codex CLI bring-up | Active | The full mission passes on Codex 0.164.0; the guard hook's live denial still needs one interactive `/hooks` trust step. |
+| 2 | Blue | Codex CLI bring-up | Closed, partly met | The full mission passes on Codex 0.164.0; the guard hook's live denial still needs one interactive `/hooks` trust step. |
 | 3 | Yellow | Live smoke round 1 (Claude Code, OpenCode, Antigravity) | Done | All four CLIs pass; six defects fixed. |
 | 4 | Red | Fix defects and cut release candidate | Done | RC 1.0.0 (`53e79c5`), CI green. |
-| 5 | Yellow | Regression tests, Codex smoke, retest | Active | Trust Codex hooks with `/hooks` and observe a live denial. Round-2 fixes: live re-run skipped by the user. |
+| 5 | Yellow | Regression tests, Codex smoke, retest | Closed, partly met | Trust Codex hooks with `/hooks` and observe a live denial. Round-2 fixes: live re-run skipped by the user. |
 | 6 | Red | Release documentation | Done | Docs final; security defect 9 fixed (`1156f33`). |
-| 7 | Blue | Deprecation note on the v0.6.1 repository | Prepared | Needs the user's approval and a visibility decision for the new repository; see `deprecation-pr.md`. |
+| 7 | Blue | Deprecation note on the v0.6.1 repository | Done | https://github.com/Cloudscockpit/actionboard-build-mission-pipeline/pull/2 open for the user to merge. |

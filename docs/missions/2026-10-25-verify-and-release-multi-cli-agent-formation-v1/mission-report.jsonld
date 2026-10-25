@@ -29,7 +29,8 @@
         {
           "@id": "urn:voltron:mission:verify-and-release-multi-cli-agent-formation-v1:report"
         }
-      ]
+      ],
+      "endDate": "2026-10-26"
     },
     {
       "@type": "Report",
@@ -249,11 +250,11 @@
           "@id": "urn:voltron:file:adapters/codex/actionboard.rules"
         }
       ],
-      "actionStatus": "https://schema.org/ActiveActionStatus",
+      "actionStatus": "https://schema.org/CompletedActionStatus",
       "result": {
         "@type": "DefinedTerm",
         "name": "result",
-        "description": "Codex 0.164.0 ran the whole mission end to end: $start-mission, spawn_agent with hyphenated agent names, Context7 from config.toml, offline graph, maturity summary. Outstanding: the guard hook's live denial on Codex was not observed, because project hooks need a one-time /hooks trust in the interactive TUI."
+        "description": "Codex 0.164.0 ran the whole mission end to end: $start-mission, spawn_agent with hyphenated agent names, Context7 from config.toml, offline graph, maturity summary. Outstanding: the guard hook's live denial on Codex was not observed, because project hooks need a one-time /hooks trust in the interactive TUI. Closed with the mission at the user's request; the live denial is a follow-up."
       },
       "additionalProperty": [
         {
@@ -365,11 +366,11 @@
           "@id": "urn:voltron:file:.github/workflows/ci.yml"
         }
       ],
-      "actionStatus": "https://schema.org/ActiveActionStatus",
+      "actionStatus": "https://schema.org/CompletedActionStatus",
       "result": {
         "@type": "DefinedTerm",
         "name": "result",
-        "description": "Round 2 on all four CLIs: code-implementation reached 2 clean runs everywhere; Black Agent re-ran Yellow's exact test command on every CLI; /version implemented and tests pass. Two new defects were found and fixed in source (preflight skipped .graphifyignore when a graph already existed; Green handed over a test command whose interpreter is a Windows Store placeholder). Live re-verification of those two fixes is outstanding."
+        "description": "Round 2 on all four CLIs: code-implementation reached 2 clean runs everywhere; Black Agent re-ran Yellow's exact test command on every CLI; /version implemented and tests pass. Two new defects were found and fixed in source (preflight skipped .graphifyignore when a graph already existed; Green handed over a test command whose interpreter is a Windows Store placeholder). Live re-verification of those two fixes was skipped by the user (build tests cover them). Closed with the mission; the Codex live denial is a follow-up."
       },
       "additionalProperty": [
         {
@@ -431,11 +432,11 @@
           "@id": "urn:voltron:file:actionboard-build-mission-pipeline/README.md"
         }
       ],
-      "actionStatus": "https://schema.org/PotentialActionStatus",
+      "actionStatus": "https://schema.org/CompletedActionStatus",
       "result": {
         "@type": "DefinedTerm",
-        "name": "deferral",
-        "description": "Prepared, not opened: local branch docs/point-to-multi-cli-successor (commit 1ed1f07, README.md only) and the PR text in deprecation-pr.md. Waits for the user's approval, and for a decision on repository visibility: the old repository is public and the new one is private, so the banner link would not open for public readers."
+        "name": "result",
+        "description": "Pull request opened after the user made ab-mission-command-center public and approved: https://github.com/Cloudscockpit/actionboard-build-mission-pipeline/pull/2 (branch docs/point-to-multi-cli-successor, commit 1ed1f07, README.md only, mergeable). It stays open for the user to merge."
       },
       "additionalProperty": [
         {
@@ -1144,11 +1145,11 @@
       "about": {
         "@id": "urn:voltron:mission:verify-and-release-multi-cli-agent-formation-v1"
       },
-      "datePublished": "2026-10-25",
+      "datePublished": "2026-10-26",
       "creator": {
         "@id": "urn:voltron:lion:main"
       },
-      "abstract": "Final report draft. 4 assignments completed, 2 active with verification outstanding, 1 prepared and waiting for approval. All four CLIs pass the full mission; 9 defects found, all fixed in source.",
+      "abstract": "Final report. Mission closed: 5 assignments completed, 2 closed partly met (the Codex live guard denial is a follow-up). All four CLIs pass the full mission; 9 defects found, all fixed in source; the v0.6.1 repository has a deprecation pull request open.",
       "mainEntity": {
         "@type": "ItemList",
         "itemListElement": [

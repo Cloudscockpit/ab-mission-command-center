@@ -308,6 +308,5 @@ File ownership and the go/no-go gate still apply; only parallelism is lost.
   ([capability matrix, Open item](docs/capability-matrix.md#open-item))
 - [x] CI green on Windows, macOS, Linux (`.github/workflows/ci.yml`, Python 3.9–3.12)
 - [x] README has install steps + known gaps per CLI
-- [ ] Old repo points to new repo — PR drafted
-  ([`deprecation-pr.md`](docs/missions/2026-10-25-verify-and-release-multi-cli-agent-formation-v1/deprecation-pr.md)),
-  waiting for approval to open it
+- [ ] Old repo points to new repo — PR open ([#2](https://github.com/Cloudscockpit/actionboard-build-mission-pipeline/pull/2));
+  ticks when it is merged

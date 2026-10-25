@@ -1,7 +1,7 @@
 # Mission Report — Verify and release the multi-CLI Agent Formation v1.0.0
 
-Mission: `urn:voltron:mission:verify-and-release-multi-cli-agent-formation-v1` · Report date: 2026-10-25 · Status: **final report draft; the mission stays open until
-the Codex live denial is observed and the deprecation pull request is approved** · Operator level: L4 · Terse output: on (agent chatter only; this report
+Mission: `urn:voltron:mission:verify-and-release-multi-cli-agent-formation-v1` · Report date: 2026-10-26 · Status: **closed** (closed by the user on 2026-10-26; one follow-up,
+see below) · Operator level: L4 · Terse output: on (agent chatter only; this report
 is full prose)
 
 ## Outcome
@@ -15,20 +15,21 @@ Progress Summary. Two rounds of live runs and the release checks found nine defe
 security defect in the Antigravity hook. All nine are fixed in source with tests, the release is
 stamped 1.0.0, and the release documentation is done.
 
-The mission is not closed yet. The guard hook's live denial on Codex needs the interactive `/hooks`
-trust step, which only the user can do. The deprecation pull request for v0.6.1 is prepared but not
-opened: it needs the user's approval and a decision on repository visibility. The user chose not to
-re-run the two round-2 fixes live; build tests cover them.
+The user closed the mission on 2026-10-26. `ab-mission-command-center` is now public, and the v0.6.1
+repository has a deprecation pull request open (https://github.com/Cloudscockpit/actionboard-build-mission-pipeline/pull/2) for the user to merge. One acceptance item
+was not met and is carried as a follow-up: the guard hook's live denial on Codex, which needs the
+interactive `/hooks` trust step that only the user can do. The user also chose not to re-run the two
+round-2 fixes live; build tests cover them.
 
 | # | Agent | Assignment | Status | Result |
 |---|---|---|---|---|
 | 1 | Green | Environment recon | Completed | Recon table delivered: Claude Code 2.1.310, OpenCode 2.1.4 (upgraded mid-session from 1.19.4), Antigravity CLI 1.4.7, Codex CLI 0.164.0 (standalone, signed in), openshell absent, Context7 connected. It surfaced the OpenCode 2.x plugin-API break, confirmed independently by live runs. |
-| 2 | Blue | Codex CLI bring-up and adapter verification | Active — verification outstanding | Codex 0.164.0 ran the whole mission end to end: $start-mission, spawn_agent with hyphenated agent names, Context7 from config.toml, offline graph, maturity summary. Outstanding: the guard hook's live denial on Codex was not observed, because project hooks need a one-time /hooks trust in the interactive TUI. |
+| 2 | Blue | Codex CLI bring-up and adapter verification | Closed — partly met | Codex 0.164.0 ran the whole mission end to end: $start-mission, spawn_agent with hyphenated agent names, Context7 from config.toml, offline graph, maturity summary. Outstanding: the guard hook's live denial on Codex was not observed, because project hooks need a one-time /hooks trust in the interactive TUI. Closed with the mission at the user's request; the live denial is a follow-up. |
 | 3 | Yellow | Live smoke round 1 (Claude Code, OpenCode, Antigravity) | Completed | Round 1 passed on all four CLIs after six defect fixes; results in tests/smoke/results-2026-10.md. Tests were re-run independently in every project. |
 | 4 | Red | Fix defects and cut release candidate | Completed | Six round-1 defects fixed (Context7 and PowerShell in Claude agent tools, session-plays-Black on Claude Code, inheritMcp on Antigravity, .graphifyignore, Yellow verification rubric, OpenCode run note); src/VERSION set to 1.0.0; dist/ regenerated; build.py --check passes; CI green. |
-| 5 | Yellow | Regression tests, Codex smoke and retest | Active — verification outstanding | Round 2 on all four CLIs: code-implementation reached 2 clean runs everywhere; Black Agent re-ran Yellow's exact test command on every CLI; /version implemented and tests pass. Two new defects were found and fixed in source (preflight skipped .graphifyignore when a graph already existed; Green handed over a test command whose interpreter is a Windows Store placeholder). Live re-verification of those two fixes is outstanding. |
+| 5 | Yellow | Regression tests, Codex smoke and retest | Closed — partly met | Round 2 on all four CLIs: code-implementation reached 2 clean runs everywhere; Black Agent re-ran Yellow's exact test command on every CLI; /version implemented and tests pass. Two new defects were found and fixed in source (preflight skipped .graphifyignore when a graph already existed; Green handed over a test command whose interpreter is a Windows Store placeholder). Live re-verification of those two fixes was skipped by the user (build tests cover them). Closed with the mission; the Codex live denial is a follow-up. |
 | 6 | Red | Release documentation | Completed | README lists the tested CLI versions and new known gaps; the capability matrix has no unverified marks left (one open item, the Codex live denial, is stated with what closes it); docs/index.html covers all four CLIs; CHANGELOG 1.0.0 is dated; PLAN.md Definition of Done is ticked or linked. Resolving the Antigravity item exposed security defect 9: the hook's no-objection answer auto-approved every shell command. Fixed (ask / force_ask, deny under always-proceed) and verified live; Claude Code's guard denial was also verified live. |
-| 7 | Blue | Deprecation note on the v0.6.1 repo | Prepared — waiting for approval | Prepared, not opened: local branch docs/point-to-multi-cli-successor (commit 1ed1f07, README.md only) and the PR text in deprecation-pr.md. Waits for the user's approval, and for a decision on repository visibility: the old repository is public and the new one is private, so the banner link would not open for public readers. |
+| 7 | Blue | Deprecation note on the v0.6.1 repo | Completed | Pull request opened after the user made ab-mission-command-center public and approved: https://github.com/Cloudscockpit/actionboard-build-mission-pipeline/pull/2 (branch docs/point-to-multi-cli-successor, commit 1ed1f07, README.md only, mergeable). It stays open for the user to merge. |
 
 ## Mission Log
 
@@ -52,7 +53,10 @@ re-run the two round-2 fixes live; build tests cover them.
    is a deny and that `toolPermission: always-proceed` approves even `force_ask`. The hook now answers
    `ask` when it has no objection, `force_ask` for a guard ask, and deny for a guard ask under
    always-proceed (`1156f33`). README, matrix, landing page, CHANGELOG and Definition of Done followed.
-8. **Deprecation pull request prepared** on a local branch of the v0.6.1 checkout; not pushed.
+8. **Deprecation pull request prepared** on a local branch of the v0.6.1 checkout. Preparing it
+   showed the new repository was private while the old one is public; the user made the new one
+   public and approved, and the pull request was opened (https://github.com/Cloudscockpit/actionboard-build-mission-pipeline/pull/2).
+9. **Mission closed** by the user, with the Codex live denial carried as a follow-up.
 
 Detailed per-step records: `mission-log.md` and `tests/smoke/results-2026-10.md`.
 
@@ -69,14 +73,14 @@ plan serves as its success criterion.
 | 4 — `build.py --check` passes; failures link commits; CI green; manifests read 1.0.0 | Met | Commits `6f228ea`, `53e79c5`; CI green; all four manifests at 1.0.0 |
 | 5 — Every smoke step passes on all four CLIs; each defect has a named test; CI green; no open High guard findings | Partly | Every defect has a named test and CI is green; round-2 fixes not re-run live (user decision); Codex live denial outstanding |
 | 6 — No ⚠️ in the capability matrix; README versions match; CHANGELOG 1.0.0; Definition of Done ticked | Met | `docs/capability-matrix.md` has no ⚠️; README lists the tested versions; CHANGELOG `1.0.0 — 2026-10-25`; DoD boxes ticked or linked to the open item |
-| 7 — Deprecation pull request open on the v0.6.1 repository | Not yet | Prepared (`deprecation-pr.md`, local commit `1ed1f07`); waits for approval and the visibility decision |
+| 7 — Deprecation pull request open on the v0.6.1 repository | Met | https://github.com/Cloudscockpit/actionboard-build-mission-pipeline/pull/2: open, mergeable, touches `README.md` only, links the now-public repository |
 
-## Deferred
+## Follow-ups
 
-- **Assignment 7 (deprecation note on v0.6.1)** is prepared. Opening it needs the user's approval
-  and a decision on making `ab-mission-command-center` public (see `deprecation-pr.md`).
-- **Codex live guard denial** (assignments 2 and 5) needs the user to trust the hooks with `/hooks`.
-- **Tagging v1.0.0 and publishing the release** are the user's steps.
+- **Codex live guard denial** (acceptance of assignments 2 and 5): trust the hooks with `/hooks` in a
+  Codex window, then ask it to run `openshell sandbox delete --all`; it should be refused.
+- **Merge the deprecation pull request** (https://github.com/Cloudscockpit/actionboard-build-mission-pipeline/pull/2).
+- **Tag v1.0.0 and publish the release.**
 - **Follow-ups outside this mission:** an `npx`/`uvx` package, default model maps for non-Anthropic
   providers, more CLIs.
 
@@ -120,5 +124,5 @@ Across the mission, in the repository `Cloudscockpit/ab-mission-command-center`:
   reference, all four adapters, the shared hook adapter, `scripts/install.py`, `scripts/aflib/`, the
   test suites, `.github/workflows/ci.yml`, `README.md`, `CHANGELOG.md`, `docs/capability-matrix.md`,
   `docs/index.html`, `PLAN.md`, `.gitignore`, `src/VERSION`, and `dist/` (regenerated).
-- **In the v0.6.1 checkout (local only, not pushed):** `README.md` on branch
-  `docs/point-to-multi-cli-successor`.
+- **In `Cloudscockpit/actionboard-build-mission-pipeline`:** `README.md` on branch
+  `docs/point-to-multi-cli-successor`, pull request #2 (open).
