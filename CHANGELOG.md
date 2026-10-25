@@ -1,6 +1,6 @@
 # Changelog
 
-## 1.0.0 — release candidate (unreleased)
+## 1.0.0 — 2026-10-25
 
 Multi-CLI rebuild of ActionBoard V5 Agent Formation (from the Claude-only v0.6.1).
 
@@ -61,6 +61,9 @@ Multi-CLI rebuild of ActionBoard V5 Agent Formation (from the Claude-only v0.6.1
 - **Live smoke round 2:** preflight always ensures `.graphifyignore` (and rebuilds the graph when
   it adds lines); Green Agent confirms the test command's interpreter starts before handing it over;
   `maturity.py summary` prints one row per assignment when a mission scores the same action twice.
+- Docs for 1.0.0: README lists the tested CLI versions and the new known gaps;
+  `docs/capability-matrix.md` resolves every unverified item with evidence; `docs/index.html`
+  covers all four CLIs and the `src/` authoring flow.
 - Green Agent's "10–50× cheaper" claim replaced with the measured `graphify benchmark` figure,
   and its `/graphify` suggestions with the offline `graphify update .` / preflight.
 
@@ -71,6 +74,11 @@ Multi-CLI rebuild of ActionBoard V5 Agent Formation (from the Claude-only v0.6.1
 - Agent prose names no CLI tools; each non-Claude agent gets a Tool glossary.
 
 ### Security
+- **Antigravity hook auto-approved shell commands.** Its no-objection answer was `allow`, which
+  agy documents as "automatically allow the tool execution", so every `run_command` skipped the
+  user's own approval setting. It now answers `ask` (defers to that setting) and sends guard asks
+  as `force_ask`. Under `toolPermission: always-proceed`, which approves even `force_ask`, guard
+  asks are denied, as on Codex. Verified live on agy 1.4.7.
 - Closed 16 guard bypasses found in review (background `&`, global flags before the
   subcommand, first-ask-hides-later-deny, `$VAR` expansion, `-lc`/`cmd /c` wrappers, unknown
   wrappers, pipes into shells, Windows paths, quote-split names, glued credential names,

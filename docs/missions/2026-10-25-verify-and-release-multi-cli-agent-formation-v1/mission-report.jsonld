@@ -404,11 +404,11 @@
           "@id": "urn:voltron:file:PLAN.md"
         }
       ],
-      "actionStatus": "https://schema.org/PotentialActionStatus",
+      "actionStatus": "https://schema.org/CompletedActionStatus",
       "result": {
         "@type": "DefinedTerm",
-        "name": "deferral",
-        "description": "Deferred: waits for assignment 5 to close."
+        "name": "result",
+        "description": "README lists the tested CLI versions and new known gaps; the capability matrix has no unverified marks left (one open item, the Codex live denial, is stated with what closes it); docs/index.html covers all four CLIs; CHANGELOG 1.0.0 is dated; PLAN.md Definition of Done is ticked or linked. Resolving the Antigravity item exposed security defect 9: the hook's no-objection answer auto-approved every shell command. Fixed (ask / force_ask, deny under always-proceed) and verified live; Claude Code's guard denial was also verified live."
       },
       "additionalProperty": [
         {
@@ -435,7 +435,7 @@
       "result": {
         "@type": "DefinedTerm",
         "name": "deferral",
-        "description": "Deferred: waits for assignment 6, and the user's approval before a pull request is opened on the v0.6.1 repository."
+        "description": "Prepared, not opened: local branch docs/point-to-multi-cli-successor (commit 1ed1f07, README.md only) and the PR text in deprecation-pr.md. Waits for the user's approval, and for a decision on repository visibility: the old repository is public and the new one is private, so the banner link would not open for public readers."
       },
       "additionalProperty": [
         {
@@ -1148,7 +1148,7 @@
       "creator": {
         "@id": "urn:voltron:lion:main"
       },
-      "abstract": "Draft final report. 3 assignments completed, 2 active with verification outstanding, 2 deferred. All four CLIs pass the full mission; 8 defects found by live runs, all fixed in source.",
+      "abstract": "Final report draft. 4 assignments completed, 2 active with verification outstanding, 1 prepared and waiting for approval. All four CLIs pass the full mission; 9 defects found, all fixed in source.",
       "mainEntity": {
         "@type": "ItemList",
         "itemListElement": [
@@ -1187,6 +1187,9 @@
           },
           {
             "@id": "urn:voltron:mission:verify-and-release-multi-cli-agent-formation-v1:maturity:5"
+          },
+          {
+            "@id": "urn:voltron:mission:verify-and-release-multi-cli-agent-formation-v1:maturity:6"
           }
         ]
       }
@@ -1506,7 +1509,7 @@
         {
           "@type": "PropertyValue",
           "name": "rate:orchestrator",
-          "value": 1.0
+          "value": 0.5
         },
         {
           "@type": "PropertyValue",
@@ -1551,7 +1554,7 @@
         {
           "@type": "PropertyValue",
           "name": "nextMilestone",
-          "value": "9 more clean run(s) (1/10) to unlock eligibility (operator certification L6 is also needed to run it autonomously)."
+          "value": "Raise Orchestrator 50% → 95% (≈18 more passing run(s)), then reach 10 clean runs to unlock Autonomous."
         }
       ]
     },
@@ -1643,6 +1646,97 @@
           "@type": "PropertyValue",
           "name": "nextMilestone",
           "value": "Raise Data 50% → 90% (≈8 more passing run(s)); Action 50% → 90% (≈8 more passing run(s)), then reach 5 clean runs to unlock Autonomous."
+        }
+      ]
+    },
+    {
+      "@type": "Thing",
+      "@id": "urn:voltron:mission:verify-and-release-multi-cli-agent-formation-v1:maturity:6",
+      "additionalType": "MaturityProgress",
+      "name": "code-implementation",
+      "about": {
+        "@id": "urn:voltron:mission:verify-and-release-multi-cli-agent-formation-v1:assignment:6"
+      },
+      "additionalProperty": [
+        {
+          "@type": "PropertyValue",
+          "name": "actionId",
+          "value": "code-implementation"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "stage:orchestrator",
+          "value": "fail"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "stage:data",
+          "value": "pass"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "stage:analysis",
+          "value": "pass"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "stage:action",
+          "value": "pass"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "stage:defense",
+          "value": "pass"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "rate:orchestrator",
+          "value": 0.5
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "rate:data",
+          "value": 1.0
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "rate:analysis",
+          "value": 1.0
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "rate:action",
+          "value": 1.0
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "rate:defense",
+          "value": 1.0
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "cleanRun",
+          "value": false
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "riskTier",
+          "value": "T3"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "cleanRuns",
+          "value": "1/10"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "executionMode",
+          "value": "actionlist"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "nextMilestone",
+          "value": "Raise Orchestrator 50% → 95% (≈18 more passing run(s)), then reach 10 clean runs to unlock Autonomous."
         }
       ]
     }

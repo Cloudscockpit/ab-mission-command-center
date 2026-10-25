@@ -13,12 +13,16 @@ Same mission flow on every supported CLI:
 6. **Go/no-go gate** → you reply `go` → Red/Blue/Yellow execute
 7. **Mission Report** (Markdown + schema.org JSON-LD)
 
-| CLI | Start a mission | Status |
-|---|---|---|
-| Claude Code | `/start-mission <objective>` | Supported (parity with v0.6.1) |
-| OpenCode | `/start-mission <objective>` | Supported, smoke-tested (agents load) |
-| Codex CLI | `$start-mission <objective>` | Supported, built from docs (Codex not tested live) |
-| Antigravity CLI (`agy`) | `/start-mission <objective>` | Supported, `agy plugin validate --strict` passes |
+| CLI | Tested version | Start a mission | Status |
+|---|---|---|---|
+| Claude Code | 2.1.310 | `/start-mission <objective>` | Supported; full mission passes live |
+| OpenCode | 2.1.4 (1.x via a legacy guard plugin) | `/start-mission <objective>` in the TUI | Supported; full mission passes live |
+| Codex CLI | 0.164.0 | `$start-mission <objective>` | Supported; full mission passes live (guard hook needs one-time `/hooks` trust) |
+| Antigravity CLI (`agy`) | 1.4.7 | `/start-mission <objective>` | Supported; full mission passes live, `agy plugin validate --strict` passes |
+
+Every CLI ran two full missions live (October 2026): preflight, Green recon, four-part plan, stop at
+the go/no-go gate, build, tests re-run independently, maturity scoring. Results:
+[`tests/smoke/results-2026-10.md`](tests/smoke/results-2026-10.md).
 
 ### Slash commands
 
@@ -66,7 +70,11 @@ if unchanged). It refuses to overwrite files it did not create unless `--force`.
 
 The marketplace at `.claude-plugin/marketplace.json` points at `./dist/claude`.
 
-**Codex** — hooks must be trusted once with `/hooks` (Codex re-asks when they change).
+**Codex** — hooks must be trusted once with `/hooks` (Codex re-asks when they change). Until
+then the OpenShell guard does not run on Codex.
+
+**Antigravity** — if your agy `toolPermission` is `always-proceed`, agy approves every prompt,
+so the guard turns its "ask" rules into denies (see Known gaps).
 
 ### Choosing models
 
@@ -157,6 +165,8 @@ adds a **Maturity & Progress Summary** to the mission report:
 | OpenCode 1.x | Plugins cannot "ask" | OpenCode 2.x asks natively through its permission hook. On 1.x (legacy plugin) an ask is let through only for a plain `openshell …` command that the agents' `permission.bash` ask patterns catch; otherwise it is denied. |
 | Codex | Hooks cannot "ask" | Same, with `.codex/rules/actionboard.rules` (`prompt`). `--add-endpoint …:full` is denied rather than asked. |
 | Codex | No per-agent tool restriction | Read-only roles are enforced by instructions only. |
+| Codex | Project hooks run only after a one-time `/hooks` trust | Until you trust them, the guard is off on Codex; the `.rules` prompts still apply. |
+| Antigravity | `toolPermission: always-proceed` approves even a hook's `force_ask` | The guard denies its "ask" commands under that setting; run them yourself or switch to `request-review`. Runs started with `--mode auto` or `--dangerously-skip-permissions` may approve asks (denies still block). |
 | Codex | No custom commands | `/start-mission` is the `$start-mission` skill; the session plays Black Agent. |
 | Antigravity | No custom commands | `/start-mission` is a skill; the session plays Black Agent (also available as `agy --agent black-agent`). |
 | All but Claude | `browser-actions` skill | Claude-only (Claude in Chrome); not shipped elsewhere. |
@@ -170,7 +180,7 @@ src/          neutral source — edit here
 adapters/     one adapter per CLI (+ shared hook adapter)
 scripts/      build.py (src → dist), install.py
 dist/         generated, committed, checked in CI — do not edit
-tests/        guard, build/lint, installer, OpenCode plugin
+tests/        guard, build/lint, installer, maturity, OpenCode plugin, live smoke results
 ```
 
 ```sh
@@ -179,6 +189,7 @@ python scripts/build.py --check                 # what CI runs
 python -m unittest discover -s tests/guard
 python -m unittest discover -s tests/build
 python -m unittest discover -s tests/install
+python -m unittest discover -s tests/maturity
 node --test tests/opencode/plugin.test.mjs      # Node 23.6+
 ```
 

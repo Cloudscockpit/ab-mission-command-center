@@ -1,7 +1,7 @@
 # Mission Report — Verify and release the multi-CLI Agent Formation v1.0.0
 
-Mission: `urn:voltron:mission:verify-and-release-multi-cli-agent-formation-v1` · Report date: 2026-10-25 · Status: **draft final report; the mission stays open until
-assignments 5 to 7 close** · Operator level: L4 · Terse output: on (agent chatter only; this report
+Mission: `urn:voltron:mission:verify-and-release-multi-cli-agent-formation-v1` · Report date: 2026-10-25 · Status: **final report draft; the mission stays open until
+the Codex live denial is observed and the deprecation pull request is approved** · Operator level: L4 · Terse output: on (agent chatter only; this report
 is full prose)
 
 ## Outcome
@@ -11,12 +11,14 @@ ActionBoard Agent Formation now runs the complete mission flow on all four targe
 `/start-mission` run performed preflight (Context7 answered, offline code graph built, terse output
 honoured), sent Green Agent for recon, rendered the four-part report, stopped at the go/no-go gate,
 and after "go" built the feature, passed its tests, recorded scored runs, and printed the Maturity &
-Progress Summary. Two rounds of live runs found eight defects. All eight are fixed in source with
-tests, and the release candidate is stamped 1.0.0 with CI green.
+Progress Summary. Two rounds of live runs and the release checks found nine defects, one of them a
+security defect in the Antigravity hook. All nine are fixed in source with tests, the release is
+stamped 1.0.0, and the release documentation is done.
 
-The mission is not closed yet. Two fixes from round 2 still need a live re-run, the guard hook's live
-denial on Codex still needs the interactive `/hooks` trust step, and the release documentation and
-the v0.6.1 deprecation pull request have not started.
+The mission is not closed yet. The guard hook's live denial on Codex needs the interactive `/hooks`
+trust step, which only the user can do. The deprecation pull request for v0.6.1 is prepared but not
+opened: it needs the user's approval and a decision on repository visibility. The user chose not to
+re-run the two round-2 fixes live; build tests cover them.
 
 | # | Agent | Assignment | Status | Result |
 |---|---|---|---|---|
@@ -25,8 +27,8 @@ the v0.6.1 deprecation pull request have not started.
 | 3 | Yellow | Live smoke round 1 (Claude Code, OpenCode, Antigravity) | Completed | Round 1 passed on all four CLIs after six defect fixes; results in tests/smoke/results-2026-10.md. Tests were re-run independently in every project. |
 | 4 | Red | Fix defects and cut release candidate | Completed | Six round-1 defects fixed (Context7 and PowerShell in Claude agent tools, session-plays-Black on Claude Code, inheritMcp on Antigravity, .graphifyignore, Yellow verification rubric, OpenCode run note); src/VERSION set to 1.0.0; dist/ regenerated; build.py --check passes; CI green. |
 | 5 | Yellow | Regression tests, Codex smoke and retest | Active — verification outstanding | Round 2 on all four CLIs: code-implementation reached 2 clean runs everywhere; Black Agent re-ran Yellow's exact test command on every CLI; /version implemented and tests pass. Two new defects were found and fixed in source (preflight skipped .graphifyignore when a graph already existed; Green handed over a test command whose interpreter is a Windows Store placeholder). Live re-verification of those two fixes is outstanding. |
-| 6 | Red | Release documentation | Deferred | Deferred: waits for assignment 5 to close. |
-| 7 | Blue | Deprecation note on the v0.6.1 repo | Deferred | Deferred: waits for assignment 6, and the user's approval before a pull request is opened on the v0.6.1 repository. |
+| 6 | Red | Release documentation | Completed | README lists the tested CLI versions and new known gaps; the capability matrix has no unverified marks left (one open item, the Codex live denial, is stated with what closes it); docs/index.html covers all four CLIs; CHANGELOG 1.0.0 is dated; PLAN.md Definition of Done is ticked or linked. Resolving the Antigravity item exposed security defect 9: the hook's no-objection answer auto-approved every shell command. Fixed (ask / force_ask, deny under always-proceed) and verified live; Claude Code's guard denial was also verified live. |
+| 7 | Blue | Deprecation note on the v0.6.1 repo | Prepared — waiting for approval | Prepared, not opened: local branch docs/point-to-multi-cli-successor (commit 1ed1f07, README.md only) and the PR text in deprecation-pr.md. Waits for the user's approval, and for a decision on repository visibility: the old repository is public and the new one is private, so the banner link would not open for public readers. |
 
 ## Mission Log
 
@@ -44,6 +46,13 @@ the v0.6.1 deprecation pull request have not started.
 6. **Smoke round 2**: clean-run counts rose, and Black Agent verified Yellow Agent's work on every
    CLI. Two new defects were found and fixed in source (`.graphifyignore` was skipped when a graph
    existed; Green handed over a non-working `python` command on Windows).
+7. **Release documentation.** Settling the capability matrix's open Antigravity item against agy's
+   hook contract showed that the hook's "allow" auto-approved every shell command and overrode the
+   user's own approval setting. Live tests on agy 1.4.7 also showed that an answer without a decision
+   is a deny and that `toolPermission: always-proceed` approves even `force_ask`. The hook now answers
+   `ask` when it has no objection, `force_ask` for a guard ask, and deny for a guard ask under
+   always-proceed (`1156f33`). README, matrix, landing page, CHANGELOG and Definition of Done followed.
+8. **Deprecation pull request prepared** on a local branch of the v0.6.1 checkout; not pushed.
 
 Detailed per-step records: `mission-log.md` and `tests/smoke/results-2026-10.md`.
 
@@ -58,15 +67,16 @@ plan serves as its success criterion.
 | 2 — Codex spawns green-agent by name; hook denies `openshell sandbox delete --all`; rules prompt; UNVERIFIED items resolved | Partly | Hyphenated names confirmed, Context7 confirmed, mission passes; live hook denial not observed (needs `/hooks` trust) |
 | 3 — One results row per smoke ID with versions and pass/fail; Claude nested-dispatch question answered | Met | `tests/smoke/results-2026-10.md`; nested dispatch: no, so Claude Code now uses session-plays-Black |
 | 4 — `build.py --check` passes; failures link commits; CI green; manifests read 1.0.0 | Met | Commits `6f228ea`, `53e79c5`; CI green; all four manifests at 1.0.0 |
-| 5 — Every smoke step passes on all four CLIs; each defect has a named test; CI green; no open High guard findings | Not yet | Round-2 defects fixed with tests (`test_round2_fixes_reach_every_target`), but not yet re-verified live |
-| 6 — No ⚠️ in the capability matrix; README versions match; CHANGELOG 1.0.0; Definition of Done ticked | Not started | — |
-| 7 — Deprecation pull request open on the v0.6.1 repository | Not started | Needs user approval |
+| 5 — Every smoke step passes on all four CLIs; each defect has a named test; CI green; no open High guard findings | Partly | Every defect has a named test and CI is green; round-2 fixes not re-run live (user decision); Codex live denial outstanding |
+| 6 — No ⚠️ in the capability matrix; README versions match; CHANGELOG 1.0.0; Definition of Done ticked | Met | `docs/capability-matrix.md` has no ⚠️; README lists the tested versions; CHANGELOG `1.0.0 — 2026-10-25`; DoD boxes ticked or linked to the open item |
+| 7 — Deprecation pull request open on the v0.6.1 repository | Not yet | Prepared (`deprecation-pr.md`, local commit `1ed1f07`); waits for approval and the visibility decision |
 
 ## Deferred
 
-- **Assignment 6 (release documentation)** waits for assignment 5.
-- **Assignment 7 (deprecation note on v0.6.1)** waits for assignment 6 and needs the user's
-  approval before any pull request is created.
+- **Assignment 7 (deprecation note on v0.6.1)** is prepared. Opening it needs the user's approval
+  and a decision on making `ab-mission-command-center` public (see `deprecation-pr.md`).
+- **Codex live guard denial** (assignments 2 and 5) needs the user to trust the hooks with `/hooks`.
+- **Tagging v1.0.0 and publishing the release** are the user's steps.
 - **Follow-ups outside this mission:** an `npx`/`uvx` package, default model maps for non-Anthropic
   providers, more CLIs.
 
@@ -82,13 +92,16 @@ Stage cells show this run's result, then the stage's pass rate across the scorin
 | External CLI integration (`api-integration`) | T2 (≥90%) | ✅ pass · 100% | ✅ pass · 100% | ✅ pass · 100% | ❌ fail · 0% | ✅ pass · 100% | No — failed: Action | 0/5 | Guided → **Actionlist** → Autonomous | Raise Action 0% → 90% (≈9 more passing run(s)), then reach 5 clean runs to unlock Autonomous. |
 | Tests and live verification, run `verify-and-release-multi-cli-agent-formation-v1-3` (`test-authoring`) | T2 (≥90%) | ✅ pass · 100% | ❌ fail · 50% | ✅ pass · 100% | ✅ pass · 50% | ✅ pass · 100% | No — failed: Data | 0/5 | Guided → **Actionlist** → Autonomous | Raise Data 50% → 90% (≈8 more passing run(s)); Action 50% → 90% (≈8 more passing run(s)), then reach 5 clean runs to unlock Autonomous. |
 | Tests and live verification, run `verify-and-release-multi-cli-agent-formation-v1-5` (`test-authoring`) | T2 (≥90%) | ✅ pass · 100% | ✅ pass · 50% | ✅ pass · 100% | ❌ fail · 50% | ✅ pass · 100% | No — failed: Action | 0/5 | Guided → **Actionlist** → Autonomous | Raise Data 50% → 90% (≈8 more passing run(s)); Action 50% → 90% (≈8 more passing run(s)), then reach 5 clean runs to unlock Autonomous. |
-| Plugin code changes (`code-implementation`) | T3 (≥95%) | ✅ pass · 100% | ✅ pass · 100% | ✅ pass · 100% | ✅ pass · 100% | ✅ pass · 100% | Yes | 1/10 | Guided → **Actionlist** → Autonomous | 9 more clean run(s) (1/10) to unlock eligibility (operator certification L6 is also needed to run it autonomously). |
+| Plugin code changes, run `verify-and-release-multi-cli-agent-formation-v1-4` (`code-implementation`) | T3 (≥95%) | ✅ pass · 50% | ✅ pass · 100% | ✅ pass · 100% | ✅ pass · 100% | ✅ pass · 100% | Yes | 1/10 | Guided → **Actionlist** → Autonomous | Raise Orchestrator 50% → 95% (≈18 more passing run(s)), then reach 10 clean runs to unlock Autonomous. |
+| Plugin code changes, run `verify-and-release-multi-cli-agent-formation-v1-6` (`code-implementation`) | T3 (≥95%) | ❌ fail · 50% | ✅ pass · 100% | ✅ pass · 100% | ✅ pass · 100% | ✅ pass · 100% | No — failed: Orchestrator | 1/10 | Guided → **Actionlist** → Autonomous | Raise Orchestrator 50% → 95% (≈18 more passing run(s)), then reach 10 clean runs to unlock Autonomous. |
 
 How to read it: every assignment counts toward the repository's AI-ops maturity, kept in the
 committed registry `.actionboard/registry.json`. Recon and plugin code changes ran clean. Codex
 integration fails the Action stage until the guard hook is seen denying a command live. The two test
 runs each failed one stage: round 1 on Data (wrong OpenCode invocation assumptions) and round 2 on
-Action (two defects found after the run). Plugin code changes are classified T3 because they ship to
+Action (two defects found after the run). Release documentation fails Orchestrator: the security fix
+it uncovered was made outside the assignment's owned files without a re-plan. The fix was right to
+make, but the scoring rule counts the ownership breach. Plugin code changes are classified T3 because they ship to
 every user of the plugin. That tier needs 10 clean runs at 95%, and operator certification L6 to run
 autonomously. The operator is L4, so for T3 work a human go/no-go stays in place.
 
@@ -101,9 +114,11 @@ Across the mission, in the repository `Cloudscockpit/ab-mission-command-center`:
   `adapters/opencode/actionboard/guard-client.ts`, `adapters/opencode/legacy/`, `tests/maturity/`,
   `tests/smoke/results-2026-10.md`, `.actionboard/config.json`, `.actionboard/registry.json`, and the
   mission directory (`mission-plan.md`, `mission-plan.jsonld`, `mission-log.md`, `mission-report.md`,
-  `mission-report.jsonld`).
+  `mission-report.jsonld`, `deprecation-pr.md`, `deprecation-pr-body.md`).
 - **Changed:** all six agents, the start-mission command, the mission-brief, mission-plan,
   mission-report, skills-registry and actionboard-devops-mission skills, the actionboard-kb format
   reference, all four adapters, the shared hook adapter, `scripts/install.py`, `scripts/aflib/`, the
   test suites, `.github/workflows/ci.yml`, `README.md`, `CHANGELOG.md`, `docs/capability-matrix.md`,
-  `.gitignore`, `src/VERSION`, and `dist/` (regenerated).
+  `docs/index.html`, `PLAN.md`, `.gitignore`, `src/VERSION`, and `dist/` (regenerated).
+- **In the v0.6.1 checkout (local only, not pushed):** `README.md` on branch
+  `docs/point-to-multi-cli-successor`.

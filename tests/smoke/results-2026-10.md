@@ -74,11 +74,20 @@ Second mission of the same kind on every CLI: `add a GET /version endpoint that 
 | 7 | Antigravity, Codex | Graph still held agent tooling (Antigravity: 560 nodes) | Preflight only wrote `.graphifyignore` on a first build; an existing graph took the update path | Preflight always ensures the file first and rebuilds when it had to add lines |
 | 8 | Claude Code | `test-authoring` failed the Data stage | Green handed over `python …`; on this Windows machine `python` is a Store placeholder | Green confirms the interpreter starts (`python --version`, `py --version`) and hands over the working form |
 
-Both fixes ship to all four CLIs (build test `test_round2_fixes_reach_every_target`). A live re-run
-is still outstanding.
+Both fixes ship to all four CLIs (build test `test_round2_fixes_reach_every_target`). The user
+chose not to re-run them live; the build tests cover them.
+
+## Release checks (assignment 6)
+
+| # | CLI | Symptom | Root cause | Fix | Verified by |
+|---|---|---|---|---|---|
+| 9 | Antigravity | Every `run_command` was auto-approved by the hook, and a guard "ask" (`openshell workspace delete team`) ran without a prompt | The hook answered `allow` (agy: "automatically allow"); the user's `toolPermission: always-proceed` approves even `force_ask`; an object without a decision is a deny | No objection → `ask`; guard ask → `force_ask`; under `always-proceed` a guard ask → deny | Live on agy 1.4.7: harmless command ran, workspace delete denied with the always-proceed reason, `sandbox delete --all` denied; guard tests |
+
+Claude Code guard, live: `openshell sandbox delete --all` through the `PowerShell` tool was
+blocked by the hook ("Refusing a cross-workspace sandbox delete…").
 
 ## Still open
 
-- Live re-run of defects 7 and 8 (one mission per CLI), and a live guard denial on Codex after
-  trusting its hooks with `/hooks`.
+- A live guard denial on Codex after trusting its hooks with `/hooks` (user step).
+- Defects 7 and 8 not re-run live (user decision; covered by build tests).
 - Interactive-only checks: the `/` menu entries in each TUI, and Codex's `/hooks` trust prompt.

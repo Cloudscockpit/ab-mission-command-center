@@ -3,19 +3,19 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>ActionBoard V5 AgentFormation — multi-agent missions for Claude Code &amp; Cowork</title>
-<meta name="description" content="ActionBoard V5 AgentFormation turns one objective into a reviewed plan, then runs it with five parallel agents that never touch the same file. Setup for Claude Code and Claude Cowork, plus how to add your own skills for the Agents.">
+<title>ActionBoard V5 AgentFormation — multi-agent missions for Claude Code, OpenCode, Codex &amp; Antigravity</title>
+<meta name="description" content="ActionBoard V5 AgentFormation turns one objective into a reviewed plan, then runs it with five parallel agents that never touch the same file. Setup for Claude Code, OpenCode, Codex CLI and Antigravity CLI, plus how to add your own skills for the Agents.">
 <meta name="author" content="Jarjis Imam — CloudsCockpit.io Inc.">
 <meta name="color-scheme" content="light dark">
-<link rel="canonical" href="https://cloudscockpit.github.io/actionboard-build-mission-pipeline/">
+<link rel="canonical" href="https://cloudscockpit.github.io/ab-mission-command-center/">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>&#129409;</text></svg>">
 <meta property="og:type" content="website">
-<meta property="og:url" content="https://cloudscockpit.github.io/actionboard-build-mission-pipeline/">
-<meta property="og:title" content="ActionBoard V5 AgentFormation — multi-agent missions for Claude Code &amp; Cowork">
-<meta property="og:description" content="ActionBoard V5 AgentFormation turns one objective into a reviewed plan, then runs it with five parallel agents that never touch the same file. Setup for Claude Code and Claude Cowork, plus how to add your own skills for the Agents.">
+<meta property="og:url" content="https://cloudscockpit.github.io/ab-mission-command-center/">
+<meta property="og:title" content="ActionBoard V5 AgentFormation — multi-agent missions for Claude Code, OpenCode, Codex &amp; Antigravity">
+<meta property="og:description" content="ActionBoard V5 AgentFormation turns one objective into a reviewed plan, then runs it with five parallel agents that never touch the same file. Setup for Claude Code, OpenCode, Codex CLI and Antigravity CLI, plus how to add your own skills for the Agents.">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="ActionBoard V5 AgentFormation">
-<meta name="twitter:description" content="ActionBoard V5 AgentFormation turns one objective into a reviewed plan, then runs it with five parallel agents that never touch the same file. Setup for Claude Code and Claude Cowork, plus how to add your own skills for the Agents.">
+<meta name="twitter:description" content="ActionBoard V5 AgentFormation turns one objective into a reviewed plan, then runs it with five parallel agents that never touch the same file. Setup for Claude Code, OpenCode, Codex CLI and Antigravity CLI, plus how to add your own skills for the Agents.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700&amp;family=IBM+Plex+Mono:wght@400;500;600&amp;family=IBM+Plex+Sans:wght@400;500;600&amp;display=swap">
@@ -380,7 +380,7 @@
   <header class="hero">
     <div class="wordmark">
       <span class="v">ActionBoard V5 AgentFormation</span>
-      <span class="ver">v0.4.1 · MIT</span>
+      <span class="ver">v1.0.0 · MIT</span>
     </div>
 
     <p class="thesis">
@@ -389,8 +389,9 @@
     </p>
 
     <p class="hero-sub">
-      A plugin for Claude Code and Claude Cowork. One command drafts the mission, assigns each
-      agent its own files, flags what it can't do yet, and stops for your go-ahead.
+      One package for Claude Code, OpenCode, Codex CLI and Antigravity CLI. One command drafts
+      the mission, assigns each agent its own files, flags what it can't do yet, and stops for
+      your go-ahead.
     </p>
 
     <div class="cmdline">
@@ -400,9 +401,10 @@
 
     <div class="meta-row">
       <span><i class="dot"></i>Claude Code</span>
-      <span><i class="dot"></i>Claude Cowork</span>
-      <span>6 skills · 5 agents</span>
-      <span>~1,250 tokens always-on</span>
+      <span><i class="dot"></i>OpenCode</span>
+      <span><i class="dot"></i>Codex CLI</span>
+      <span><i class="dot"></i>Antigravity CLI</span>
+      <span>15 skills · 6 agents</span>
     </div>
   </header>
 
@@ -495,11 +497,12 @@
   </section>
 
   <section>
-    <div class="eyebrow">Setup · both apps</div>
+    <div class="eyebrow">Setup · four CLIs</div>
     <h2>Install it in under a minute</h2>
     <p class="lede">
-      Same plugin either way. Pick the column that matches the app you use — Claude Code is the
-      terminal, Cowork is the desktop and web app.
+      One source, built for each CLI. Claude Code and Cowork install the plugin from the
+      marketplace; OpenCode, Codex and Antigravity use the installer, which needs Python 3.9+ and
+      records every file it writes so <code>--uninstall</code> removes exactly those.
     </p>
 
     <div class="split">
@@ -509,7 +512,7 @@
           <span class="badge">Terminal</span>
         </div>
         <p>Run these two commands in any session:</p>
-        <pre><code>/plugin marketplace add Cloudscockpit/actionboard-build-mission-pipeline
+        <pre><code>/plugin marketplace add Cloudscockpit/ab-mission-command-center
 /plugin install actionboard-v5-agentformation@actionboard-v5-agentformation</code></pre>
         <p>
           If the install summary says <code>Run /reload-plugins to activate.</code>, run
@@ -527,17 +530,37 @@
         <p>This happens in the interface, not the chat box — typing the command above into a Cowork message will not work.</p>
         <ol>
           <li>Open <strong>Customize</strong> in the sidebar, then <strong>Plugins</strong>.</li>
-          <li>Select <strong>Add marketplace</strong> and enter<br><code>Cloudscockpit/actionboard-build-mission-pipeline</code></li>
+          <li>Select <strong>Add marketplace</strong> and enter<br><code>Cloudscockpit/ab-mission-command-center</code></li>
           <li>Find <strong>ActionBoard V5 AgentFormation</strong> in the list and select <strong>Install</strong>.</li>
           <li>Open the installed plugin to review its skills and agents before enabling them.</li>
         </ol>
       </div>
+
+      <div class="panel">
+        <div class="panel-title">
+          <h3>OpenCode · Codex · Antigravity</h3>
+          <span class="badge">Installer</span>
+        </div>
+        <p>Clone once, then install into a project (or <code>--global</code>):</p>
+        <pre><code>git clone https://github.com/Cloudscockpit/ab-mission-command-center
+cd ab-mission-command-center
+python scripts/install.py --target opencode --project ../my-app
+python scripts/install.py --target codex --project ../my-app
+python scripts/install.py --target antigravity --project ../my-app</code></pre>
+        <p>
+          Run it with no flags to pick from the CLIs it finds on your PATH. It asks before
+          installing Graphify or enabling terse output, and adds the Context7 MCP server.
+          On Codex, trust the hooks once with <code>/hooks</code>.
+        </p>
+      </div>
     </div>
 
     <div class="note" style="margin-top:1.5rem">
-      <strong>Then, in either app:</strong> type <code>/start-mission</code> followed by what you
-      want done, in plain English. You will get the four tables above and a prompt to approve.
-      Nothing is written until you reply <code>go</code>.
+      <strong>Then, in any of them:</strong> type <code>/start-mission</code> (on Codex,
+      <code>$start-mission</code>) followed by what you want done, in plain English. On OpenCode,
+      use the interactive TUI: <code>opencode run</code> does not expand commands. You will get
+      the four tables above and a prompt to approve. Nothing is written until you reply
+      <code>go</code>.
     </div>
   </section>
 
@@ -559,15 +582,15 @@
 Want me to scaffold it via skill-creator now? (yes / no / skip &lt;name&gt;)</code></pre>
     <p class="lede">
       Answer <code>yes</code> and it scaffolds the skill through <code>skill-creator</code>. The
-      new skill becomes available next session, or immediately after
-      <code>/reload-plugins</code>. Good for one-off gaps; it lives in your own skills directory,
+      new skill becomes available next session (on Claude Code, immediately after
+      <code>/reload-plugins</code>). Good for one-off gaps; it lives in your own skills directory,
       not in the plugin.
     </p>
 
     <h3 style="margin-top:2.4rem">Option B — ship it inside the plugin</h3>
     <p class="lede">
-      Fork the repo and add the skill properly, so it travels with the plugin for every user.
-      Six steps, in order.
+      Fork the repo and add the skill to the neutral source in <code>src/</code>, so the build
+      ships it to every CLI. Six steps, in order.
     </p>
 
     <div class="steps">
@@ -579,7 +602,7 @@ Want me to scaffold it via skill-creator now? (yes / no / skip &lt;name&gt;)</co
             The folder name and the <code>name:</code> in the frontmatter must match exactly. If
             they differ, the skill is skipped silently — no error, it simply never appears.
           </p>
-          <pre><code><span class="c">skills/changelog-writer/SKILL.md</span>
+          <pre><code><span class="c">src/skills/changelog-writer/SKILL.md</span>
 
 ---
 <span class="k">name:</span> changelog-writer
@@ -600,8 +623,8 @@ Read the commit range, group by type, write to CHANGELOG.md.
         <div class="step-body">
           <h3>Write the description like a trigger, not a summary</h3>
           <p>
-            The <code>description</code> is the only thing Claude sees when deciding whether to
-            fire the skill. Include the literal phrases a person would actually type. "Writes
+            The <code>description</code> is the only thing the agent sees when deciding whether
+            to fire the skill. Include the literal phrases a person would actually type. "Writes
             changelogs" will not trigger; the version above will.
           </p>
         </div>
@@ -611,7 +634,7 @@ Read the commit range, group by type, write to CHANGELOG.md.
         <div class="step-body">
           <h3>Register it in the actions map</h3>
           <p>
-            Add an entry to <code>skills/skills-registry/actions-map.json</code>. This is what
+            Add an entry to <code>src/skills/skills-registry/actions-map.json</code>. This is what
             Black Agent consults during Skills Gap analysis — an unregistered skill exists but
             never gets planned into a mission.
           </p>
@@ -628,62 +651,66 @@ Read the commit range, group by type, write to CHANGELOG.md.
 
       <div class="step">
         <div class="step-body">
-          <h3>Check the tools contract</h3>
+          <h3>Check the capabilities contract</h3>
           <p>
-            Every tool in <code>requiredTools</code> must appear in that Agent's frontmatter
-            <code>tools:</code> line. Miss one and the Agent is assigned work it physically cannot
-            do — the mission fails at dispatch, not at plan time. The entry above needs
-            <code>Write</code> added to <code>agents/yellow-agent.md</code>, which ships with
-            <code>Read, Edit, Bash, Glob, Grep</code>.
+            Every tool in <code>requiredTools</code> needs the matching capability in that Agent's
+            neutral frontmatter (<code>capabilities:</code> in <code>src/agents/</code>); the build
+            turns capabilities into each CLI's own tool list. Miss one and the Agent is assigned
+            work it physically cannot do — the mission fails at dispatch, not at plan time. The
+            entry above needs <code>write: true</code> in <code>src/agents/yellow-agent.md</code>,
+            which ships with <code>write: false</code>.
           </p>
           <p>Verify every entry at once rather than by eye:</p>
           <pre><code>python3 - &lt;&lt;'PY'
 import json, re, os
+NEED = {'Read': 'read', 'Glob': 'read', 'Grep': 'read', 'Write': 'write', 'Edit': 'edit',
+        'Bash': 'bash', 'WebFetch': 'webfetch', 'WebSearch': 'websearch', 'Skill': 'skills'}
 agents = {}
-for a in os.listdir('agents'):
-    fm = re.match(r'^---\n(.*?)\n---', open(f'agents/{a}').read(), re.S).group(1)
-    n  = re.search(r'^name:\s*(.*)$',  fm, re.M).group(1).strip()
-    tl = re.search(r'^tools:\s*(.*)$', fm, re.M)
-    agents[n] = {x.strip() for x in tl.group(1).split(',')} if tl else None
+for a in os.listdir('src/agents'):
+    fm = re.match(r'^---\n(.*?)\n---', open(f'src/agents/{a}').read(), re.S).group(1)
+    n = re.search(r'^name:\s*(.*)$', fm, re.M).group(1).strip()
+    caps = re.search(r'^capabilities:\n((?:  .*\n?)*)', fm, re.M).group(1)
+    agents[n] = {k for k, v in re.findall(r'^\s+(\w+):\s*(\S+)', caps, re.M) if v != 'false'}
 
-for a in json.load(open('skills/skills-registry/actions-map.json'))['actionTypes']:
-    have = agents.get(a['agent'])
-    if have and (miss := set(a['requiredTools']) - have):
-        print('MISSING', a['action'], '->', a['agent'], sorted(miss))
+for a in json.load(open('src/skills/skills-registry/actions-map.json'))['actionTypes']:
+    miss = {NEED[t] for t in a['requiredTools'] if t in NEED} - agents.get(a['agent'], set())
+    if miss:
+        print('MISSING', a['action'], '-&gt;', a['agent'], sorted(miss))
 PY</code></pre>
         </div>
       </div>
 
       <div class="step">
         <div class="step-body">
-          <h3>Reference bundled files by plugin root</h3>
+          <h3>Reference bundled files through the skill directory</h3>
           <p>
-            If the skill reads anything shipped alongside it — a template, a knowledge-base doc —
-            address it through <code>${CLAUDE_PLUGIN_ROOT}</code>. A bare relative path resolves
-            against whatever project the user is in and the read fails.
+            If the skill reads anything shipped alongside it — a template, a reference doc —
+            write the path with <code>{{skill_dir}}</code>. The build swaps in each CLI's install
+            location. A bare relative path resolves against whatever project the user is in and
+            the read fails.
           </p>
-          <pre><code><span class="c">✗</span>  Read the format reference at kb/changelog-format.md
-<span class="c">✓</span>  Read ${CLAUDE_PLUGIN_ROOT}/kb/changelog-format.md</code></pre>
+          <pre><code><span class="c">✗</span>  Read the format reference at references/changelog-format.md
+<span class="c">✓</span>  Read {{skill_dir}}/references/changelog-format.md</code></pre>
         </div>
       </div>
 
       <div class="step">
         <div class="step-body">
-          <h3>Bump the version, then validate</h3>
+          <h3>Bump the version, build, then validate</h3>
           <p>
-            Raise <code>version</code> in <strong>both</strong>
-            <code>.claude-plugin/plugin.json</code> and
-            <code>.claude-plugin/marketplace.json</code>. The version field pins the plugin —
-            users receive an update only when it changes, so a push without a bump sits on GitHub
-            invisibly.
+            Raise <code>src/VERSION</code> and rebuild. The build writes the version into every
+            CLI's manifest. The version pins the Claude plugin — users receive an update only
+            when it changes, so a push without a bump sits on GitHub invisibly.
           </p>
-          <pre><code>claude plugin validate .
-claude plugin validate .claude-plugin/plugin.json
-claude --plugin-dir . -p "list your actionboard-v5-agentformation skills"</code></pre>
+          <pre><code>python scripts/build.py --target all
+python scripts/build.py --check
+python -m unittest discover -s tests/build
+claude plugin validate dist/claude
+agy plugin validate --strict dist/antigravity</code></pre>
           <p>
-            The first command resolves the <em>marketplace</em> manifest when both live in one
-            folder, which is why the plugin manifest gets its own line. The third actually loads
-            the plugin and proves the skill registers.
+            <code>dist/</code> is generated and committed; CI fails when it drifts from
+            <code>src/</code>. The build tests lint every target, so a skill that breaks one CLI
+            fails before it ships.
           </p>
         </div>
       </div>
@@ -707,7 +734,7 @@ claude --plugin-dir . -p "list your actionboard-v5-agentformation skills"</code>
           </tr>
           <tr>
             <td>Agent blocked at dispatch</td>
-            <td>A tool in <code>requiredTools</code> is missing from that Agent's frontmatter <code>tools:</code>.</td>
+            <td>A tool in <code>requiredTools</code> has no matching capability in that Agent's <code>capabilities:</code>.</td>
           </tr>
           <tr>
             <td>Skill exists but is never planned</td>
@@ -715,11 +742,11 @@ claude --plugin-dir . -p "list your actionboard-v5-agentformation skills"</code>
           </tr>
           <tr>
             <td>File not found at runtime</td>
-            <td>A bundled path written relative instead of through <code>${CLAUDE_PLUGIN_ROOT}</code>.</td>
+            <td>A bundled path written relative instead of through <code>{{skill_dir}}</code>.</td>
           </tr>
           <tr>
             <td>Users stay on the old version</td>
-            <td>Pushed without bumping <code>version</code>. The field pins the plugin.</td>
+            <td>Pushed without bumping <code>src/VERSION</code> and rebuilding. The version pins the plugin.</td>
           </tr>
         </tbody>
       </table>
@@ -760,6 +787,12 @@ claude --plugin-dir . -p "list your actionboard-v5-agentformation skills"</code>
           Agent and file identifiers are global across missions — so ten missions later you can ask
           which files accumulate the most failed assignments.
         </p>
+        <p>
+          Every report also carries a <strong>Maturity &amp; Progress Summary</strong>: each
+          assignment scored on five stages, clean runs counted in
+          <code>.actionboard/registry.json</code>, and how close each kind of work is to moving
+          from Guided to Actionlist to Autonomous.
+        </p>
       </div>
     </div>
   </section>
@@ -769,7 +802,7 @@ claude --plugin-dir . -p "list your actionboard-v5-agentformation skills"</code>
     <div class="eyebrow">Beyond one mission</div>
     <h2>ActionBoard.ai runs the Agents as a continuous loop</h2>
     <p class="lede">
-      This plugin gives you one mission at a time, in your editor, on your machine.
+      This package gives you one mission at a time, in your CLI, on your machine.
       <a href="https://actionboard.ai">ActionBoard.ai</a> is the platform the Agents come from —
       where a single mission becomes an operating loop that keeps running, learns from each pass,
       and spans local, cloud, and mobile.
@@ -851,7 +884,7 @@ claude --plugin-dir . -p "list your actionboard-v5-agentformation skills"</code>
     </div>
     <p class="lede" style="margin-top:1.5rem">
       Issues and pull requests are welcome on the
-      <a href="https://github.com/Cloudscockpit/actionboard-build-mission-pipeline">plugin repository</a>.
+      <a href="https://github.com/Cloudscockpit/ab-mission-command-center">repository</a>.
       Adding a skill is the easiest way to contribute — the six steps above are the whole process.
     </p>
   </section>
@@ -859,11 +892,11 @@ claude --plugin-dir . -p "list your actionboard-v5-agentformation skills"</code>
   <footer>
     <div class="foot-grid">
       <div>
-        <div class="repo">github.com/Cloudscockpit/actionboard-build-mission-pipeline</div>
-        <div style="margin-top:0.35rem">MIT · v0.4.1 · 6 skills, 5 agents</div>
+        <div class="repo">github.com/Cloudscockpit/ab-mission-command-center</div>
+        <div style="margin-top:0.35rem">MIT · v1.0.0 · 15 skills, 6 agents</div>
       </div>
       <div style="text-align:right">
-        <div>Built for Claude Code and Claude Cowork</div>
+        <div>Built for Claude Code, OpenCode, Codex and Antigravity</div>
         <div style="margin-top:0.35rem">Cloudscockpit</div>
       </div>
     </div>

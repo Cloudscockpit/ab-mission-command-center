@@ -300,8 +300,14 @@ File ownership and the go/no-go gate still apply; only parallelism is lost.
 
 ## 9. Definition of Done (v1.0.0)
 
-- [ ] Same `/start-mission` flow works on all 4 CLIs (or documented fallback)
-- [ ] Guard blocks blast-radius OpenShell commands on every CLI that has hooks
-- [ ] CI green on Windows, macOS, Linux
-- [ ] README has install steps + known gaps per CLI
-- [ ] Old repo points to new repo
+- [x] Same `/start-mission` flow works on all 4 CLIs (or documented fallback) — two live missions
+  per CLI ([`tests/smoke/results-2026-10.md`](tests/smoke/results-2026-10.md)); Codex uses the
+  `$start-mission` skill, OpenCode needs the TUI (README Known gaps)
+- [ ] Guard blocks blast-radius OpenShell commands on every CLI that has hooks — live on Claude
+  Code, OpenCode 2.x and Antigravity; **Codex pending** its one-time interactive `/hooks` trust
+  ([capability matrix, Open item](docs/capability-matrix.md#open-item))
+- [x] CI green on Windows, macOS, Linux (`.github/workflows/ci.yml`, Python 3.9–3.12)
+- [x] README has install steps + known gaps per CLI
+- [ ] Old repo points to new repo — PR drafted
+  ([`deprecation-pr.md`](docs/missions/2026-10-25-verify-and-release-multi-cli-agent-formation-v1/deprecation-pr.md)),
+  waiting for approval to open it
