@@ -36,7 +36,8 @@ your project until you reply `go`.
 > **1. Claude Code (In-Chat / Zero Cloning):**
 > Paste into Claude Code chat:
 > ```sh
-> /plugin marketplace add Cloudscockpit/ab-mission-command-center
+>  /plugin marketplace add Cloudscockpit/actionboard-build-mission-pipeline
+>  /plugin install actionboard-v5-agentformation@actionboard-v5-agentformation
 > ```
 >
 > **2. OpenCode CLI (npx, nothing left behind):**
