@@ -25,10 +25,14 @@ def payload(cli, command, tool=None):
             "tool_name": tool or "Bash", "tool_input": {"command": command}}
 
 
-def call(cli, event, data):
+HOME = tempfile.mkdtemp()  # no agy settings.json unless a test writes one
+
+
+def call(cli, event, data, home=HOME):
     stdin = data if isinstance(data, str) else json.dumps(data)
+    env = dict(os.environ, HOME=home, USERPROFILE=home)
     proc = subprocess.run([sys.executable, BUILT[cli], "--cli", cli, "--event", event],
-                          input=stdin, capture_output=True, text=True)
+                          input=stdin, capture_output=True, text=True, env=env)
     assert proc.returncode == 0, proc.stderr
     return json.loads(proc.stdout) if proc.stdout.strip() else None
 
@@ -37,7 +41,9 @@ def decision(cli, out):
     if out is None:
         return "allow"
     if cli == "antigravity":
-        return out["decision"]
+        # agy: "ask" defers to the user's own approval setting (no objection);
+        # "force_ask" is the guard asking.
+        return {"ask": "allow", "force_ask": "ask"}.get(out["decision"], out["decision"])
     return out["hookSpecificOutput"]["permissionDecision"]
 
 
@@ -73,7 +79,27 @@ class Pre(unittest.TestCase):
     def test_other_tools_ignored(self):
         self.assertIsNone(call("claude", "pre", payload("claude", "openshell sandbox delete --all", "Read")))
         out = call("antigravity", "pre", payload("antigravity", "openshell sandbox delete --all", "view_file"))
-        self.assertEqual(out["decision"], "allow")
+        self.assertEqual(out, {"decision": "ask"})
+
+    def test_antigravity_never_sends_allow(self):
+        # agy's "allow" auto-approves and skips the user's own approval setting;
+        # an object without a decision is a deny (both verified live on agy 1.4.7).
+        for command in ("ls", "git push", "openshell sandbox list"):
+            self.assertEqual(call("antigravity", "pre", payload("antigravity", command)),
+                             {"decision": "ask"}, command)
+        self.assertEqual(call("antigravity", "pre", "garbage"), {"decision": "ask"})
+        out = call("antigravity", "pre", payload("antigravity", "openshell workspace delete team"))
+        self.assertEqual(out["decision"], "force_ask")
+
+    def test_antigravity_always_proceed_turns_asks_into_denies(self):
+        home = tempfile.mkdtemp()
+        os.makedirs(os.path.join(home, ".gemini", "antigravity-cli"))
+        with open(os.path.join(home, ".gemini", "antigravity-cli", "settings.json"), "w") as fh:
+            json.dump({"toolPermission": "always-proceed"}, fh)
+        out = call("antigravity", "pre", payload("antigravity", "openshell workspace delete team"), home)
+        self.assertEqual(out["decision"], "deny")
+        self.assertIn("always-proceed", out["reason"])
+        self.assertEqual(call("antigravity", "pre", payload("antigravity", "ls"), home), {"decision": "ask"})
 
     def test_garbage_payload_fails_closed(self):
         self.assertEqual(decision("claude", call("claude", "pre", "{openshell")), "ask")

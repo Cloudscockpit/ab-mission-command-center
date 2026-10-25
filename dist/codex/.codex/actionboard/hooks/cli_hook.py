@@ -9,7 +9,8 @@ is never mistaken for an allow.
 
 Per-CLI "ask" handling:
   claude       native ask.
-  antigravity  native ask.
+  antigravity  native ask ("force_ask"), except under toolPermission
+               "always-proceed", which approves even that: there it is denied.
   codex        hooks cannot ask. An ask is passed through only when the command
                is one literal openshell call whose argv starts with the exact
                prefix of a "prompt" rule in .codex/rules/actionboard.rules;
@@ -31,6 +32,13 @@ STATIC_ASK = {
         "workspace-delete": ["openshell", "workspace", "delete"],
     },
 }
+
+# agy's toolPermission "always-proceed" approves even "force_ask" (verified live on
+# agy 1.4.7), so under it a guard ask is turned into a deny.
+AGY_SETTINGS = os.path.join("~", ".gemini", "antigravity-cli", "settings.json")
+AGY_ALWAYS_PROCEEDS = (" Antigravity is set to always-proceed (toolPermission), so it "
+                       "would run the command without asking; the guard blocked it "
+                       "instead. Run it yourself, or set toolPermission to request-review.")
 
 SHELL_TOOLS = {
     "claude": {"Bash", "PowerShell"},
@@ -61,16 +69,31 @@ def extract(cli, payload):
 
 def respond_pre(cli, decision, reason):
     if cli == "antigravity":
-        return {"decision": decision, "reason": reason} if decision != "allow" else {"decision": "allow"}
+        # agy's "allow" auto-approves and skips the user's approval setting, and an
+        # object without a decision is a deny. "ask" defers to that setting, so it is
+        # the neutral answer; a guard ask uses "force_ask", which always prompts.
+        if decision == "allow":
+            return {"decision": "ask"}
+        return {"decision": "force_ask" if decision == "ask" else decision, "reason": reason}
     if decision == "allow":
         return None
     return {"hookSpecificOutput": {"hookEventName": "PreToolUse", "permissionDecision": decision,
                                    "permissionDecisionReason": reason}}
 
 
+def agy_always_proceeds():
+    try:
+        with open(os.path.expanduser(AGY_SETTINGS), encoding="utf-8") as fh:
+            return json.load(fh).get("toolPermission") == "always-proceed"
+    except Exception:
+        return False
+
+
 def downgrade(cli, result, command, openshell):
     """Map an "ask" onto CLIs whose hooks cannot ask."""
     decision, reason = result["decision"], result["reason"]
+    if decision == "ask" and cli == "antigravity" and agy_always_proceeds():
+        return "deny", reason + AGY_ALWAYS_PROCEEDS
     if decision != "ask" or cli not in STATIC_ASK:
         return decision, reason
     prefix = STATIC_ASK[cli].get(result.get("rule"))
