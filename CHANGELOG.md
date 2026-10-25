@@ -28,6 +28,11 @@ Zero-footprint install: no clone left in your project, and uninstall without a c
 - D1: uninstall left `__pycache__/` folders that Python created beside installed hook scripts, so
   a project never returned to its pre-install listing. Uninstall now removes a `__pycache__/` only
   when every entry is a `.pyc` of a script it installed.
+- On Python 3.9 the uvx wrapper crashed with a traceback on a download error (for example "tag not
+  published yet") because closing an `HTTPError` without a body raises there. Closing is now
+  best-effort.
+- The installer no longer copies `__pycache__/` folders or `.pyc` files that local test runs leave in
+  `dist/` into user projects. Fresh clones and release tarballs were never affected.
 
 ### Known gaps / open
 - Bundle checksum pin for the downloaded tarball (Medium) is not implemented yet.

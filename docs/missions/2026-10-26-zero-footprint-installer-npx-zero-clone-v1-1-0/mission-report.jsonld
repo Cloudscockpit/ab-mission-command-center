@@ -320,7 +320,7 @@
       "agent": {
         "@id": "urn:voltron:lion:yellow"
       },
-      "actionStatus": "https://schema.org/ActiveActionStatus",
+      "actionStatus": "https://schema.org/CompletedActionStatus",
       "result": [
         {
           "@type": "DefinedTerm",
@@ -330,7 +330,7 @@
         {
           "@type": "DefinedTerm",
           "name": "outcome",
-          "description": "tests/install 55, tests/installer 23 (py) and 28+1 skipped (node) pass on Windows; 52/23/29 pass on Linux (WSL). New tests fail against the 1.0.0 installer. CI gains an npx-installer job on three OSes. Outstanding: acceptance requires CI green on a pushed branch, and nothing has been pushed, so macOS has never run."
+          "description": "tests/install 55, tests/installer 23 (py) and 28+1 skipped (node) pass on Windows; Linux (WSL) also green. New tests fail against the 1.0.0 installer. CI gains an npx-installer job on three OSes. The first CI run on pull request #1 failed the Python 3.9 legs on all three OSes (HTTPError.close crash in the uvx wrapper); a local 3.9 run then exposed stale dist/ bytecode being installed. Both fixed in edb7a24; CI run 40230139567 is green on all 16 jobs across Windows, macOS and Linux."
         }
       ],
       "object": [
@@ -354,11 +354,6 @@
           "@type": "PropertyValue",
           "name": "dependsOn",
           "value": "urn:voltron:mission:zero-footprint-installer-npx-zero-clone-v1-1-0:assignment:3"
-        },
-        {
-          "@type": "PropertyValue",
-          "name": "verificationOutstanding",
-          "value": "CI green on a pushed branch on Windows, macOS and Linux"
         }
       ]
     },
@@ -1087,7 +1082,7 @@
       "creator": {
         "@id": "urn:voltron:lion:main"
       },
-      "abstract": "Five of six assignments completed; regression-test assignment active pending CI on a pushed branch. Zero-footprint install verified live on three CLIs; npx usable once v1.1.0 is tagged and published.",
+      "abstract": "All six assignments completed; CI green on all 16 jobs after two Python 3.9 fixes. Zero-footprint install verified live on three CLIs; npx usable once v1.1.0 is tagged and published. Mission closed by the user.",
       "mainEntity": {
         "@type": "ItemList",
         "itemListElement": [
@@ -1189,7 +1184,7 @@
       "@type": "DefinedTerm",
       "@id": "urn:voltron:mission:zero-footprint-installer-npx-zero-clone-v1-1-0:criterion:4",
       "name": "Regression tests for zero leftover clone folders",
-      "description": "tests/install 55 pass; new tests fail on 1.0.0 (36 failures/errors)",
+      "description": "tests/install 55 pass; new tests fail on 1.0.0 (36 failures/errors); CI run 40230139567 green on Windows, macOS and Linux, Python 3.9 to 3.12",
       "inDefinedTermSet": {
         "@id": "urn:voltron:mission:zero-footprint-installer-npx-zero-clone-v1-1-0:success-criteria"
       },
