@@ -57,12 +57,30 @@ Goal: agents read a lightweight code graph instead of raw files.
 
    Before pinning, check the current release with Context7 or `https://pypi.org/pypi/graphifyy/json`
    and tell the user if a newer version exists; install the version the user agrees to.
-5. Build the graph offline (zero tokens, no API key):
+5. Build the graph offline (zero tokens, no API key). First make sure `.graphifyignore` in the
+   project root keeps agent tooling out of the graph: create it, or append only the lines that
+   are missing, so that it contains:
+
+   ```text
+   # ActionBoard: keep agent CLI tooling out of the code graph
+   .opencode/
+   .agents/
+   .codex/
+   .claude/
+   .actionboard/
+   graphify-out/
+   opencode.json
+   ```
+
+   Without it, the graph indexes the installed ActionBoard hooks and plugins instead of the
+   user's code. Then build:
 
    ```sh
    graphify extract . --code-only
    graphify cluster-only . --no-label --no-viz
    ```
+
+   On Windows the shell tool may be PowerShell rather than Bash; the commands are the same.
 
    Confirm `graphify-out/GRAPH_REPORT.md` exists. Suggest adding `graphify-out/` to
    `.gitignore`; do not edit `.gitignore` without asking.

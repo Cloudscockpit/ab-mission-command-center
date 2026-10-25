@@ -47,6 +47,17 @@ Multi-CLI rebuild of ActionBoard V5 Agent Formation (from the Claude-only v0.6.1
 - **Antigravity on Windows:** hooks failed because agy re-escapes quotes before `cmd /c`; the
   installer now writes the Python and hook paths unquoted unless they contain spaces (same for
   Codex `commandWindows`). Verified live on agy 1.4.7.
+- **Live smoke round 1** (all four CLIs pass the full mission; `tests/smoke/results-2026-10.md`):
+  - Claude Code: agents now list the Context7 MCP tools (preflight could not see Context7) and
+    `PowerShell` next to `Bash` (on Windows the shell tool can be PowerShell); the guard hook
+    matches `Bash|PowerShell`.
+  - Claude Code: `/start-mission` makes the main session play Black Agent. As a subagent it
+    rightly refused a relayed "go", so scoring never ran.
+  - Antigravity agents set `inheritMcp: true`.
+  - Preflight writes `.graphifyignore` so the graph covers the user's code, not agent tooling.
+  - Maturity rubric: Yellow Agent's own work is verified by Black Agent re-running Yellow's
+    exact test command (it could never pass the Action stage before).
+  - README: `opencode run "/start-mission …"` does not expand commands on OpenCode 2.x.
 - Green Agent's "10–50× cheaper" claim replaced with the measured `graphify benchmark` figure,
   and its `/graphify` suggestions with the offline `graphify update .` / preflight.
 

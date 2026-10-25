@@ -66,6 +66,10 @@ class Pre(unittest.TestCase):
                 got = decision(cli, call(cli, "pre", payload(cli, command)))
                 self.assertEqual(got, want, "%s / %s" % (cli, command))
 
+    def test_claude_powershell_tool_is_guarded(self):
+        out = call("claude", "pre", payload("claude", "openshell sandbox delete --all", "PowerShell"))
+        self.assertEqual(decision("claude", out), "deny")
+
     def test_other_tools_ignored(self):
         self.assertIsNone(call("claude", "pre", payload("claude", "openshell sandbox delete --all", "Read")))
         out = call("antigravity", "pre", payload("antigravity", "openshell sandbox delete --all", "view_file"))

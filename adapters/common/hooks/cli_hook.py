@@ -33,7 +33,7 @@ STATIC_ASK = {
 }
 
 SHELL_TOOLS = {
-    "claude": {"Bash"},
+    "claude": {"Bash", "PowerShell"},
     "codex": {"Bash", "shell", "exec_command", "local_shell"},
     "antigravity": {"run_command"},
 }

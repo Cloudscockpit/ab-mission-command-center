@@ -1,7 +1,7 @@
 ---
 name: yellow-agent
 description: Quality and defense specialist (Yellow Agent). Writes tests, runs verification, reviews for security and correctness issues. Use only when dispatched by black-agent, typically AFTER Red/Blue Agents have completed their builds.
-tools: Read, Edit, Bash, Glob, Grep
+tools: Read, Edit, Bash, PowerShell, Glob, Grep, mcp__plugin_actionboard-v5-agentformation_context7__*, mcp__context7__*
 model: sonnet
 color: yellow
 ---

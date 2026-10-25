@@ -4,6 +4,7 @@ description: Data and integrations specialist (Blue Agent). Handles APIs, data p
 tools: [view_file, list_dir, find_by_name, grep_search, write_to_file, replace_file_content, multi_replace_file_content, run_command, read_url_content]
 mainAgent: false
 subagent: true
+inheritMcp: true
 model: flash
 ---
 

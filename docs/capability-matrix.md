@@ -49,8 +49,10 @@ Real CLI runs in throwaway projects, with `openshell` absent from PATH so nothin
 |---|---|---|
 | OpenCode | **2.1.4** (`@opencode/cli`) | Six agents load with the right modes; v1-style `permission` rules are translated to 2.x `shell` rules; Context7 shows `connected`. **2.x dropped `tool.execute.before`** and renamed the shell tool to `shell`, so the 1.x plugin never fired. Replaced by a 2.x plugin (`default { id, setup }`, `ctx.permission.hook("evaluate")`, native **ask**). Live run: `openshell sandbox delete --all-workspaces` → `permission.rejected: ActionBoard guard: Refusing a cross-workspace sandbox delete…`. The 1.x plugin ships as `actionboard/legacy/` and `install.py` picks it when it detects OpenCode 1.x. |
 | Antigravity CLI | **1.4.7** | Workspace plugin loads and its PreToolUse hook runs. **Bug found and fixed:** agy re-escapes quotes as `\"` before `cmd /c`, so a quoted Python path failed; when the hook failed, agy blocked the tool (fail-closed, previously unverified). After the fix, live run → `tool call denied by pre-tool hook: Refusing a cross-workspace sandbox delete…`. |
-| Claude Code | 2.1.310 | `claude plugin validate` passes for the plugin and marketplace; Context7 connected. Live mission run pending (smoke 4.3). |
-| Codex CLI | not installed | Pending (assignment 2). |
+| Claude Code | 2.1.310 | Full mission passes (smoke 4.3). Fixed on the way: agents now list the Context7 MCP tools and `PowerShell` (the Windows shell tool), and `/start-mission` makes the main session play Black Agent, because a subagent Black refused the relayed "go" and nested dispatch was unreliable. **Nested delegation: ❌ in practice → session-plays-Black, as on every CLI.** |
+| Codex CLI | 0.164.0 | Full mission passes (smoke 6.6): `$start-mission`, `spawn_agent` with `green-agent` / `red-agent` / `yellow-agent` (hyphenated names work), Context7 from `config.toml`, offline graph, maturity summary. |
+
+Full round-1 results and the six defects fixed: `tests/smoke/results-2026-10.md`.
 
 ## Guard limits
 

@@ -1,7 +1,7 @@
 ---
 name: blue-agent
 description: Data and integrations specialist (Blue Agent). Handles APIs, data plumbing, persistence, external service wiring. Use only when dispatched by black-agent with a concrete assignment including file-ownership boundaries.
-tools: Read, Write, Edit, Bash, Glob, Grep, WebFetch
+tools: Read, Write, Edit, Bash, PowerShell, Glob, Grep, WebFetch, mcp__plugin_actionboard-v5-agentformation_context7__*, mcp__context7__*
 model: sonnet
 color: blue
 ---

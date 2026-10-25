@@ -4,6 +4,7 @@ description: Rapid execution specialist (Red Agent). Writes code, scaffolds feat
 tools: [view_file, list_dir, find_by_name, grep_search, write_to_file, replace_file_content, multi_replace_file_content, run_command]
 mainAgent: false
 subagent: true
+inheritMcp: true
 model: flash
 ---
 

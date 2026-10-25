@@ -229,11 +229,21 @@ class Lint(unittest.TestCase):
             self.assertTrue(body.lstrip("\n").startswith("# "), path)
 
     def test_claude_agents(self):
-        allowed = {"Read", "Write", "Edit", "Bash", "Glob", "Grep", "WebFetch", "WebSearch", "Agent", "Skill"}
+        context7 = {"mcp__plugin_actionboard-v5-agentformation_context7__*", "mcp__context7__*"}
+        allowed = {"Read", "Write", "Edit", "Bash", "PowerShell", "Glob", "Grep", "WebFetch", "WebSearch",
+                   "Agent", "Skill"} | context7
         for path in walk(os.path.join(DIST, "claude", "agents"), ".md"):
             meta, _ = frontmatter.split(read(path))
-            self.assertTrue(set(meta["tools"].split(", ")) <= allowed, path)
+            tools = set(meta["tools"].split(", "))
+            self.assertTrue(tools <= allowed, path)
+            # Smoke 2026-10-25: a tools list without MCP entries hid Context7 from Black Agent.
+            self.assertTrue(context7 <= tools, path)
+            # Smoke 2026-10-25: on Windows the shell tool can be PowerShell; Bash alone left none.
+            self.assertEqual("Bash" in tools, "PowerShell" in tools, path)
             self.assertIn(meta["model"], ("opus", "sonnet", "inherit"))
+        for path in walk(os.path.join(DIST, "antigravity", "agents"), ".md"):
+            meta, _ = frontmatter.split(read(path))
+            self.assertIs(meta.get("inheritMcp"), True, path)
 
 
 if __name__ == "__main__":

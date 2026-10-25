@@ -52,7 +52,7 @@ fresh `@id`s records nothing, because nothing links back to what was promised.
       | Orchestrator | The assignment, its file ownership, and its dispatch order were right for the goal; no ownership conflict or re-plan was needed |
       | Data | The inputs (recon, files, upstream outputs) were located, current, and complete |
       | Analysis | The approach the Agent took was correct for the goal; no rework was needed |
-      | Action | The acceptance criterion was met on the first attempt and verified by someone other than the Agent that did the work (normally Yellow Agent) |
+      | Action | The acceptance criterion was met on the first attempt and verified by someone other than the Agent that did the work. For Red and Blue work that is Yellow Agent. For Yellow Agent's own work (tests, reviews), Black Agent verifies it by re-running the exact test command from Yellow's report and comparing the result; record that command and its outcome as the evidence |
       | Defense/Audit | No policy or guard violation, no High security finding, no unlogged side effect, and the Agent's `Files created/changed:` list matches what actually changed |
 
    3. **Record the run** in the project's registry (`.actionboard/registry.json`, committed as

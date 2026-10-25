@@ -4,6 +4,7 @@ description: Owns OpenShell sandbox lifecycle — provisioning, policy iteration
 tools: [view_file, list_dir, find_by_name, grep_search, run_command]
 mainAgent: false
 subagent: true
+inheritMcp: true
 model: inherit
 ---
 

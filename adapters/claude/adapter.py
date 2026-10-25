@@ -11,6 +11,8 @@ from aflib.model import adapter_file, adapter_tree, bash_mode, caps, render_text
 NAME = "claude"
 LABEL = "Claude Code"
 MODELS = {"strong": "opus", "fast": "sonnet", "inherit": "inherit"}
+# Plugin-bundled MCP tools are named mcp__plugin_<plugin>_<server>__<tool>.
+CONTEXT7_PLUGIN_TOOLS = "mcp__plugin_actionboard-v5-agentformation_context7__*"
 
 TOOLS = {
     "dispatch": "the `Agent` tool",
@@ -46,7 +48,9 @@ def tools(agent):
     if c["edit"]:
         out.append("Edit")
     if bash != "deny":
-        out.append("Bash")
+        # Claude Code on Windows may expose the shell as PowerShell instead of
+        # Bash; a subagent listing only Bash then has no shell at all.
+        out += ["Bash", "PowerShell"]
     if c["read"]:
         out += ["Glob", "Grep"]
     if c["webfetch"]:
@@ -57,6 +61,10 @@ def tools(agent):
         out.append("Agent")
     if c["skills"]:
         out.append("Skill")
+    # Context7 is mandatory for every agent (operating policy). A tools list
+    # without MCP entries hides it from subagents, so name both the server this
+    # plugin bundles and a user-configured `context7` server.
+    out += [CONTEXT7_PLUGIN_TOOLS, "mcp__context7__*"]
     return out
 
 

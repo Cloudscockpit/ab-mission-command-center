@@ -4,6 +4,7 @@ description: Recon specialist (Green Agent). Inventories the project and surface
 tools: [view_file, list_dir, find_by_name, grep_search, run_command, read_url_content, search_web]
 mainAgent: false
 subagent: true
+inheritMcp: true
 model: flash
 ---
 

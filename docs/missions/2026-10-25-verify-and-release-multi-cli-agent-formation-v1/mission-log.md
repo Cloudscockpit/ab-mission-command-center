@@ -56,14 +56,33 @@ This mission's own Mission Report will be the first to carry the section.
 
 Files created/changed: `src/skills/actionboard-devops-mission/scripts/maturity.py`, `src/skills/actionboard-devops-mission/SKILL.md`, `src/skills/actionboard-devops-mission/assets/mission-report-template.md`, `src/skills/mission-report/SKILL.md`, `src/skills/actionboard-kb/references/mission-knowledge-format.md`, `src/skills/skills-registry/actions-map.json`, `src/agents/black-agent.md`, `tests/maturity/test_maturity.py`, `tests/build/test_build.py`, `.github/workflows/ci.yml`, `.gitignore`, `README.md`, `CHANGELOG.md`, `mission-plan.md`, `mission-plan.jsonld`, this log, `dist/` (regenerated).
 
+## Assignment 2 (Codex bring-up) and Assignment 3 (smoke round 1) — done
+
+The user installed Codex CLI 0.164.0 (standalone, signed in with ChatGPT), approved token spend for
+full `/start-mission` runs, chose terse output on and operator level L4, and asked to leave the
+Claude Code Graphify skill untouched. A power outage interrupted the first round of runs; they
+were restarted from a checked state.
+
+All four CLIs now pass the full mission end to end: preflight, Green recon, the four-part report,
+the go/no-go stop, implementation, tests (verified by re-running them independently), registry
+writes, and the Maturity & Progress Summary. Six defects were found and fixed along the way; see
+`tests/smoke/results-2026-10.md`.
+
+Files created/changed: `tests/smoke/results-2026-10.md`, `src/commands/start-mission.md`,
+`src/agents/black-agent.md`, `src/skills/mission-report/SKILL.md`,
+`src/skills/mission-preflight/SKILL.md`, `adapters/claude/adapter.py`,
+`adapters/claude/hooks/hooks.json`, `adapters/antigravity/adapter.py`,
+`adapters/common/hooks/cli_hook.py`, `tests/build/test_build.py`, `tests/guard/test_cli_hook.py`,
+`README.md`, `dist/` (regenerated).
+
 ## Assignment status
 
 | # | Agent | Assignment | Status | Next step |
 |---|---|---|---|---|
 | 1 | Green | Environment recon | Done | — |
-| 2 | Blue | Codex CLI bring-up | Blocked | The user installs Codex (`npm i -g @openai/codex`) and runs `codex login`. |
-| 3 | Yellow | Live smoke round 1 (Claude Code, OpenCode, Antigravity) | In progress | Guard checks passed live on OpenCode and Antigravity. Full `/start-mission` runs are next; they spend model tokens on each CLI. |
-| 4 | Red | Fix defects and cut release candidate | Waiting on 2 and 3 | — |
+| 2 | Blue | Codex CLI bring-up | Done | Codex 0.164.0 passed the full mission. |
+| 3 | Yellow | Live smoke round 1 (Claude Code, OpenCode, Antigravity) | Done | All four CLIs pass; six defects fixed. |
+| 4 | Red | Fix defects and cut release candidate | In progress | Defect fixes are in; next: set `src/VERSION` to 1.0.0 and regenerate. |
 | 5 | Yellow | Regression tests, Codex smoke, retest | Waiting on 4 | — |
 | 6 | Red | Release documentation | Waiting on 5 | — |
 | 7 | Blue | Deprecation note on the v0.6.1 repository | Waiting on 6; needs the user's approval before the pull request is created | — |

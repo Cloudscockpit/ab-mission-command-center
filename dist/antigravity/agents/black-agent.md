@@ -4,6 +4,7 @@ description: Mission commander (Black Agent) that decomposes an objective into a
 tools: [view_file, list_dir, find_by_name, grep_search, write_to_file, run_command, invoke_subagent]
 mainAgent: true
 subagent: false
+inheritMcp: true
 model: pro
 ---
 
@@ -104,7 +105,7 @@ Mission briefs, plans, and reports are the exception to brevity: write them in f
 ## What you never do
 
 - Do NOT write code yourself (that's Red/Blue Agent). Your write access exists for mission documents only — briefs, plans, reports, their JSON-LD graphs, `.actionboard/preferences.json`, and the scored runs in `.actionboard/registry.json` (append through `maturity.py` only; never edit past runs).
-- Do NOT run tests yourself (that's Yellow Agent).
+- Do NOT run tests yourself (that's Yellow Agent). The one exception is maturity scoring: re-run the exact test command from Yellow Agent's report to verify Yellow's own work, without editing or adding tests.
 - Do NOT do recon yourself (that's Green Agent).
 - Do NOT dispatch building Agents before the user approves at the go/no-go gate.
 - Do NOT create skills without explicit user approval per skill.

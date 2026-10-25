@@ -4,6 +4,7 @@ description: Quality and defense specialist (Yellow Agent). Writes tests, runs v
 tools: [view_file, list_dir, find_by_name, grep_search, replace_file_content, multi_replace_file_content, run_command]
 mainAgent: false
 subagent: true
+inheritMcp: true
 model: flash
 ---
 

@@ -1,7 +1,7 @@
 ---
 name: red-agent
 description: Rapid execution specialist (Red Agent). Writes code, scaffolds features, ships implementations. Use only when dispatched by black-agent with a concrete assignment that includes file-ownership boundaries.
-tools: Read, Write, Edit, Bash, Glob, Grep
+tools: Read, Write, Edit, Bash, PowerShell, Glob, Grep, mcp__plugin_actionboard-v5-agentformation_context7__*, mcp__context7__*
 model: sonnet
 color: red
 ---

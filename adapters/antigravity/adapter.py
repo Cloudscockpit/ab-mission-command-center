@@ -92,6 +92,7 @@ def build(src, out, models):
         meta["tools"] = tools(a)
         meta["mainAgent"] = primary
         meta["subagent"] = not primary
+        meta["inheritMcp"] = True  # Context7 is mandatory for every agent
         meta["model"] = models.get(a.meta.get("model_tier", "inherit"), "inherit")
         meta.update(a.meta.get("x-" + NAME) or {})
         body = "\n# %s\n\n%s" % (title(a.name), agent_body(a, NAME, TOOLS, LABEL, GLOSSARY).lstrip("\n"))
