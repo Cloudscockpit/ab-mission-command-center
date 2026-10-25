@@ -130,6 +130,25 @@ and field intact, whatever is enabled. Every agent report ends with a `Files cre
 
 ActionBoard works with Caveman but is not Caveman and is not endorsed by its author.
 
+## AI-ops maturity: every mission counts
+
+At the end of every mission, Black Agent scores each dispatched assignment on the five formation
+stages, records the run in `.actionboard/registry.json` (commit it: it is your evidence), and
+adds a **Maturity & Progress Summary** to the mission report:
+
+| Action | Tier (threshold) | Orchestrator | Data | Analysis | Action | Defense/Audit | Clean Run | Clean runs | Execution mode | Next milestone |
+|---|---|---|---|---|---|---|---|---|---|---|
+| Code implementation (`code-implementation`) | T1 (≥90%) | ✅ pass · 100% | ✅ pass · 67% | ✅ pass · 100% | ✅ pass · 100% | ✅ pass · 100% | Yes | 2/3 | Guided → **Actionlist** → Autonomous | Raise Data 67% → 90% (≈7 more passing run(s)), then reach 3 clean runs to unlock Autonomous. |
+
+- Each kind of work (an action type such as `code-implementation`) earns autonomy separately:
+  **Guided → Actionlist → Autonomous**, once every stage stays at or above the tier threshold
+  and enough clean runs exist (T1: 90% and 3 runs, T2: 90% and 5, T3: 95% and 10; T4 never).
+- Only the last 20 runs within 90 days count, so maturity also drops when quality drops.
+- The numbers come from `maturity.py`, which uses the formation gate's own rules
+  (`gate_check.py`). An unscored stage is a fail, and a retry-to-green fails the Action stage.
+- Your operator level (L1–L7) is a certification you provide in `.actionboard/config.json`.
+  Missions never raise it; it caps the highest tier that may run autonomously.
+
 ## Known gaps
 
 | CLI | Gap | Effect |

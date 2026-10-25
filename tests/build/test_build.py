@@ -184,6 +184,19 @@ class Lint(unittest.TestCase):
                 self.assertTrue(os.path.exists(os.path.join(skills, "terse-output", f)), (t, f))
             self.assertTrue(os.path.exists(os.path.join(skills, "mission-preflight", "SKILL.md")), t)
 
+    def test_maturity_summary_reaches_every_target(self):
+        skill_dirs = {"claude": ("claude", "skills"), "opencode": ("opencode", "skills"),
+                      "antigravity": ("antigravity", "skills"), "codex": ("codex", ".agents", "skills")}
+        for t, parts in skill_dirs.items():
+            skills = os.path.join(DIST, *parts)
+            report = read(skills, "mission-report", "SKILL.md")
+            self.assertIn("## Maturity & Progress Summary", report, t)
+            self.assertIn("actionboard-devops-mission/scripts/maturity.py", report, t)
+            self.assertTrue(os.path.exists(os.path.join(
+                skills, "actionboard-devops-mission", "scripts", "maturity.py")), t)
+            self.assertIn("## Maturity & Progress Summary", read(
+                skills, "actionboard-devops-mission", "assets", "mission-report-template.md"), t)
+
     def test_context7_configured_for_every_target(self):
         url = "https://mcp.context7.com/mcp"
         self.assertEqual(json.loads(read(DIST, "claude", ".mcp.json"))["mcpServers"]["context7"],

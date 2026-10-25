@@ -28,6 +28,17 @@ Multi-CLI rebuild of ActionBoard V5 Agent Formation (from the Claude-only v0.6.1
   - `install.py --with graphify,terse` / `--without …`, with an explanatory note before each prompt.
   - Registry actions `version-lookup`, `mission-preflight`, `output-compression`.
 
+- **AI-ops maturity from every mission:**
+  - `actionboard-devops-mission/scripts/maturity.py`: `record` appends a scored run to
+    `.actionboard/registry.json`; `summary` renders the Maturity & Progress Summary using the
+    formation gate's own rules (stage scores, Clean Run, tier, `3/5` clean runs, Guided →
+    Actionlist → Autonomous, next milestone with the number of runs needed).
+  - Every mission report (the `mission-report` skill and the DevOps report template) now has a
+    mandatory `## Maturity & Progress Summary` section, plus one `MaturityProgress` node per
+    scored assignment in the JSON-LD.
+  - Black Agent scores and records every mission at the end, whether or not it is written to disk.
+  - Registry action `maturity-scoring`. Operator level stays a user-provided certification.
+
 ### Fixed
 - **OpenCode 2.x:** the guard never fired, because 2.x removed `tool.execute.before` and renamed
   the shell tool to `shell`. New 2.x plugin uses `ctx.permission.hook("evaluate")` (native ask)

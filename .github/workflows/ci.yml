@@ -33,6 +33,8 @@ jobs:
         run: python -m unittest discover -s tests/build -v
       - name: Installer round trip
         run: python -m unittest discover -s tests/install -v
+      - name: Maturity scoring and summary
+        run: python -m unittest discover -s tests/maturity -v
 
   opencode-plugin:
     runs-on: ubuntu-latest

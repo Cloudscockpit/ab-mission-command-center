@@ -218,6 +218,21 @@
       ],
       "requires": "user enabled terse output during mission-preflight",
       "status": "conditional"
+    },
+    {
+      "action": "maturity-scoring",
+      "agent": "black-agent",
+      "description": "Score each dispatched assignment on the five formation stages, record the run in .actionboard/registry.json, and render the Maturity & Progress Summary",
+      "requiredTools": [
+        "Bash",
+        "Write"
+      ],
+      "skills": [
+        "mission-report",
+        "actionboard-devops-mission"
+      ],
+      "requires": "operator's certified level (L1-L7) from .actionboard/config.json or the user; never assumed",
+      "status": "covered"
     }
   ]
 }

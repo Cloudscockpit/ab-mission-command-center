@@ -27,6 +27,16 @@ partially, say which actions landed and which did not. No hedging: the end
 condition was checkable or it was not, and if it was not, that is the first
 finding.>
 
+## Maturity & Progress Summary
+
+<Paste the output of `python scripts/maturity.py summary --registry <registry> --mission
+<mission-id>` verbatim, after recording each action's run with `maturity.py record`. Never
+edit the numbers by hand: they come from the same rules as `gate_check.py`.>
+
+| Action | Tier (threshold) | Orchestrator | Data | Analysis | Action | Defense/Audit | Clean Run | Clean runs | Execution mode | Next milestone |
+|---|---|---|---|---|---|---|---|---|---|---|
+| <name> (`<id>`) | T<n> (≥90%) | ✅ pass · 100% | ✅ pass · 67% | ✅ pass · 100% | ✅ pass · 100% | ✅ pass · 100% | Yes / No — failed: <stages> | <clean>/<required> | Guided → **Actionlist** → Autonomous | <what unlocks the next level> |
+
 ## 2. Gate check at plan time
 
 Verdicts from `gate_check.py` before execution, and the mode each action actually

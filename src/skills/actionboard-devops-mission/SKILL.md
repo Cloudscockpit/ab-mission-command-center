@@ -85,6 +85,18 @@ A stage that cannot be scored counts as a failure, not as absent. Unscoreable st
 
 Write the mission report using `{{skill_dir}}/assets/mission-report-template.md`. The report is the evidence artifact — it is what an auditor reads and what the next run of this pattern starts from. Include stage scores, gate movements, and any regression.
 
+Record each action's scored run, then render the report's mandatory **Maturity & Progress Summary** section:
+
+```sh
+python "{{skill_dir}}/scripts/maturity.py" record --registry .actionboard/registry.json \
+  --mission <mission-id> --action <action-id> --run-id <mission-id>-<n> --mode <mode> \
+  --stages orchestrator=pass,data=pass,analysis=pass,action=pass,defense=pass
+python "{{skill_dir}}/scripts/maturity.py" summary --registry .actionboard/registry.json \
+  --mission <mission-id> --operator-level <L1-L7>
+```
+
+Paste the summary output verbatim. It uses the gate's own rules, so it cannot disagree with `gate_check.py`.
+
 ## Handling gate failures
 
 When an action fails the gate, the useful response is diagnostic, not apologetic. Identify which stage is dragging the rate down and what the failures have in common. A data stage at 70% usually means a source is stale or an input is ambiguous. An analysis stage at 70% usually means the goal is underspecified. An action stage at 70% with the others clean usually means the end condition is wrong, not the execution.
@@ -104,6 +116,7 @@ All paths below are relative to `{{skill_dir}}/`.
 - `references/formation-gate.md` — thresholds, stage scoring, maturity floors, regression handling
 - `references/mission-modes.md` — mode selection, promotion and demotion rules
 - `scripts/gate_check.py` — computes per-action verdicts from registry history
+- `scripts/maturity.py` — `record` appends a scored run; `summary` renders the Maturity & Progress Summary with the gate's own rules
 - `scripts/backfill_registry.py` — seeds a registry from git or CI history; backfilled runs are context, never eligibility
 - `assets/action-registry.schema.json` — registry record shape
 - `assets/mission-report-template.md` — required report structure

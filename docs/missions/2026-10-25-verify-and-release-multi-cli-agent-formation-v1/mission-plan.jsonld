@@ -39,7 +39,7 @@
       "creator": {
         "@id": "urn:voltron:lion:main"
       },
-      "abstract": "7 assignments, 13 skills-gap entries, 12 risks. Awaiting go/no-go.",
+      "abstract": "7 assignments, 14 skills-gap entries, 14 risks. Awaiting go/no-go.",
       "mainEntity": {
         "@type": "ItemList",
         "itemListElement": [
@@ -104,6 +104,9 @@
             "@id": "urn:voltron:mission:verify-and-release-multi-cli-agent-formation-v1:gap:13"
           },
           {
+            "@id": "urn:voltron:mission:verify-and-release-multi-cli-agent-formation-v1:gap:14"
+          },
+          {
             "@id": "urn:voltron:mission:verify-and-release-multi-cli-agent-formation-v1:risk:1"
           },
           {
@@ -138,6 +141,12 @@
           },
           {
             "@id": "urn:voltron:mission:verify-and-release-multi-cli-agent-formation-v1:risk:12"
+          },
+          {
+            "@id": "urn:voltron:mission:verify-and-release-multi-cli-agent-formation-v1:risk:13"
+          },
+          {
+            "@id": "urn:voltron:mission:verify-and-release-multi-cli-agent-formation-v1:risk:14"
           }
         ]
       }
@@ -255,7 +264,7 @@
       "@type": "Action",
       "@id": "urn:voltron:mission:verify-and-release-multi-cli-agent-formation-v1:assignment:3",
       "name": "Live smoke round 1 (Claude Code, OpenCode, Antigravity)",
-      "description": "Run smoke tests 4.3, 4.4 (parity vs v0.6.1), 5.8 and 7.6 from tests/smoke/README.md in throwaway repos with the stub openshell first on PATH. Objective: add a /hello endpoint. Check the four-part report, the go/no-go stop, Green running as a separate agent, the / menu entries (/mission-brief, /mission-plan, ...), guard deny/ask behaviour, and the cost layer: preflight asks both opt-in questions with their notes and records .actionboard/preferences.json, Context7 answers, Green recon is graph-backed, and with terse output on the brief/plan/report stay in full prose and every Agent report ends with Files created/changed. Record failures; do not fix them.",
+      "description": "Run smoke tests 4.3, 4.4 (parity vs v0.6.1), 5.8 and 7.6 from tests/smoke/README.md in throwaway repos with the stub openshell first on PATH. Objective: add a /hello endpoint. Check the four-part report, the go/no-go stop, Green running as a separate agent, the / menu entries (/mission-brief, /mission-plan, ...), guard deny/ask behaviour, and the cost layer: preflight asks both opt-in questions with their notes and records .actionboard/preferences.json, Context7 answers, Green recon is graph-backed, and with terse output on the brief/plan/report stay in full prose and every Agent report ends with Files created/changed, and each completed mission scores its assignments into .actionboard/registry.json and shows the Maturity & Progress Summary. Record failures; do not fix them.",
       "agent": {
         "@id": "urn:voltron:lion:yellow"
       },
@@ -338,7 +347,7 @@
       "@type": "Action",
       "@id": "urn:voltron:mission:verify-and-release-multi-cli-agent-formation-v1:assignment:5",
       "name": "Regression tests, Codex smoke and retest",
-      "description": "Add a failing-before/passing-after test for every defect fixed in the previous assignment; add the new test directory to CI; run smoke 6.6 (Codex) and re-run every failed row on the release candidate; security re-review any change under src/hooks/ or adapters/*/hooks.",
+      "description": "Add a failing-before/passing-after test for every defect fixed in the previous assignment; add the new test directory to CI; run smoke 6.6 (Codex) and re-run every failed row on the release candidate; security re-review any change under src/hooks/ or adapters/*/hooks; confirm that repeated smoke missions move clean-run counts in .actionboard/registry.json and that the summary matches gate_check.py.",
       "agent": {
         "@id": "urn:voltron:lion:yellow"
       },
@@ -772,6 +781,23 @@
     {
       "@type": "DefinedTerm",
       "@id": "urn:voltron:mission:verify-and-release-multi-cli-agent-formation-v1:gap:13",
+      "name": "AI-ops maturity scoring (5 stages, clean runs, execution mode, next milestone)",
+      "additionalProperty": [
+        {
+          "@type": "PropertyValue",
+          "name": "status",
+          "value": "use-existing-skill:mission-report"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "notes",
+          "value": "maturity-scoring -> black-agent via maturity.py (gate_check.py rules); needs the operator level from .actionboard/config.json or the user, never assumed"
+        }
+      ]
+    },
+    {
+      "@type": "DefinedTerm",
+      "@id": "urn:voltron:mission:verify-and-release-multi-cli-agent-formation-v1:gap:14",
       "name": "Mission report with JSON-LD",
       "additionalProperty": [
         {
@@ -882,6 +908,52 @@
       "@type": "Thing",
       "@id": "urn:voltron:mission:verify-and-release-multi-cli-agent-formation-v1:risk:5",
       "additionalType": "Risk",
+      "name": "Self-scoring inflates maturity, so actions reach Autonomous without real evidence",
+      "additionalProperty": [
+        {
+          "@type": "PropertyValue",
+          "name": "category",
+          "value": "scope"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "severity",
+          "value": "H"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "mitigation",
+          "value": "Unscored stage = fail; retry-to-green fails the Action stage; Action passes only when someone other than the doing Agent verified it; numbers only from maturity.py (gate rules, 20-run window, 90 days); operator level is never raised by a mission; the committed registry makes every score reviewable in a diff"
+        }
+      ]
+    },
+    {
+      "@type": "Thing",
+      "@id": "urn:voltron:mission:verify-and-release-multi-cli-agent-formation-v1:risk:6",
+      "additionalType": "Risk",
+      "name": "Parallel missions conflict on .actionboard/registry.json",
+      "additionalProperty": [
+        {
+          "@type": "PropertyValue",
+          "name": "category",
+          "value": "integration"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "severity",
+          "value": "L"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "mitigation",
+          "value": "Runs are append-only with unique run ids; resolve by keeping both runs; split per action if it recurs"
+        }
+      ]
+    },
+    {
+      "@type": "Thing",
+      "@id": "urn:voltron:mission:verify-and-release-multi-cli-agent-formation-v1:risk:7",
+      "additionalType": "Risk",
       "name": "Claude Code subagents cannot dispatch subagents, so Black-as-subagent never runs Green",
       "additionalProperty": [
         {
@@ -903,7 +975,7 @@
     },
     {
       "@type": "Thing",
-      "@id": "urn:voltron:mission:verify-and-release-multi-cli-agent-formation-v1:risk:6",
+      "@id": "urn:voltron:mission:verify-and-release-multi-cli-agent-formation-v1:risk:8",
       "additionalType": "Risk",
       "name": "Codex assumptions are wrong (hyphenated names, Windows hook quoting, exec_command payload)",
       "additionalProperty": [
@@ -926,7 +998,7 @@
     },
     {
       "@type": "Thing",
-      "@id": "urn:voltron:mission:verify-and-release-multi-cli-agent-formation-v1:risk:7",
+      "@id": "urn:voltron:mission:verify-and-release-multi-cli-agent-formation-v1:risk:9",
       "additionalType": "Risk",
       "name": "Antigravity workspace plugin loads but the hook 'allow' result auto-approves commands",
       "additionalProperty": [
@@ -949,7 +1021,7 @@
     },
     {
       "@type": "Thing",
-      "@id": "urn:voltron:mission:verify-and-release-multi-cli-agent-formation-v1:risk:8",
+      "@id": "urn:voltron:mission:verify-and-release-multi-cli-agent-formation-v1:risk:10",
       "additionalType": "Risk",
       "name": "Model nondeterminism makes smoke results flaky",
       "additionalProperty": [
@@ -972,7 +1044,7 @@
     },
     {
       "@type": "Thing",
-      "@id": "urn:voltron:mission:verify-and-release-multi-cli-agent-formation-v1:risk:9",
+      "@id": "urn:voltron:mission:verify-and-release-multi-cli-agent-formation-v1:risk:11",
       "additionalType": "Risk",
       "name": "Private repo blocks marketplace / agy installs from GitHub on other machines",
       "additionalProperty": [
@@ -995,7 +1067,7 @@
     },
     {
       "@type": "Thing",
-      "@id": "urn:voltron:mission:verify-and-release-multi-cli-agent-formation-v1:risk:10",
+      "@id": "urn:voltron:mission:verify-and-release-multi-cli-agent-formation-v1:risk:12",
       "additionalType": "Risk",
       "name": "Optional work creeps in (npx/uvx package, default non-Anthropic model maps, new CLIs)",
       "additionalProperty": [
@@ -1018,7 +1090,7 @@
     },
     {
       "@type": "Thing",
-      "@id": "urn:voltron:mission:verify-and-release-multi-cli-agent-formation-v1:risk:11",
+      "@id": "urn:voltron:mission:verify-and-release-multi-cli-agent-formation-v1:risk:13",
       "additionalType": "Risk",
       "name": "Installer or smoke runs edit a real project's AGENTS.md or .codex/hooks.json",
       "additionalProperty": [
@@ -1041,7 +1113,7 @@
     },
     {
       "@type": "Thing",
-      "@id": "urn:voltron:mission:verify-and-release-multi-cli-agent-formation-v1:risk:12",
+      "@id": "urn:voltron:mission:verify-and-release-multi-cli-agent-formation-v1:risk:14",
       "additionalType": "Risk",
       "name": "CLI updates change formats between test and release",
       "additionalProperty": [

@@ -45,6 +45,7 @@ Identifiers are opaque URNs so they stay stable when files move between repos.
 | Agent assignment | `urn:voltron:mission:{slug}:assignment:{n}` | per mission |
 | Skills-gap entry | `urn:voltron:mission:{slug}:gap:{n}` | per mission |
 | Risk | `urn:voltron:mission:{slug}:risk:{n}` | per mission |
+| Maturity progress | `urn:voltron:mission:{slug}:maturity:{n}` (`{n}` = the assignment number) | per mission |
 | Owned file | `urn:voltron:file:{repo-relative-path}` | **global** |
 | Agent | `urn:voltron:lion:{red\|blue\|green\|yellow\|main}` | **global** |
 
@@ -75,6 +76,7 @@ assignments, how often Yellow Agent blocked on the same acceptance criterion.
 | Success criterion | `DefinedTerm` | `name`, `description`, `inDefinedTermSet` |
 | Skills-gap entry | `DefinedTerm` | `name` (capability), `additionalProperty` |
 | Risk | `Thing` | `name`, `description`, `additionalType: "Risk"`, `additionalProperty` |
+| Maturity progress (report only) | `Thing` | `name` (action id), `about` (the assignment `@id`), `additionalType: "MaturityProgress"`, `additionalProperty` |
 | Scope / Out-of-scope / Success Criteria / Constraints | `ItemList` (container) wrapping `DefinedTerm` items | `name`, `itemListElement` |
 
 **Why `Organization` for a Agent.** schema.org restricts the range of `Action.agent` to
@@ -106,6 +108,47 @@ A blocked assignment additionally carries `error` with the blocking reason as a 
 
 Skills-gap status uses the mission vocabulary unchanged, as an `additionalProperty` value:
 `covered`, `use-existing-skill:{name}`, or `needs-new-skill`.
+
+## Maturity progress
+
+Every mission report carries a `## Maturity & Progress Summary` section, produced by the
+`actionboard-devops-mission` skill's `scripts/maturity.py` from `.actionboard/registry.json`.
+It applies the same rules as the formation gate (`gate_check.py`). In the graph, each scored
+assignment gets one `MaturityProgress` node. Every value is an `additionalProperty`
+`PropertyValue`:
+
+| `name` | `value` |
+|---|---|
+| `actionId` | Registry action id, for example `code-implementation` |
+| `stage:orchestrator`, `stage:data`, `stage:analysis`, `stage:action`, `stage:defense` | `pass` or `fail` for this run |
+| `rate:orchestrator` … `rate:defense` | Pass rate across the scoring window, `0`–`1` |
+| `cleanRun` | `true` when all five stages passed on a scored, first-attempt run |
+| `riskTier` | `T1`–`T4` |
+| `cleanRuns` | `"3/5"` (clean runs in the window / required for the tier) |
+| `executionMode` | `guided`, `actionlist`, or `autonomous` (the gate's verdict) |
+| `nextMilestone` | What unlocks the next level, as one sentence |
+
+```json
+{
+  "@type": "Thing",
+  "@id": "urn:voltron:mission:add-health-endpoint:maturity:1",
+  "additionalType": "MaturityProgress",
+  "name": "code-implementation",
+  "about": { "@id": "urn:voltron:mission:add-health-endpoint:assignment:1" },
+  "additionalProperty": [
+    { "@type": "PropertyValue", "name": "stage:action", "value": "pass" },
+    { "@type": "PropertyValue", "name": "cleanRun", "value": true },
+    { "@type": "PropertyValue", "name": "cleanRuns", "value": "3/5" },
+    { "@type": "PropertyValue", "name": "executionMode", "value": "actionlist" },
+    { "@type": "PropertyValue", "name": "nextMilestone",
+      "value": "2 more clean run(s) (3/5) to unlock Autonomous." }
+  ]
+}
+```
+
+Across missions these nodes answer "which kinds of work are close to autonomy, and which stage
+holds each one back". Maturity belongs to actions, never to the operator. The operator's
+certified level (L1–L7) is an input and no mission raises it.
 
 ## Output location
 

@@ -42,6 +42,20 @@ Files created/changed: none.
 
 Files created/changed: `adapters/opencode/plugins/actionboard-guard.ts`, `adapters/opencode/actionboard/guard-client.ts`, `adapters/opencode/legacy/actionboard-guard.v1.ts`, `adapters/opencode/adapter.py`, `adapters/antigravity/hooks.json`, `adapters/antigravity/adapter.py`, `adapters/codex/hooks.json`, `adapters/codex/adapter.py`, `scripts/install.py`, `tests/opencode/plugin.test.mjs`, `tests/install/test_install.py`, `docs/capability-matrix.md`, `README.md`, `CHANGELOG.md`, `dist/` (regenerated).
 
+## Scope addition: AI-ops maturity in every mission report (user request)
+
+| Change | Where |
+|---|---|
+| `maturity.py record` / `summary`, built on `gate_check.py` (same tiers, thresholds, 20-run window, 90-day staleness, clean-run rule) | `src/skills/actionboard-devops-mission/scripts/maturity.py` |
+| Mandatory `## Maturity & Progress Summary` section: 5-stage breakdown, Clean Run, tier, clean runs (for example 3/5), Guided → Actionlist → Autonomous, next milestone | `mission-report` skill, DevOps report template, KB format (`MaturityProgress` node) |
+| Black Agent scores and records every mission at the end, even when nothing is written to disk | `src/agents/black-agent.md` |
+| 17 new tests, including one proving the execution mode always equals `gate_check.py`'s verdict; CI step added | `tests/maturity/test_maturity.py`, `.github/workflows/ci.yml` |
+| Mission plan updated: baseline note, smoke and retest checks, Skills Gap row, two new risks | `mission-plan.md`, `mission-plan.jsonld` |
+
+This mission's own Mission Report will be the first to carry the section.
+
+Files created/changed: `src/skills/actionboard-devops-mission/scripts/maturity.py`, `src/skills/actionboard-devops-mission/SKILL.md`, `src/skills/actionboard-devops-mission/assets/mission-report-template.md`, `src/skills/mission-report/SKILL.md`, `src/skills/actionboard-kb/references/mission-knowledge-format.md`, `src/skills/skills-registry/actions-map.json`, `src/agents/black-agent.md`, `tests/maturity/test_maturity.py`, `tests/build/test_build.py`, `.github/workflows/ci.yml`, `.gitignore`, `README.md`, `CHANGELOG.md`, `mission-plan.md`, `mission-plan.jsonld`, this log, `dist/` (regenerated).
+
 ## Assignment status
 
 | # | Agent | Assignment | Status | Next step |
