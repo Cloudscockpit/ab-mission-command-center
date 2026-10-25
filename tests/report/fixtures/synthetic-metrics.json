@@ -1,0 +1,47 @@
+{
+  "mission": "synthetic-dashboard-fixture",
+  "started_at": "2026-01-05T09:00:00Z",
+  "ended_at": "2026-01-05T09:14:32Z",
+  "tests": [
+    {
+      "name": "unit",
+      "command": "python -m unittest discover -s tests -v",
+      "passed": 142,
+      "failed": 1,
+      "skipped": 3
+    },
+    {
+      "name": "lint",
+      "command": "python -m ruff check ., --quiet",
+      "passed": 31,
+      "failed": 0,
+      "skipped": 0
+    }
+  ],
+  "files": [
+    {
+      "path": "src/health.py",
+      "status": "add"
+    },
+    {
+      "path": "src/routes/status.py",
+      "status": "add"
+    },
+    {
+      "path": "src/routes/__init__.py",
+      "status": "edit"
+    },
+    {
+      "path": "pyproject.toml",
+      "status": "edit"
+    },
+    {
+      "path": "docs/old-health.md",
+      "status": "del"
+    },
+    {
+      "path": "scripts/extra_helper.py",
+      "status": "add"
+    }
+  ]
+}

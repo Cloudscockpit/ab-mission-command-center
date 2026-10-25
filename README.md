@@ -63,7 +63,7 @@ your project until you reply `go`.
 > git clone --depth 1 https://github.com/Cloudscockpit/ab-mission-command-center.git && python ab-mission-command-center/scripts/install.py --target <opencode|antigravity|codex> --project . --cleanup
 > ```
 >
-> Until v1.1.0 is tagged and published, `npx` and `uvx` answer "tag not published yet"; use the git one-liner until then.
+> Until v1.2.0 is tagged and published, `npx` and `uvx` answer "tag not published yet"; use the git one-liner until then.
 >
 > *(After installing, start a mission with `/start-mission <objective>`, or `$start-mission` on Codex)*
 
@@ -148,7 +148,7 @@ This downloads the installer into a temporary folder, installs into your project
 temporary folder again, so nothing but OpenCode's own files lands in your project: there is no
 clone to ignore, commit or index. Add `--global` to install for your user instead of the current
 project. It needs Node 18+ for `npx` and Python 3.9+ on PATH, because the wrapper hands the work to
-`scripts/install.py`. Until v1.1.0 is tagged and published, `npx` and `uvx` answer "tag not
+`scripts/install.py`. Until v1.2.0 is tagged and published, `npx` and `uvx` answer "tag not
 published yet"; use the git one-liner below in the meantime.
 
 **Installation (uvx, if you have uv but not Node):**
@@ -254,7 +254,7 @@ This downloads the installer into a temporary folder, installs into your project
 temporary folder again, so nothing but Codex's own files lands in your project: there is no
 clone to ignore, commit or index. Add `--global` to install for your user instead of the current
 project. It needs Node 18+ for `npx` and Python 3.9+ on PATH, because the wrapper hands the work to
-`scripts/install.py`. Until v1.1.0 is tagged and published, `npx` and `uvx` answer "tag not
+`scripts/install.py`. Until v1.2.0 is tagged and published, `npx` and `uvx` answer "tag not
 published yet"; use the git one-liner below in the meantime.
 
 **Installation (uvx, if you have uv but not Node):**
@@ -360,7 +360,7 @@ This downloads the installer into a temporary folder, installs into your project
 temporary folder again, so nothing but Antigravity's own files lands in your project: there is no
 clone to ignore, commit or index. Add `--global` to install for your user instead of the current
 project. It needs Node 18+ for `npx` and Python 3.9+ on PATH, because the wrapper hands the work to
-`scripts/install.py`. Until v1.1.0 is tagged and published, `npx` and `uvx` answer "tag not
+`scripts/install.py`. Until v1.2.0 is tagged and published, `npx` and `uvx` answer "tag not
 published yet"; use the git one-liner below in the meantime.
 
 **Installation (uvx, if you have uv but not Node):**
@@ -517,6 +517,45 @@ adds a **Maturity & Progress Summary** to the mission report:
 - Your operator level (L1–L7) is a certification you provide in `.actionboard/config.json`.
   Missions never raise it; it caps the highest tier that may run autonomously.
 
+## Mission dashboard
+
+Every persisted mission now ends with three report files in its mission folder:
+`mission-report.md`, `mission-report.jsonld` and `mission-report.html`. The HTML file is a
+dashboard you open by double-clicking it. It is one self-contained file: no network request, no
+CDN, no external font or script, and it works from a 375px phone to a wide monitor.
+
+![Mission dashboard on a desktop screen: header with status, four key figures, Agent workload donut, stage maturity bars and the touched-files accordion](docs/assets/mission-dashboard-desktop.png)
+
+![Mission dashboard on a 375px phone screen, single column](docs/assets/mission-dashboard-mobile.png)
+
+*The preview is rendered from the real v1.1.0 mission data: its mission report, its
+`.actionboard/registry.json` runs and the `git diff` of that work. The duration is taken from
+commit times, because the registry timestamps for that mission were backfilled in one batch and
+would have shown one second.* Open [`docs/assets/sample-mission-report.html`](docs/assets/sample-mission-report.html)
+to see the same file.
+
+What it shows:
+
+- **Header:** mission id, a status badge ("Clean run", "Retried" or "Stage failed"), operator
+  level and the time it was generated.
+- **Four key figures:** duration, files changed (added, edited, deleted), tests passed, and the
+  autonomy clean-run counter. "Autonomous unlocked" appears only when the gate verdict for an
+  action really is `autonomous`.
+- **Agent workload:** a donut of each Agent's share of the dispatched assignments, with a card per
+  Agent showing assignments, files and outcome.
+- **Stage maturity:** five bars (Orchestrator, Data, Analysis, Action, Defense/Audit) with this
+  mission's pass rate and the window pass rate.
+- **Touched files:** an accordion with a one-click copy of each path (the copy button needs
+  JavaScript; everything else reads with scripting off).
+
+`render_dashboard.py` (Python 3.9+, standard library only, in the `mission-report` skill) builds
+the page from the mission report graph, `.actionboard/registry.json` and a small
+`mission-metrics.json`, which Black Agent records at the end of the mission (start and end time,
+test counts and the file list from `git diff`, untracked files included). A figure with no
+source prints "Not recorded", never zero. The Markdown and JSON-LD reports stay authoritative; the
+dashboard is a view of them. It carries a Content-Security-Policy that blocks every network
+request, and any text from the reports is HTML-escaped.
+
 ## Known gaps
 
 | CLI | Gap | Effect |
@@ -542,7 +581,7 @@ src/          neutral source — edit here
 adapters/     one adapter per CLI (+ shared hook adapter)
 scripts/      build.py (src → dist), install.py
 dist/         generated, committed, checked in CI — do not edit
-tests/        guard, build/lint, installer, maturity, OpenCode plugin, live smoke results
+tests/        guard, build/lint, installer, maturity, report dashboard, OpenCode plugin, live smoke results
 ```
 
 ```sh
@@ -552,6 +591,7 @@ python -m unittest discover -s tests/guard
 python -m unittest discover -s tests/build
 python -m unittest discover -s tests/install
 python -m unittest discover -s tests/maturity
+python -m unittest discover -s tests/report
 node --test tests/opencode/plugin.test.mjs      # Node 23.6+
 ```
 

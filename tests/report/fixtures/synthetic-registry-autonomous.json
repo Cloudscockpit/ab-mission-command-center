@@ -1,0 +1,135 @@
+{
+  "registry_version": "1",
+  "actions": [
+    {
+      "id": "fixture-alpha",
+      "name": "Fixture alpha",
+      "risk_tier": "T2",
+      "end_condition": "Synthetic end condition",
+      "missions": [
+        "synthetic-dashboard-fixture"
+      ],
+      "runs": [
+        {
+          "run_id": "synthetic-dashboard-fixture-1",
+          "mode": "actionlist",
+          "stages": {
+            "orchestrator": true,
+            "data": true,
+            "analysis": true,
+            "action": true,
+            "defense": true
+          },
+          "first_attempt": true,
+          "provenance": "scored",
+          "environment": {
+            "target": "claude"
+          },
+          "notes": "Synthetic run.",
+          "mission": "synthetic-dashboard-fixture"
+        },
+        {
+          "run_id": "synthetic-dashboard-fixture-2",
+          "mode": "actionlist",
+          "stages": {
+            "orchestrator": true,
+            "data": true,
+            "analysis": true,
+            "action": true,
+            "defense": true
+          },
+          "first_attempt": true,
+          "provenance": "scored",
+          "environment": {
+            "target": "claude"
+          },
+          "notes": "Synthetic run.",
+          "mission": "synthetic-dashboard-fixture"
+        },
+        {
+          "run_id": "synthetic-dashboard-fixture-3",
+          "mode": "actionlist",
+          "stages": {
+            "orchestrator": true,
+            "data": true,
+            "analysis": true,
+            "action": true,
+            "defense": true
+          },
+          "first_attempt": true,
+          "provenance": "scored",
+          "environment": {
+            "target": "claude"
+          },
+          "notes": "Synthetic run.",
+          "mission": "synthetic-dashboard-fixture"
+        },
+        {
+          "run_id": "synthetic-dashboard-fixture-4",
+          "mode": "actionlist",
+          "stages": {
+            "orchestrator": true,
+            "data": true,
+            "analysis": true,
+            "action": true,
+            "defense": true
+          },
+          "first_attempt": true,
+          "provenance": "scored",
+          "environment": {
+            "target": "claude"
+          },
+          "notes": "Synthetic run.",
+          "mission": "synthetic-dashboard-fixture"
+        },
+        {
+          "run_id": "synthetic-dashboard-fixture-5",
+          "mode": "actionlist",
+          "stages": {
+            "orchestrator": true,
+            "data": true,
+            "analysis": true,
+            "action": true,
+            "defense": true
+          },
+          "first_attempt": true,
+          "provenance": "scored",
+          "environment": {
+            "target": "claude"
+          },
+          "notes": "Synthetic run.",
+          "mission": "synthetic-dashboard-fixture"
+        }
+      ]
+    },
+    {
+      "id": "fixture-beta",
+      "name": "Fixture beta",
+      "risk_tier": "T2",
+      "end_condition": "Synthetic end condition",
+      "missions": [
+        "synthetic-dashboard-fixture"
+      ],
+      "runs": [
+        {
+          "run_id": "synthetic-dashboard-fixture-6",
+          "mode": "actionlist",
+          "stages": {
+            "orchestrator": true,
+            "data": true,
+            "analysis": true,
+            "action": true,
+            "defense": true
+          },
+          "first_attempt": true,
+          "provenance": "scored",
+          "environment": {
+            "target": "claude"
+          },
+          "notes": "Synthetic run.",
+          "mission": "synthetic-dashboard-fixture"
+        }
+      ]
+    }
+  ]
+}

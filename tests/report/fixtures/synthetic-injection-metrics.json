@@ -1,0 +1,40 @@
+{
+  "mission": "synthetic-dashboard-fixture",
+  "started_at": "2026-01-05T09:00:00Z",
+  "ended_at": "2026-01-05T09:01:00Z",
+  "tests": [
+    {
+      "name": "unlock suite",
+      "command": "python -m unittest -k unlock",
+      "passed": 4,
+      "failed": 0,
+      "skipped": 0
+    }
+  ],
+  "files": [
+    {
+      "path": "src/unlock.py",
+      "status": "edit"
+    },
+    {
+      "path": "docs/unlock-flow.md",
+      "status": "edit"
+    },
+    {
+      "path": "src/Unlocked/arrow→name.txt",
+      "status": "edit"
+    },
+    {
+      "path": "notes/em—dash.md",
+      "status": "edit"
+    },
+    {
+      "path": "notes/en–dash.md",
+      "status": "edit"
+    },
+    {
+      "path": "keep/UNLOCKING.txt",
+      "status": "edit"
+    }
+  ]
+}

@@ -1,0 +1,317 @@
+{
+  "mission": "mission-analytics-dashboard-v1-2-0",
+  "started_at": "2026-10-25T21:39:43Z",
+  "ended_at": "2026-10-25T22:58:16Z",
+  "tests": [
+    {
+      "name": "tests/report",
+      "command": "py -3 -m unittest discover -s tests/report",
+      "passed": 126,
+      "failed": 0,
+      "skipped": 0
+    },
+    {
+      "name": "tests/guard",
+      "command": "py -3 -m unittest discover -s tests/guard",
+      "passed": 32,
+      "failed": 0,
+      "skipped": 0
+    },
+    {
+      "name": "tests/build",
+      "command": "py -3 -m unittest discover -s tests/build",
+      "passed": 21,
+      "failed": 0,
+      "skipped": 0
+    },
+    {
+      "name": "tests/install",
+      "command": "py -3 -m unittest discover -s tests/install",
+      "passed": 55,
+      "failed": 0,
+      "skipped": 0
+    },
+    {
+      "name": "tests/maturity",
+      "command": "py -3 -m unittest discover -s tests/maturity",
+      "passed": 18,
+      "failed": 0,
+      "skipped": 0
+    },
+    {
+      "name": "tests/installer (python)",
+      "command": "py -3 -m unittest discover -s tests/installer",
+      "passed": 23,
+      "failed": 0,
+      "skipped": 0
+    },
+    {
+      "name": "tests/installer (node)",
+      "command": "node --test tests/installer/install.test.mjs",
+      "passed": 28,
+      "failed": 0,
+      "skipped": 1
+    },
+    {
+      "name": "tests/opencode (node)",
+      "command": "node --test tests/opencode/plugin.test.mjs",
+      "passed": 9,
+      "failed": 0,
+      "skipped": 0
+    }
+  ],
+  "files": [
+    {
+      "path": ".actionboard/registry.json",
+      "status": "edit"
+    },
+    {
+      "path": ".claude-plugin/marketplace.json",
+      "status": "edit"
+    },
+    {
+      "path": ".github/workflows/ci.yml",
+      "status": "edit"
+    },
+    {
+      "path": "CHANGELOG.md",
+      "status": "edit"
+    },
+    {
+      "path": "README.md",
+      "status": "edit"
+    },
+    {
+      "path": "dist/antigravity/agents/black-agent.md",
+      "status": "edit"
+    },
+    {
+      "path": "dist/antigravity/plugin.json",
+      "status": "edit"
+    },
+    {
+      "path": "dist/antigravity/skills/actionboard-devops-mission/assets/mission-report-template.md",
+      "status": "edit"
+    },
+    {
+      "path": "dist/antigravity/skills/mission-report/SKILL.md",
+      "status": "edit"
+    },
+    {
+      "path": "dist/antigravity/skills/start-mission/SKILL.md",
+      "status": "edit"
+    },
+    {
+      "path": "dist/antigravity/skills/start-mission/references/black-agent.md",
+      "status": "edit"
+    },
+    {
+      "path": "dist/claude/.claude-plugin/plugin.json",
+      "status": "edit"
+    },
+    {
+      "path": "dist/claude/agents/black-agent.md",
+      "status": "edit"
+    },
+    {
+      "path": "dist/claude/commands/start-mission.md",
+      "status": "edit"
+    },
+    {
+      "path": "dist/claude/skills/actionboard-devops-mission/assets/mission-report-template.md",
+      "status": "edit"
+    },
+    {
+      "path": "dist/claude/skills/mission-report/SKILL.md",
+      "status": "edit"
+    },
+    {
+      "path": "dist/codex/.agents/skills/actionboard-devops-mission/assets/mission-report-template.md",
+      "status": "edit"
+    },
+    {
+      "path": "dist/codex/.agents/skills/mission-report/SKILL.md",
+      "status": "edit"
+    },
+    {
+      "path": "dist/codex/.agents/skills/start-mission/SKILL.md",
+      "status": "edit"
+    },
+    {
+      "path": "dist/codex/.agents/skills/start-mission/references/black-agent.md",
+      "status": "edit"
+    },
+    {
+      "path": "dist/opencode/actionboard/config.json",
+      "status": "edit"
+    },
+    {
+      "path": "dist/opencode/agents/black-agent.md",
+      "status": "edit"
+    },
+    {
+      "path": "dist/opencode/commands/start-mission.md",
+      "status": "edit"
+    },
+    {
+      "path": "dist/opencode/skills/actionboard-devops-mission/assets/mission-report-template.md",
+      "status": "edit"
+    },
+    {
+      "path": "dist/opencode/skills/mission-report/SKILL.md",
+      "status": "edit"
+    },
+    {
+      "path": "packages/installer-py/actionboard_install/__init__.py",
+      "status": "edit"
+    },
+    {
+      "path": "packages/installer-py/actionboard_install/__main__.py",
+      "status": "edit"
+    },
+    {
+      "path": "packages/installer-py/pyproject.toml",
+      "status": "edit"
+    },
+    {
+      "path": "packages/installer/package.json",
+      "status": "edit"
+    },
+    {
+      "path": "src/VERSION",
+      "status": "edit"
+    },
+    {
+      "path": "src/agents/black-agent.md",
+      "status": "edit"
+    },
+    {
+      "path": "src/commands/start-mission.md",
+      "status": "edit"
+    },
+    {
+      "path": "src/skills/actionboard-devops-mission/assets/mission-report-template.md",
+      "status": "edit"
+    },
+    {
+      "path": "src/skills/mission-report/SKILL.md",
+      "status": "edit"
+    },
+    {
+      "path": "dist/antigravity/skills/mission-report/scripts/dashboard_template.py",
+      "status": "add"
+    },
+    {
+      "path": "dist/antigravity/skills/mission-report/scripts/render_dashboard.py",
+      "status": "add"
+    },
+    {
+      "path": "dist/claude/skills/mission-report/scripts/dashboard_template.py",
+      "status": "add"
+    },
+    {
+      "path": "dist/claude/skills/mission-report/scripts/render_dashboard.py",
+      "status": "add"
+    },
+    {
+      "path": "dist/codex/.agents/skills/mission-report/scripts/dashboard_template.py",
+      "status": "add"
+    },
+    {
+      "path": "dist/codex/.agents/skills/mission-report/scripts/render_dashboard.py",
+      "status": "add"
+    },
+    {
+      "path": "dist/opencode/skills/mission-report/scripts/dashboard_template.py",
+      "status": "add"
+    },
+    {
+      "path": "dist/opencode/skills/mission-report/scripts/render_dashboard.py",
+      "status": "add"
+    },
+    {
+      "path": "docs/assets/mission-dashboard-desktop.png",
+      "status": "add"
+    },
+    {
+      "path": "docs/assets/mission-dashboard-mobile.png",
+      "status": "add"
+    },
+    {
+      "path": "docs/assets/sample-mission-report.html",
+      "status": "add"
+    },
+    {
+      "path": "docs/missions/2026-10-26-mission-analytics-dashboard-v1-2-0/mission-plan.jsonld",
+      "status": "add"
+    },
+    {
+      "path": "docs/missions/2026-10-26-mission-analytics-dashboard-v1-2-0/mission-plan.md",
+      "status": "add"
+    },
+    {
+      "path": "docs/missions/2026-10-26-mission-analytics-dashboard-v1-2-0/mission-report.jsonld",
+      "status": "add"
+    },
+    {
+      "path": "docs/missions/2026-10-26-mission-analytics-dashboard-v1-2-0/mission-report.md",
+      "status": "add"
+    },
+    {
+      "path": "src/skills/mission-report/scripts/dashboard_template.py",
+      "status": "add"
+    },
+    {
+      "path": "src/skills/mission-report/scripts/render_dashboard.py",
+      "status": "add"
+    },
+    {
+      "path": "tests/report/fixtures/README.md",
+      "status": "add"
+    },
+    {
+      "path": "tests/report/fixtures/synthetic-hostile-metrics.json",
+      "status": "add"
+    },
+    {
+      "path": "tests/report/fixtures/synthetic-hostile-registry.json",
+      "status": "add"
+    },
+    {
+      "path": "tests/report/fixtures/synthetic-hostile-report.jsonld",
+      "status": "add"
+    },
+    {
+      "path": "tests/report/fixtures/synthetic-injection-metrics.json",
+      "status": "add"
+    },
+    {
+      "path": "tests/report/fixtures/synthetic-injection-report.jsonld",
+      "status": "add"
+    },
+    {
+      "path": "tests/report/fixtures/synthetic-metrics.json",
+      "status": "add"
+    },
+    {
+      "path": "tests/report/fixtures/synthetic-mission-report.jsonld",
+      "status": "add"
+    },
+    {
+      "path": "tests/report/fixtures/synthetic-registry-autonomous.json",
+      "status": "add"
+    },
+    {
+      "path": "tests/report/fixtures/synthetic-registry.json",
+      "status": "add"
+    },
+    {
+      "path": "tests/report/test_dashboard.py",
+      "status": "add"
+    },
+    {
+      "path": "tests/report/visual-results-2026-10.md",
+      "status": "add"
+    }
+  ]
+}

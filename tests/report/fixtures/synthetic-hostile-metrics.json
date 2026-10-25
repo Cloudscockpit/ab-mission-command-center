@@ -1,0 +1,48 @@
+{
+  "mission": "hostile-slug",
+  "started_at": "2026-01-05T09:00:00Z",
+  "ended_at": "2026-01-05T09:01:00Z",
+  "tests": [
+    {
+      "name": "</script><script>alert(4)</script><b>x</b>",
+      "command": "'onmouseover=alert(2) x='",
+      "passed": 3,
+      "failed": 0,
+      "skipped": 0
+    }
+  ],
+  "files": [
+    {
+      "path": "src/\"><script>alert(1)</script>.py",
+      "status": "edit"
+    },
+    {
+      "path": "lib/'onmouseover=alert(2) x='.js",
+      "status": "edit"
+    },
+    {
+      "path": "css/</style><script>alert(3)</script>.css",
+      "status": "edit"
+    },
+    {
+      "path": "js/</script><script>alert(4)</script>.js",
+      "status": "edit"
+    },
+    {
+      "path": "img/<img src=x onerror=alert(5)>.png",
+      "status": "edit"
+    },
+    {
+      "path": "docs/a&amp;b &lt;i&gt;.md",
+      "status": "edit"
+    },
+    {
+      "path": "win\\path\\with space.txt",
+      "status": "edit"
+    },
+    {
+      "path": "extra/\"><script>alert(1)</script>",
+      "status": "add"
+    }
+  ]
+}

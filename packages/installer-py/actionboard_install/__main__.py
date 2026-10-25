@@ -16,7 +16,7 @@ import urllib.error
 import urllib.request
 from urllib.parse import urlparse
 
-VERSION = "1.1.0"
+VERSION = "1.2.0"
 REPO = "Cloudscockpit/ab-mission-command-center"
 TARGETS = ("codex", "antigravity", "opencode")
 MAX_REDIRECTS = 5

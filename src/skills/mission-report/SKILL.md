@@ -24,6 +24,12 @@ fresh `@id`s records nothing, because nothing links back to what was promised.
 | Deferred | What was cut, and why | `Action` left `Potential`, with a reason |
 | **Maturity & Progress Summary** (mandatory) | Per dispatched assignment: the 5-stage score breakdown, Clean Run status, autonomy progress (tier, clean runs `3/5`, execution mode Guided → Actionlist → Autonomous), and the next milestone | `Thing` (`additionalType: "MaturityProgress"`) per assignment, `about` the assignment |
 
+Beyond the required sections above, every persisted mission also gets a dashboard,
+`mission-report.html`, plus its input `mission-metrics.json` (timing, changed files, test
+counts). The HTML is a derived view of the report graph, the registry, and the metrics: it adds
+no data of its own and never replaces or shortens a required Markdown section. It is one
+self-contained file that works offline, with no network access and no external assets.
+
 ## Procedure
 
 1. **Load the plan's graph.** Read `mission-plan.jsonld` and reuse every `@id` — mission,
@@ -85,6 +91,50 @@ fresh `@id`s records nothing, because nothing links back to what was promised.
    `## Maturity & Progress Summary` section with the table from step 6, even when no action was
    scored (say why). Add one `MaturityProgress` node per scored assignment (see the KB). Validate
    per the KB checklist and report both paths, plus `.actionboard/registry.json`.
+8. **Write the mission metrics, then the dashboard.** The order is fixed: Markdown, JSON-LD,
+   validate, metrics, HTML. Run both commands from the repository root, writing into the mission
+   directory next to the other two documents.
+   1. **Write `mission-metrics.json`** with the `metrics` subcommand:
+
+      ```sh
+      python {{skills_root}}/mission-report/scripts/render_dashboard.py metrics \
+        --out <mission-dir>/mission-metrics.json --mission <slug> \
+        --started-at <start-iso-utc> --ended-at <now-iso-utc> --git-base <base-commit> \
+        --test "<suite-name>,<test-command>,<passed>,<failed>,<skipped>"
+      ```
+
+      - `--started-at` is the UTC time Black Agent recorded when the user said "go" (for example
+        `2026-10-26T09:30:00Z`); `--ended-at` is the current UTC time.
+      - `--git-base` is the commit recorded at mission start. It must be a plain ref: no leading
+        `-` and no spaces. New untracked files are counted as additions automatically; files
+        matched by `.gitignore` are not counted. No `git add` step is needed.
+      - Pass one `--test` per suite Yellow Agent reported, repeating the flag. Copy the counts
+        from Yellow's report exactly; never invent or estimate a count. The command part may
+        contain commas. Omit `--test` when Yellow reported no suite.
+      - Anything you cannot supply is left out; the page then shows "Not recorded" for it.
+   2. **Render `mission-report.html`:**
+
+      ```sh
+      python {{skills_root}}/mission-report/scripts/render_dashboard.py render \
+        --report <mission-dir>/mission-report.jsonld --mission <slug> \
+        --out <mission-dir>/mission-report.html \
+        --registry .actionboard/registry.json \
+        --metrics <mission-dir>/mission-metrics.json [--operator-level <L1-L7>]
+      ```
+
+      `--operator-level` is the same level used in step 6; if it is omitted the script reads
+      `.actionboard/config.json`. On Windows use `py`.
+   3. **List the new files** in `Files created/changed:`: `mission-report.html` and
+      `mission-metrics.json`, alongside the Markdown, JSON-LD, and registry.
+   4. **A render failure is a reported defect, never a silent skip.** If either command fails,
+      report the command, its error output, and that the dashboard is missing. The Markdown and
+      JSON-LD stay on disk and remain the authoritative report.
+   5. **Do not ignore warnings.** If `render` prints a line containing `WARNING` on stderr (for
+      example `render_dashboard: WARNING ...; showing Not recorded`, as when the maturity data
+      could not be read), report it in the Mission Summary instead of ignoring it. The figures that warning affects show "Not recorded" on the page.
+   6. **Agent-written text appears as written.** The dashboard shows the text the Agents wrote
+      without rewriting it. The Markdown and JSON-LD remain authoritative if the page and the
+      written record ever differ.
 
 ## Writing rules
 
@@ -98,6 +148,8 @@ fresh `@id`s records nothing, because nothing links back to what was promised.
   seconds. Never shorten or omit a required section to get there; the full-prose rule above wins.
 - The maturity numbers come only from `maturity.py`, which uses the same rules as the formation
   gate. Do not compute or adjust them by hand.
+- The HTML dashboard is generated only by `render_dashboard.py`, never written by hand. The
+  full-prose rule above still applies to the Markdown report, which stays the complete record.
 
 ## What the accumulated graph answers
 

@@ -9,6 +9,10 @@
 > Markdown plus schema.org JSON-LD. Use it when the report needs to join a
 > queryable mission history; use this template when the report is the gate
 > evidence record.
+>
+> The `mission-report` skill also generates a `mission-report.html` dashboard
+> alongside this gate-evidence template. It is a view of the same registry data
+> and adds nothing to it.
 
 | | |
 | --- | --- |

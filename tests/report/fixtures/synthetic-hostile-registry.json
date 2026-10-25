@@ -1,0 +1,34 @@
+{
+  "registry_version": "1",
+  "actions": [
+    {
+      "id": "hostile-\"><script>alert(1)</script>",
+      "name": "Hostile \"><script>alert(1)</script> 'onmouseover=alert(2) x='",
+      "risk_tier": "T2",
+      "end_condition": "Synthetic end condition",
+      "missions": [
+        "hostile-slug"
+      ],
+      "runs": [
+        {
+          "run_id": "hostile-1",
+          "mode": "actionlist",
+          "stages": {
+            "orchestrator": true,
+            "data": true,
+            "analysis": true,
+            "action": true,
+            "defense": true
+          },
+          "first_attempt": true,
+          "provenance": "scored",
+          "environment": {
+            "target": "claude"
+          },
+          "notes": "Synthetic run.",
+          "mission": "hostile-slug"
+        }
+      ]
+    }
+  ]
+}
