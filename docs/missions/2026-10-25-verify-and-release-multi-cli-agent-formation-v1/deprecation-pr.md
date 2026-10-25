@@ -1,4 +1,4 @@
-# Assignment 7 — deprecation PR draft (not opened)
+# Assignment 7 — deprecation PR (opened)
 
 **Status:** opened on 2026-10-26 as https://github.com/Cloudscockpit/actionboard-build-mission-pipeline/pull/2 after the user made `ab-mission-command-center` public
 and approved option 1. Open and mergeable; it touches `README.md` only. The user merges it.
