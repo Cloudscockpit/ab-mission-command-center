@@ -177,7 +177,11 @@ def download(url, dest, redirects=0, opener=None):
             shutil.copyfileobj(resp, out)
         return
     except urllib.error.HTTPError as e:
-        e.close()
+        try:
+            e.close()
+        except Exception:
+            # Best effort: on Python 3.9 an HTTPError without fp raises (KeyError 'file') on close.
+            pass
         if 300 <= e.code < 400 and e.headers.get("Location"):
             if redirects >= MAX_REDIRECTS:
                 raise InstallerError("too many redirects")

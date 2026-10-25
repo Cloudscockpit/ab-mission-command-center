@@ -469,8 +469,11 @@ def target_files(target, config):
         if not os.path.isdir(root):
             raise SystemExit("dist/%s is missing; run python scripts/build.py first" % target)
         files = {}
-        for dp, _, fn in os.walk(root):
+        for dp, dn, fn in os.walk(root):
+            dn[:] = [d for d in dn if d != "__pycache__"]
             for f in sorted(fn):
+                if f.endswith((".pyc", ".pyo")):
+                    continue
                 full = os.path.join(dp, f)
                 rel = os.path.relpath(full, root).replace(os.sep, "/")
                 with open(full, "rb") as fh:
