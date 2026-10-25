@@ -37,7 +37,6 @@ your project until you reply `go`.
 > Paste into Claude Code chat:
 > ```sh
 > /plugin marketplace add Cloudscockpit/ab-mission-command-center
-> /plugin install actionboard-v5-agentformation@actionboard-v5-agentformation
 > ```
 >
 > **2. OpenCode CLI (npx, nothing left behind):**
