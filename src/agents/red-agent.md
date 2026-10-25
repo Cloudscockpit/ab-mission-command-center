@@ -60,3 +60,5 @@ If `blocked`, explain what's blocking and what you'd need to unblock.
 - Do NOT run tests beyond a quick sanity check — Yellow Agent does verification.
 - Do NOT commit changes — that's the user's call.
 - Do NOT dispatch other agents.
+
+{{partial:operating_policy}}

@@ -56,3 +56,5 @@ available.
 Detailed procedure, profile tables, policy grammar, and triage tables live in the
 `openshell-admin` skill shipped with ActionBoard. Read the reference file the task actually
 reaches; do not preload all of them.
+
+{{partial:operating_policy}}

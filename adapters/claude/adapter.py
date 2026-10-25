@@ -5,6 +5,7 @@ import json
 from collections import OrderedDict
 
 from aflib import frontmatter
+from aflib.common import context7_json
 from aflib.model import adapter_file, adapter_tree, bash_mode, caps, render_text, render_tree, target_meta
 
 NAME = "claude"
@@ -105,6 +106,7 @@ def build(src, out, models):
         ("license", p["license"]), ("keywords", p["keywords"]),
     ])
     out.add(".claude-plugin/plugin.json", json.dumps(manifest, indent=2, ensure_ascii=False))
+    out.add(".mcp.json", context7_json("claude"))
 
 
 def root_files(src):

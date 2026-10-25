@@ -4,3 +4,5 @@ __pycache__/
 .openshell-audit.log
 # Reference checkout of the v0.6.1 source repository (read-only, not part of this repo)
 /actionboard-build-mission-pipeline/
+graphify-out/
+.actionboard/

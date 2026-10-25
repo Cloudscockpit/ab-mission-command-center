@@ -2,6 +2,7 @@
 
 import json
 import os
+import re
 from collections import OrderedDict
 
 from . import frontmatter, render
@@ -66,6 +67,12 @@ class Source:
                 raise ValueError("skill %s: name must match its directory" % name)
             self.skills.append(Skill(name, meta, body, files))
         self.hooks_core = _tree(os.path.join(root, "hooks", "core"))
+        PARTIALS.clear()
+        pdir = os.path.join(root, "partials")
+        if os.path.isdir(pdir):
+            for f in sorted(os.listdir(pdir)):
+                if f.endswith(".md"):
+                    PARTIALS[f[:-3]] = _read(os.path.join(pdir, f))
         for a in self.agents:
             caps = a.meta.get("capabilities") or {}
             unknown = set(caps) - set(CAPABILITIES)
@@ -116,8 +123,22 @@ def target_meta(meta, target, drop=("name", "description", "targets", "role", "m
     return out
 
 
+PARTIALS = {}  # src/partials/<name>.md, filled by Source()
+
+
+def _include(text, where):
+    def repl(m):
+        name = m.group(1)
+        if name not in PARTIALS:
+            raise KeyError("unknown partial {{partial:%s}} in %s" % (name, where))
+        return PARTIALS[name].rstrip("\n")
+    return re.sub(r"\{\{partial:([a-z_]+)\}\}", repl, text)
+
+
 def render_text(text, target, values, where):
-    return render.fill(render.strip_conditionals(text, target), values, where)
+    """Partials first (so they get the same conditionals and placeholders), then
+    conditional blocks, then placeholders."""
+    return render.fill(render.strip_conditionals(_include(text, where), target), values, where)
 
 
 def render_tree(files, target, values, where):

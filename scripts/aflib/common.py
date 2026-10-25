@@ -2,8 +2,31 @@
 
 from collections import OrderedDict
 
+import json
+
 from . import frontmatter
 from .model import glossary_section, render_text, render_tree
+
+# Mandatory for every target: the hosted Context7 MCP server (Streamable HTTP, no
+# Node needed). An optional CONTEXT7_API_KEY raises its rate limits.
+CONTEXT7_URL = "https://mcp.context7.com/mcp"
+
+
+def context7_json(shape):
+    """Context7 MCP config in each CLI's JSON shape."""
+    if shape == "claude":
+        server = OrderedDict([("type", "http"), ("url", CONTEXT7_URL)])
+        return json.dumps({"mcpServers": {"context7": server}}, indent=2)
+    if shape == "antigravity":
+        return json.dumps({"mcpServers": {"context7": {"url": CONTEXT7_URL}}}, indent=2)
+    if shape == "opencode":
+        server = OrderedDict([("type", "remote"), ("url", CONTEXT7_URL), ("enabled", True)])
+        return json.dumps({"mcp": {"context7": server}}, indent=2)
+    raise ValueError(shape)
+
+
+def context7_toml():
+    return '[mcp_servers.context7]\nurl = "%s"\n' % CONTEXT7_URL
 
 ARGS_TEXT = "the objective the user typed after the skill name"
 

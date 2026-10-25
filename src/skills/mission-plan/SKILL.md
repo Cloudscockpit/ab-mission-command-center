@@ -8,6 +8,8 @@ description: Write a ActionBoard V5 Mission Plan (Agent Assignments with file ow
 Emits the second of the three ActionBoard V5 mission documents: what each Agent will do, what the
 mission cannot yet do, and what could go wrong.
 
+{{partial:full_prose_rule}}
+
 **Read the format reference first:** `{{skills_root}}/actionboard-kb/references/mission-knowledge-format.md`.
 It defines the JSON-LD envelope, the URN identifier scheme, the schema.org type mapping, the
 `actionStatus` vocabulary, and the pre-write validation steps.

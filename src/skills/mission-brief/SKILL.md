@@ -7,6 +7,8 @@ description: Write a ActionBoard V5 Mission Brief (objective, scope, out of scop
 
 Emits the first of the three ActionBoard V5 mission documents in both human and machine form.
 
+{{partial:full_prose_rule}}
+
 **Read the format reference first:** `{{skills_root}}/actionboard-kb/references/mission-knowledge-format.md`.
 It defines the JSON-LD envelope, the URN identifier scheme, the schema.org type mapping, and
 the pre-write validation steps. Do not improvise identifiers or types — the three mission

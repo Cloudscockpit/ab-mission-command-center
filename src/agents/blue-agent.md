@@ -58,3 +58,5 @@ Notes: <anything Black Agent needs to know>
 - Do NOT commit changes.
 - Do NOT make breaking schema changes without explicit authorization.
 - Do NOT dispatch other agents.
+
+{{partial:operating_policy}}

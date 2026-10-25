@@ -163,6 +163,36 @@ class Lint(unittest.TestCase):
         for name in ("mission-brief", "mission-plan", "mission-report"):
             self.assertTrue(os.path.exists(os.path.join(cmds, name + ".md")), name)
 
+    def test_cost_and_context_rules_reach_every_target(self):
+        agent_dirs = {"claude": ("claude", "agents"), "opencode": ("opencode", "agents"),
+                      "antigravity": ("antigravity", "agents"), "codex": ("codex", ".codex", "agents")}
+        skill_dirs = {"claude": ("claude", "skills"), "opencode": ("opencode", "skills"),
+                      "antigravity": ("antigravity", "skills"), "codex": ("codex", ".agents", "skills")}
+        for t, parts in agent_dirs.items():
+            for path in walk(os.path.join(DIST, *parts), (".md", ".toml")):
+                text = read(path)
+                self.assertIn("## Operating policy (cost and accuracy)", text, path)
+                self.assertIn("Never compress these.", text, path)
+                self.assertIn("Files created/changed:", text, path)
+            black = read(DIST, *parts, "black-agent.md") if t != "codex" else \
+                read(DIST, "codex", ".agents", "skills", "start-mission", "references", "black-agent.md")
+            self.assertIn("Step 0 — Preflight", black, t)
+            skills = os.path.join(DIST, *skill_dirs[t])
+            for doc in ("mission-brief", "mission-plan", "mission-report"):
+                self.assertIn("**Full prose, always.**", read(skills, doc, "SKILL.md"), (t, doc))
+            for f in ("SKILL.md", "LICENSE.txt", "NOTICE.txt"):
+                self.assertTrue(os.path.exists(os.path.join(skills, "terse-output", f)), (t, f))
+            self.assertTrue(os.path.exists(os.path.join(skills, "mission-preflight", "SKILL.md")), t)
+
+    def test_context7_configured_for_every_target(self):
+        url = "https://mcp.context7.com/mcp"
+        self.assertEqual(json.loads(read(DIST, "claude", ".mcp.json"))["mcpServers"]["context7"],
+                         {"type": "http", "url": url})
+        self.assertEqual(json.loads(read(DIST, "antigravity", "mcp_config.json"))["mcpServers"]["context7"],
+                         {"url": url})
+        self.assertEqual(json.loads(read(DIST, "opencode", "actionboard", "mcp.json"))["mcp"]["context7"]["url"], url)
+        self.assertIn('url = "%s"' % url, read(DIST, "codex", ".codex", "actionboard", "mcp.toml"))
+
     def test_codex_agents(self):
         try:
             import tomllib

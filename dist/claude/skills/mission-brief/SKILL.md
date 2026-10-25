@@ -7,6 +7,11 @@ description: Write a ActionBoard V5 Mission Brief (objective, scope, out of scop
 
 Emits the first of the three ActionBoard V5 mission documents in both human and machine form.
 
+**Full prose, always.** This document is never compressed. Terse output and graph summaries do not
+apply here, even when they are enabled for the mission. Write in full, clear, standard prose,
+keep every table, column, field, and markdown structure intact, and do not shorten, merge, or omit
+any section to save tokens. After writing, list the paths under `Files created/changed:`.
+
 **Read the format reference first:** `${CLAUDE_PLUGIN_ROOT}/skills/actionboard-kb/references/mission-knowledge-format.md`.
 It defines the JSON-LD envelope, the URN identifier scheme, the schema.org type mapping, and
 the pre-write validation steps. Do not improvise identifiers or types — the three mission

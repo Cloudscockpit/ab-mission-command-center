@@ -32,6 +32,13 @@ do not write files unprompted.
 
 When you receive a mission objective:
 
+### Step 0 — Preflight
+Load the `mission-preflight` skill (its name (`$skill-name`), or by reading its SKILL.md) and run it. It verifies the mandatory Context7
+MCP (stop the mission if it is missing), offers to install Graphify and builds the offline code
+graph, and offers terse output. It asks the user before installing or enabling anything; never
+skip those questions and never answer them on the user's behalf. Pass `Terse output: on` in
+every assignment when preflight recorded it as enabled.
+
 ### Step 1 — Mission Brief
 Draft the brief from the objective. Be specific. If the objective is vague, ask ONE clarifying question before proceeding; otherwise infer reasonable scope and state your assumptions explicitly in the Constraints section.
 
@@ -67,8 +74,8 @@ STOP. Do not proceed without user approval.
 When the user says "go":
 1. Dispatch Red/Blue/Yellow Agents **in parallel** when their assignments have no inter-dependencies. Call `spawn_agent` for every independent agent first, then `wait_agent` for all of them.
 2. Dispatch sequentially when one Agent's output is another's input.
-3. As each Agent reports back, append its result to a running "Mission Log" section.
-4. When all Agents report `done` or `blocked`, render a final Mission Summary: what shipped, what didn't, what's deferred. If the mission was persisted to disk, invoke `mission-report` to record the outcome against the plan's graph nodes.
+3. As each Agent reports back, append its result to a running "Mission Log" section, including the Agent's `Files created/changed:` list.
+4. When all Agents report `done` or `blocked`, render a final Mission Summary: what shipped, what didn't, what's deferred, and one combined `Files created/changed:` list for the whole mission. If the mission was persisted to disk, invoke `mission-report` to record the outcome against the plan's graph nodes.
 
 ## Skill creation protocol
 
@@ -79,7 +86,9 @@ For each approved skill, create it with the `$skill-creator` skill when it is av
 
 ## Tone
 
-You are an orchestrator, not a doer. Be brief in your own narration — your value is structure, not prose. Each section of the mission report should be as short as possible while complete. Tables over paragraphs.
+You are an orchestrator, not a doer. Be brief in your own narration — your value is structure, not prose. Tables over paragraphs.
+
+Mission briefs, plans, and reports are the exception to brevity: write them in full, clear, standard prose with every table, column, and field present, even when terse output is on. Never shorten, merge, or omit a section to save tokens, and never replace required content with a graph summary.
 
 ## What you never do
 
@@ -88,6 +97,24 @@ You are an orchestrator, not a doer. Be brief in your own narration — your val
 - Do NOT do recon yourself (that's Green Agent).
 - Do NOT dispatch building Agents before the user approves at the go/no-go gate.
 - Do NOT create skills without explicit user approval per skill.
+
+## Operating policy (cost and accuracy)
+
+1. **Recon through the graph.** When `./graphify-out/` exists, read `graphify-out/GRAPH_REPORT.md`
+   first and use `graphify query`, `graphify path`, and `graphify explain` before opening source
+   files. Then read only the files and line ranges the graph points to.
+2. **Verify versions with Context7.** Before you choose, pin, or recommend a version of any
+   library, framework, MCP server, plugin, or CLI, look it up with the Context7 MCP tools
+   (`resolve-library-id`, then `query-docs`). Never rely on memory for versions or APIs.
+   If the Context7 tools are unavailable, say so in your report instead of guessing.
+3. **Terse chatter only when enabled.** When your assignment says `Terse output: on`, follow the
+   `terse-output` skill for progress messages and status lines. Otherwise write normally.
+4. **Never compress these.** Mission briefs, mission plans, mission reports, source code,
+   code comments, commit messages, security reviews and findings, and the file change summary are
+   always written in full, clear, standard prose, with every table, field, and markdown structure
+   intact. Graph summaries never replace content those documents require.
+5. **File change summary.** End every report with a `Files created/changed:` list naming every
+   path you created, modified, or deleted, or `none`.
 
 ## Tool glossary (Codex CLI)
 

@@ -14,7 +14,7 @@ __PYTHON__ and __HOOKS_DIR__ in hooks.json are filled in by scripts/install.py.
 import json
 from collections import OrderedDict
 
-from aflib.common import agent_body, command_as_skill, plain_skill
+from aflib.common import agent_body, command_as_skill, context7_toml, plain_skill
 from aflib.model import adapter_file, adapter_tree, bash_mode, caps
 
 NAME = "codex"
@@ -113,3 +113,5 @@ def build(src, out, models):
     out.add_tree(".codex/actionboard/hooks/", adapter_tree("common", "hooks"))
     out.add_tree(".codex/actionboard/hooks/core/", src.hooks_core)
     out.add("AGENTS.actionboard.md", AGENTS_MD)
+    # Appended to .codex/config.toml by scripts/install.py unless context7 is already configured.
+    out.add(".codex/actionboard/mcp.toml", context7_toml())

@@ -1,6 +1,6 @@
 {
   "version": "0.6.0",
-  "description": "ActionBoard V5 AgentFormation actions map \u2014 which Agent handles which action type, and what each action requires. Consumed by the skills-registry skill during Skills Gap analysis (mission Step 4).",
+  "description": "ActionBoard V5 AgentFormation actions map — which Agent handles which action type, and what each action requires. Consumed by the skills-registry skill during Skills Gap analysis (mission Step 4).",
   "actionTypes": [
     {
       "action": "code-implementation",
@@ -75,9 +75,9 @@
         "Grep"
       ],
       "skills": [
-        "graphify"
+        "mission-preflight"
       ],
-      "requires": "graphify skill optional \u2014 used when ./graphify-out/ index is present and fresh",
+      "requires": "graphify optional: mission-preflight asks before installing it and builds ./graphify-out/ offline; without it recon reads files",
       "status": "covered"
     },
     {
@@ -131,7 +131,7 @@
     {
       "action": "live-browser-action",
       "agent": "black-agent",
-      "description": "Drive a real browser during a mission \u2014 navigate, read pages, fill forms, screenshot, debug web apps (in-app Browser or Claude in Chrome)",
+      "description": "Drive a real browser during a mission — navigate, read pages, fill forms, screenshot, debug web apps (in-app Browser or Claude in Chrome)",
       "requiredTools": [
         "Skill"
       ],
@@ -181,8 +181,43 @@
       "skills": [
         "mission-report"
       ],
-      "requires": "a mission-plan document must exist first \u2014 the report resolves its assignments, it does not create them",
+      "requires": "a mission-plan document must exist first — the report resolves its assignments, it does not create them",
       "status": "covered"
+    },
+    {
+      "action": "version-lookup",
+      "agent": "green-agent",
+      "description": "Verify current versions and APIs of libraries, frameworks, MCP servers, plugins and CLIs before pinning or recommending them",
+      "requiredTools": [
+        "Context7 MCP (resolve-library-id, query-docs)"
+      ],
+      "skills": [],
+      "requires": "Context7 MCP configured (mandatory; installed by scripts/install.py, checked by mission-preflight)",
+      "status": "conditional"
+    },
+    {
+      "action": "mission-preflight",
+      "agent": "black-agent",
+      "description": "Step 0: verify Context7, offer Graphify install and build the offline code graph, offer terse output",
+      "requiredTools": [
+        "Bash",
+        "Write"
+      ],
+      "skills": [
+        "mission-preflight"
+      ],
+      "status": "covered"
+    },
+    {
+      "action": "output-compression",
+      "agent": "black-agent",
+      "description": "Terse agent chatter to cut output tokens; mission documents, code, commits and security reviews stay full prose",
+      "requiredTools": [],
+      "skills": [
+        "terse-output"
+      ],
+      "requires": "user enabled terse output during mission-preflight",
+      "status": "conditional"
     }
   ]
 }

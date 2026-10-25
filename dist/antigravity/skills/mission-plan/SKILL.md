@@ -10,6 +10,11 @@ description: Write a ActionBoard V5 Mission Plan (Agent Assignments with file ow
 Emits the second of the three ActionBoard V5 mission documents: what each Agent will do, what the
 mission cannot yet do, and what could go wrong.
 
+**Full prose, always.** This document is never compressed. Terse output and graph summaries do not
+apply here, even when they are enabled for the mission. Write in full, clear, standard prose,
+keep every table, column, field, and markdown structure intact, and do not shorten, merge, or omit
+any section to save tokens. After writing, list the paths under `Files created/changed:`.
+
 **Read the format reference first:** `<skill-dir>/../actionboard-kb/references/mission-knowledge-format.md`.
 It defines the JSON-LD envelope, the URN identifier scheme, the schema.org type mapping, the
 `actionStatus` vocabulary, and the pre-write validation steps.

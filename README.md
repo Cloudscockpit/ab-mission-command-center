@@ -112,6 +112,24 @@ The guard is defense in depth, not a sandbox; see the limits in
 State-changing `openshell` calls are appended to `.openshell-audit.log` (or
 `$OPENSHELL_AUDIT_LOG`).
 
+## Cost optimisation and up-to-date context
+
+Every mission starts with **Step 0 — preflight** (`mission-preflight` skill, also `/mission-preflight`):
+
+| Piece | What it does | Required? | How it is set up |
+|---|---|---|---|
+| **Context7 MCP** | Agents verify current library, framework, MCP, plugin, and CLI versions before pinning or recommending them | **Mandatory** — a mission stops if it is missing | Hosted server `https://mcp.context7.com/mcp` (no Node). Claude: plugin `.mcp.json`. Antigravity: plugin `mcp_config.json`. OpenCode: merged into `opencode.json`. Codex: block in `.codex/config.toml`. An existing `context7` server of yours is left untouched. Optional `CONTEXT7_API_KEY` raises rate limits. |
+| **Graphify** (`graphifyy` 0.9.95) | Indexes code into a lightweight graph; agents read the map instead of raw files, saving input tokens and API cost. Built **offline with no API key** (`graphify extract . --code-only`, then `graphify cluster-only . --no-label --no-viz`). On this repository `graphify benchmark` measured 11–25× fewer tokens per recon question. | Optional — **asked before installing** | `install.py` asks (or `--with graphify` / `--without graphify`); otherwise preflight asks inside the CLI. Installs with `uv tool`, then `pipx`, then `pip --user`. |
+| **Terse output** | Cuts output tokens for background agent chatter. Rules derived from [Caveman](https://github.com/JuliusBrussee/caveman) v4.0.1 (Apache-2.0), bundled as the `terse-output` skill — nothing to download, no Node | Optional — **asked before enabling** | `install.py` asks (or `--with terse` / `--without terse`); otherwise preflight asks. |
+
+Answers are stored per project in `.actionboard/preferences.json`.
+
+**Never compressed:** mission briefs, mission plans, mission reports, source code, code comments,
+commit messages, and security reviews are always written in full standard prose with every table
+and field intact, whatever is enabled. Every agent report ends with a `Files created/changed:` list.
+
+ActionBoard works with Caveman but is not Caveman and is not endorsed by its author.
+
 ## Known gaps
 
 | CLI | Gap | Effect |

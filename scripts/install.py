@@ -21,7 +21,9 @@ import argparse
 import hashlib
 import json
 import os
+import re
 import shutil
+import subprocess
 import sys
 import tempfile
 
@@ -59,7 +61,8 @@ def plan(target, scope, project):
     if target == "opencode":
         root = os.path.join(project, ".opencode") if scope == "project" else \
             os.path.join(os.environ.get("XDG_CONFIG_HOME") or os.path.join(home, ".config"), "opencode")
-        return [("", root)], os.path.join(root, "actionboard", MANIFEST), {}
+        config = os.path.join(project if scope == "project" else root, "opencode.json")
+        return [("", root)], os.path.join(root, "actionboard", MANIFEST), {"opencode_json": config}
     if target == "codex":
         base = project if scope == "project" else home
         codex = os.path.join(base, ".codex") if scope == "project" else \
@@ -67,7 +70,8 @@ def plan(target, scope, project):
         agents_md = os.path.join(project, "AGENTS.md") if scope == "project" else os.path.join(codex, "AGENTS.md")
         return ([(".agents/", os.path.join(base, ".agents")), (".codex/", codex)],
                 os.path.join(codex, "actionboard", MANIFEST),
-                {"agents_md": agents_md, "hooks_dir": os.path.join(codex, "actionboard", "hooks")})
+                {"agents_md": agents_md, "hooks_dir": os.path.join(codex, "actionboard", "hooks"),
+                 "config_toml": os.path.join(codex, "config.toml")})
     if target == "antigravity":
         root = os.path.join(project, ".agents", "plugins", PLUGIN) if scope == "project" else \
             os.path.join(home, ".gemini", "config", "plugins", PLUGIN)
@@ -167,6 +171,144 @@ def unmerge_agents_md(path):
         os.remove(path)
 
 
+# ---------------------------------------------------------------- merges (Context7 MCP)
+
+CONTEXT7_BEGIN, CONTEXT7_END = "# actionboard:begin context7", "# actionboard:end context7"
+
+
+def merged_opencode_mcp(path, ours):
+    """opencode.json with mcp.context7 added; None when a context7 server already exists."""
+    data = {"$schema": "https://opencode.ai/config.json"}
+    if os.path.exists(path):
+        with open(path, encoding="utf-8") as fh:
+            try:
+                data = json.load(fh)
+            except ValueError:
+                raise SystemExit(
+                    "%s is not plain JSON (comments?), so the installer cannot merge into it.\n"
+                    "Add the mandatory Context7 MCP by hand, then re-run:\n%s" % (path, ours))
+    if (data.get("mcp") or {}).get("context7"):
+        return None
+    data.setdefault("mcp", {})["context7"] = json.loads(ours)["mcp"]["context7"]
+    return json.dumps(data, indent=2) + "\n"
+
+
+def unmerge_opencode_mcp(path, created):
+    if not os.path.exists(path):
+        return
+    with open(path, encoding="utf-8") as fh:
+        data = json.load(fh)
+    (data.get("mcp") or {}).pop("context7", None)
+    if "mcp" in data and not data["mcp"]:
+        del data["mcp"]
+    if created and set(data) <= {"$schema"}:
+        os.remove(path)
+    else:
+        write_atomic(path, json.dumps(data, indent=2) + "\n")
+
+
+def merged_codex_mcp(path, block):
+    """config.toml with a marked [mcp_servers.context7] block; None when one exists."""
+    text = ""
+    if os.path.exists(path):
+        with open(path, encoding="utf-8") as fh:
+            text = fh.read()
+    if re.search(r'^\s*\[mcp_servers\.("?)context7\1\]', text, re.M):
+        return None
+    body = "%s\n%s%s\n" % (CONTEXT7_BEGIN, block.rstrip("\n") + "\n", CONTEXT7_END)
+    return (text.rstrip("\n") + "\n\n" if text.strip() else "") + body
+
+
+def unmerge_codex_mcp(path, created):
+    if not os.path.exists(path):
+        return
+    with open(path, encoding="utf-8") as fh:
+        text = fh.read()
+    start, end = text.find(CONTEXT7_BEGIN), text.find(CONTEXT7_END)
+    if start == -1 or end == -1:
+        return
+    text = (text[:start].rstrip("\n") + "\n" + text[end + len(CONTEXT7_END):].lstrip("\n")).strip("\n")
+    if created and not text.strip():
+        os.remove(path)
+    else:
+        write_atomic(path, text + "\n")
+
+
+# ---------------------------------------------------------------- optional cost tools
+
+GRAPHIFY_SPEC = "graphifyy==0.9.95"
+NOTES = {
+    "graphify": (
+        "Graphify indexes your code into a lightweight graph map. Agents then read that map "
+        "instead of raw files, which saves input tokens and significantly reduces API cost. "
+        "It is an open-source Python package (graphifyy, Apache-2.0, no telemetry) and builds "
+        "the code graph offline without any API key.",
+        "Install Graphify (%s) now?" % GRAPHIFY_SPEC),
+    "terse": (
+        "Terse output (rules derived from Caveman, bundled with ActionBoard, nothing to "
+        "download) optimizes and cuts down output tokens to reduce generation cost. It applies "
+        "only to background agent chatter. Mission plans, mission reports, source code, commit "
+        "messages, and security reviews always stay in full, standard prose.",
+        "Enable terse output for this project?"),
+}
+PREF_KEYS = {"graphify": "graphify", "terse": "terse_output"}
+
+
+def install_graphify(dry):
+    """Install graphifyy with the first available installer. Returns True on success."""
+    if shutil.which("graphify"):
+        print("graphify is already on PATH; not reinstalling.")
+        return True
+    candidates = []
+    if shutil.which("uv"):
+        candidates.append(["uv", "tool", "install", GRAPHIFY_SPEC])
+    if shutil.which("pipx"):
+        candidates.append(["pipx", "install", GRAPHIFY_SPEC])
+    candidates.append([python_path(), "-m", "pip", "install", "--user", GRAPHIFY_SPEC])
+    for cmd in candidates:
+        print(("would run " if dry else "run ") + " ".join(cmd))
+        if dry:
+            return True
+        if subprocess.run(cmd).returncode == 0:
+            return True
+    print("Graphify install failed; recon will read files instead. Try: " + " ".join(candidates[-1]))
+    return False
+
+
+def preferences(project, chosen, refused, interactive, dry):
+    """Ask (or apply --with/--without) for Graphify and terse output, then record the
+    answers in <project>/.actionboard/preferences.json for mission-preflight."""
+    path = os.path.join(project, ".actionboard", "preferences.json")
+    prefs = {}
+    if os.path.exists(path):
+        with open(path, encoding="utf-8") as fh:
+            prefs = json.load(fh)
+    for feature in ("graphify", "terse"):
+        key = PREF_KEYS[feature]
+        if feature in chosen:
+            answer = True
+        elif feature in refused:
+            answer = False
+        elif interactive and key not in prefs:
+            note, question = NOTES[feature]
+            print("\n" + note)
+            try:
+                answer = input(question + " [y/N] ").strip().lower() in ("y", "yes")
+            except EOFError:
+                print()
+                continue  # no answer: stay undecided so mission-preflight asks
+
+        else:
+            continue  # undecided: mission-preflight asks inside the CLI
+        if feature == "graphify" and answer:
+            answer = install_graphify(dry)
+        prefs[key] = "enabled" if answer else "declined"
+    if prefs and not dry:
+        write_atomic(path, json.dumps(prefs, indent=2, sort_keys=True) + "\n")
+        print("recorded preferences in " + path)
+    return prefs
+
+
 # ---------------------------------------------------------------- install / uninstall
 
 def load_manifest(path):
@@ -193,6 +335,12 @@ def install(target, scope, project, files, version, force, dry):
         if target == "codex" and rel == "AGENTS.actionboard.md":
             record["merges"].append({"kind": "agents-md", "path": extras["agents_md"]})
             continue
+        if target == "codex" and rel == ".codex/actionboard/mcp.toml":
+            record["merges"].append({"kind": "codex-mcp", "path": extras["config_toml"]})
+            continue
+        if target == "opencode" and rel == "actionboard/mcp.json":
+            record["merges"].append({"kind": "opencode-mcp", "path": extras["opencode_json"]})
+            continue
         prefix, dest_root = next((p, d) for p, d in mapping if rel.startswith(p))
         dest = os.path.normpath(os.path.join(dest_root, *rel[len(prefix):].split("/")))
         if os.path.commonpath([dest, os.path.normpath(dest_root)]) != os.path.normpath(dest_root):
@@ -215,12 +363,26 @@ def install(target, scope, project, files, version, force, dry):
 
     # Build merged configs up front so a malformed user file aborts before any write.
     merged = []
-    for m in record["merges"]:
+    prior = {(m["kind"], m["path"]): m for m in previous.get("merges", [])}
+    for m in list(record["merges"]):
+        old = prior.get((m["kind"], m["path"]))
         if m["kind"] == "codex-hooks":
             text = merged_hooks(m["path"], substitute(".codex/hooks.json", files[".codex/hooks.json"], extras))
-            merged.append((m["path"], lambda p=m["path"], t=text: write_atomic(p, t)))
-        else:
+        elif m["kind"] == "agents-md":
             merged.append((m["path"], lambda p=m["path"]: merge_agents_md(p, files["AGENTS.actionboard.md"], False)))
+            continue
+        else:  # Context7: never touch a server the user configured themselves
+            m["created"] = old["created"] if old else not os.path.exists(m["path"])
+            if m["kind"] == "codex-mcp":
+                text = merged_codex_mcp(m["path"], files[".codex/actionboard/mcp.toml"])
+            else:
+                text = merged_opencode_mcp(m["path"], files["actionboard/mcp.json"])
+            if text is None:
+                if not old:  # configured by the user: leave it, and do not remove it later
+                    record["merges"].remove(m)
+                    print("Context7 MCP already configured in %s; leaving it as is." % m["path"])
+                continue
+        merged.append((m["path"], lambda p=m["path"], t=text: write_atomic(p, t)))
 
     for dest, data in writes:
         print(("would write " if dry else "write ") + dest)
@@ -267,7 +429,14 @@ def uninstall(target, scope, project):
         os.remove(path)
         dirs.add(os.path.dirname(path))
     for m in record.get("merges", []):
-        (unmerge_hooks if m["kind"] == "codex-hooks" else unmerge_agents_md)(m["path"])
+        if m["kind"] == "codex-hooks":
+            unmerge_hooks(m["path"])
+        elif m["kind"] == "agents-md":
+            unmerge_agents_md(m["path"])
+        elif m["kind"] == "codex-mcp":
+            unmerge_codex_mcp(m["path"], m.get("created", False))
+        elif m["kind"] == "opencode-mcp":
+            unmerge_opencode_mcp(m["path"], m.get("created", False))
     os.remove(manifest_path)
     dirs.add(os.path.dirname(manifest_path))
     roots = {os.path.abspath(d) for _, d in mapping}
@@ -333,7 +502,15 @@ def main(argv=None):
     ap.add_argument("--force", action="store_true", help="overwrite files ActionBoard did not create")
     ap.add_argument("--dry-run", action="store_true")
     ap.add_argument("--yes", action="store_true", help="do not prompt")
+    ap.add_argument("--with", dest="with_", default="", metavar="graphify,terse",
+                    help="opt in without a prompt: install Graphify and/or enable terse output")
+    ap.add_argument("--without", default="", metavar="graphify,terse",
+                    help="opt out without a prompt")
     args = ap.parse_args(argv)
+    chosen = {x.strip() for x in args.with_.split(",") if x.strip()}
+    refused = {x.strip() for x in args.without.split(",") if x.strip()}
+    if (chosen | refused) - set(NOTES):
+        raise SystemExit("--with/--without accept: " + ", ".join(sorted(NOTES)))
 
     if sys.version_info < (3, 9):
         raise SystemExit("Python 3.9+ is required")
@@ -367,6 +544,12 @@ def main(argv=None):
             files = target_files(t, args.config)
             version = files.pop("_version")
             status |= install(t, scope_name, project, files, version, args.force, args.dry_run)
+
+    # Graphify and terse output are per project and always opt-in: ask here, or let
+    # mission-preflight ask inside the CLI when this run is non-interactive.
+    if not args.uninstall and status == 0 and scope_name == "project":
+        interactive = not args.yes and sys.stdin.isatty()
+        preferences(project, chosen, refused, interactive, args.dry_run)
     return status
 
 

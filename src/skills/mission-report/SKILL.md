@@ -8,6 +8,8 @@ description: Write a ActionBoard V5 Mission Report recording what each Agent shi
 Emits the third and final ActionBoard V5 mission document: the outcome of every assignment, recorded
 against the same graph nodes the plan created.
 
+{{partial:full_prose_rule}}
+
 **Read the format reference first:** `{{skills_root}}/actionboard-kb/references/mission-knowledge-format.md`.
 The report's value depends entirely on reusing the plan's identifiers — a report that mints
 fresh `@id`s records nothing, because nothing links back to what was promised.

@@ -63,3 +63,5 @@ Acceptance: <met | not-met> — <details>
 - Do NOT commit changes.
 - Do NOT dispatch other agents.
 - Do NOT add tests for code that isn't in scope for this mission.
+
+{{partial:operating_policy}}

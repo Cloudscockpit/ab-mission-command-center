@@ -1,0 +1,1066 @@
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Project",
+      "@id": "urn:voltron:mission:verify-and-release-multi-cli-agent-formation-v1",
+      "name": "Verify and release the multi-CLI Agent Formation v1.0.0",
+      "identifier": "verify-and-release-multi-cli-agent-formation-v1",
+      "startDate": "2026-10-25",
+      "description": "Prove the multi-CLI rebuild works live on Claude Code, OpenCode, Codex CLI and Antigravity CLI, fix what breaks, and ship v1.0.0 from Cloudscockpit/ab-mission-command-center.",
+      "member": [
+        {
+          "@id": "urn:voltron:lion:blue"
+        },
+        {
+          "@id": "urn:voltron:lion:green"
+        },
+        {
+          "@id": "urn:voltron:lion:red"
+        },
+        {
+          "@id": "urn:voltron:lion:yellow"
+        }
+      ],
+      "subjectOf": [
+        {
+          "@id": "urn:voltron:mission:verify-and-release-multi-cli-agent-formation-v1:plan"
+        }
+      ]
+    },
+    {
+      "@type": "Report",
+      "@id": "urn:voltron:mission:verify-and-release-multi-cli-agent-formation-v1:plan",
+      "name": "Mission Plan — Verify and release the multi-CLI Agent Formation v1.0.0",
+      "about": {
+        "@id": "urn:voltron:mission:verify-and-release-multi-cli-agent-formation-v1"
+      },
+      "datePublished": "2026-10-25",
+      "creator": {
+        "@id": "urn:voltron:lion:main"
+      },
+      "abstract": "7 assignments, 13 skills-gap entries, 12 risks. Awaiting go/no-go.",
+      "mainEntity": {
+        "@type": "ItemList",
+        "itemListElement": [
+          {
+            "@id": "urn:voltron:mission:verify-and-release-multi-cli-agent-formation-v1:assignment:1"
+          },
+          {
+            "@id": "urn:voltron:mission:verify-and-release-multi-cli-agent-formation-v1:assignment:2"
+          },
+          {
+            "@id": "urn:voltron:mission:verify-and-release-multi-cli-agent-formation-v1:assignment:3"
+          },
+          {
+            "@id": "urn:voltron:mission:verify-and-release-multi-cli-agent-formation-v1:assignment:4"
+          },
+          {
+            "@id": "urn:voltron:mission:verify-and-release-multi-cli-agent-formation-v1:assignment:5"
+          },
+          {
+            "@id": "urn:voltron:mission:verify-and-release-multi-cli-agent-formation-v1:assignment:6"
+          },
+          {
+            "@id": "urn:voltron:mission:verify-and-release-multi-cli-agent-formation-v1:assignment:7"
+          },
+          {
+            "@id": "urn:voltron:mission:verify-and-release-multi-cli-agent-formation-v1:gap:1"
+          },
+          {
+            "@id": "urn:voltron:mission:verify-and-release-multi-cli-agent-formation-v1:gap:2"
+          },
+          {
+            "@id": "urn:voltron:mission:verify-and-release-multi-cli-agent-formation-v1:gap:3"
+          },
+          {
+            "@id": "urn:voltron:mission:verify-and-release-multi-cli-agent-formation-v1:gap:4"
+          },
+          {
+            "@id": "urn:voltron:mission:verify-and-release-multi-cli-agent-formation-v1:gap:5"
+          },
+          {
+            "@id": "urn:voltron:mission:verify-and-release-multi-cli-agent-formation-v1:gap:6"
+          },
+          {
+            "@id": "urn:voltron:mission:verify-and-release-multi-cli-agent-formation-v1:gap:7"
+          },
+          {
+            "@id": "urn:voltron:mission:verify-and-release-multi-cli-agent-formation-v1:gap:8"
+          },
+          {
+            "@id": "urn:voltron:mission:verify-and-release-multi-cli-agent-formation-v1:gap:9"
+          },
+          {
+            "@id": "urn:voltron:mission:verify-and-release-multi-cli-agent-formation-v1:gap:10"
+          },
+          {
+            "@id": "urn:voltron:mission:verify-and-release-multi-cli-agent-formation-v1:gap:11"
+          },
+          {
+            "@id": "urn:voltron:mission:verify-and-release-multi-cli-agent-formation-v1:gap:12"
+          },
+          {
+            "@id": "urn:voltron:mission:verify-and-release-multi-cli-agent-formation-v1:gap:13"
+          },
+          {
+            "@id": "urn:voltron:mission:verify-and-release-multi-cli-agent-formation-v1:risk:1"
+          },
+          {
+            "@id": "urn:voltron:mission:verify-and-release-multi-cli-agent-formation-v1:risk:2"
+          },
+          {
+            "@id": "urn:voltron:mission:verify-and-release-multi-cli-agent-formation-v1:risk:3"
+          },
+          {
+            "@id": "urn:voltron:mission:verify-and-release-multi-cli-agent-formation-v1:risk:4"
+          },
+          {
+            "@id": "urn:voltron:mission:verify-and-release-multi-cli-agent-formation-v1:risk:5"
+          },
+          {
+            "@id": "urn:voltron:mission:verify-and-release-multi-cli-agent-formation-v1:risk:6"
+          },
+          {
+            "@id": "urn:voltron:mission:verify-and-release-multi-cli-agent-formation-v1:risk:7"
+          },
+          {
+            "@id": "urn:voltron:mission:verify-and-release-multi-cli-agent-formation-v1:risk:8"
+          },
+          {
+            "@id": "urn:voltron:mission:verify-and-release-multi-cli-agent-formation-v1:risk:9"
+          },
+          {
+            "@id": "urn:voltron:mission:verify-and-release-multi-cli-agent-formation-v1:risk:10"
+          },
+          {
+            "@id": "urn:voltron:mission:verify-and-release-multi-cli-agent-formation-v1:risk:11"
+          },
+          {
+            "@id": "urn:voltron:mission:verify-and-release-multi-cli-agent-formation-v1:risk:12"
+          }
+        ]
+      }
+    },
+    {
+      "@type": "Organization",
+      "@id": "urn:voltron:lion:main",
+      "additionalType": "https://schema.org/SoftwareApplication",
+      "name": "Black Agent",
+      "description": "Mission commander. Plans, delegates, gates, reports.",
+      "additionalProperty": {
+        "@type": "PropertyValue",
+        "name": "specialty",
+        "value": "command"
+      }
+    },
+    {
+      "@type": "Organization",
+      "@id": "urn:voltron:lion:green",
+      "additionalType": "https://schema.org/SoftwareApplication",
+      "name": "Green Agent",
+      "description": "Recon specialist. Read-only inventory and environment checks.",
+      "additionalProperty": {
+        "@type": "PropertyValue",
+        "name": "specialty",
+        "value": "recon"
+      }
+    },
+    {
+      "@type": "Organization",
+      "@id": "urn:voltron:lion:blue",
+      "additionalType": "https://schema.org/SoftwareApplication",
+      "name": "Blue Agent",
+      "description": "Data and integrations specialist. External CLIs, auth, cross-repo wiring.",
+      "additionalProperty": {
+        "@type": "PropertyValue",
+        "name": "specialty",
+        "value": "integrations"
+      }
+    },
+    {
+      "@type": "Organization",
+      "@id": "urn:voltron:lion:red",
+      "additionalType": "https://schema.org/SoftwareApplication",
+      "name": "Red Agent",
+      "description": "Rapid execution specialist. Writes code, ships fixes.",
+      "additionalProperty": {
+        "@type": "PropertyValue",
+        "name": "specialty",
+        "value": "rapid-execution"
+      }
+    },
+    {
+      "@type": "Organization",
+      "@id": "urn:voltron:lion:yellow",
+      "additionalType": "https://schema.org/SoftwareApplication",
+      "name": "Yellow Agent",
+      "description": "Quality and defense specialist. Tests, live verification, security review.",
+      "additionalProperty": {
+        "@type": "PropertyValue",
+        "name": "specialty",
+        "value": "quality-defense"
+      }
+    },
+    {
+      "@type": "Action",
+      "@id": "urn:voltron:mission:verify-and-release-multi-cli-agent-formation-v1:assignment:1",
+      "name": "Environment recon",
+      "description": "Inventory every CLI on this machine (claude, opencode, agy, codex) with version, auth state and its non-interactive mode (claude -p, opencode run, agy -p, codex exec); confirm openshell is NOT on PATH; confirm the Context7 MCP connects in each CLI (claude mcp list, opencode mcp list, codex mcp list, agy plugin list); recon from ./graphify-out/ built by Black's Step 0 preflight; record the latest CI run on main and which PLAN.md items are still open.",
+      "agent": {
+        "@id": "urn:voltron:lion:green"
+      },
+      "object": [],
+      "actionStatus": "https://schema.org/PotentialActionStatus",
+      "result": {
+        "@type": "DefinedTerm",
+        "name": "acceptance",
+        "description": "Recon report (standard Green header, Recon mode: graph-backed) with a table CLI | version | authenticated | print-mode command | Context7 connected, an openshell-absent check, the CI run id + status, the open PLAN.md item list, and a Files created/changed list (none)."
+      }
+    },
+    {
+      "@type": "Action",
+      "@id": "urn:voltron:mission:verify-and-release-multi-cli-agent-formation-v1:assignment:2",
+      "name": "Codex CLI bring-up and adapter verification",
+      "description": "Install Codex CLI (user runs `codex login`), install dist/codex into a scratch repo, trust hooks via /hooks, and resolve the four UNVERIFIED items in docs/capability-matrix.md: hyphenated agent names, commandWindows quoting on Windows, exec_command payload shape, plugin-vs-project hooks. Patch the Codex adapter only; build to a temp dir with --out to test.",
+      "agent": {
+        "@id": "urn:voltron:lion:blue"
+      },
+      "object": [
+        {
+          "@id": "urn:voltron:file:adapters/codex/adapter.py"
+        },
+        {
+          "@id": "urn:voltron:file:adapters/codex/hooks.json"
+        },
+        {
+          "@id": "urn:voltron:file:adapters/codex/actionboard.rules"
+        }
+      ],
+      "actionStatus": "https://schema.org/PotentialActionStatus",
+      "result": {
+        "@type": "DefinedTerm",
+        "name": "acceptance",
+        "description": "In a scratch repo: `codex exec` spawns green-agent by name; the hook denies `openshell sandbox delete --all` (stub openshell) and `openshell workspace delete x` prompts via rules. `codex mcp list` shows context7 from the installed config.toml block. Each UNVERIFIED item is reported as confirmed or changed, with the codex version."
+      },
+      "additionalProperty": [
+        {
+          "@type": "PropertyValue",
+          "name": "dependsOn",
+          "value": "urn:voltron:mission:verify-and-release-multi-cli-agent-formation-v1:assignment:1"
+        }
+      ]
+    },
+    {
+      "@type": "Action",
+      "@id": "urn:voltron:mission:verify-and-release-multi-cli-agent-formation-v1:assignment:3",
+      "name": "Live smoke round 1 (Claude Code, OpenCode, Antigravity)",
+      "description": "Run smoke tests 4.3, 4.4 (parity vs v0.6.1), 5.8 and 7.6 from tests/smoke/README.md in throwaway repos with the stub openshell first on PATH. Objective: add a /hello endpoint. Check the four-part report, the go/no-go stop, Green running as a separate agent, the / menu entries (/mission-brief, /mission-plan, ...), guard deny/ask behaviour, and the cost layer: preflight asks both opt-in questions with their notes and records .actionboard/preferences.json, Context7 answers, Green recon is graph-backed, and with terse output on the brief/plan/report stay in full prose and every Agent report ends with Files created/changed. Record failures; do not fix them.",
+      "agent": {
+        "@id": "urn:voltron:lion:yellow"
+      },
+      "object": [
+        {
+          "@id": "urn:voltron:file:tests/smoke/results-2026-10.md"
+        },
+        {
+          "@id": "urn:voltron:file:tests/smoke/stub/openshell"
+        }
+      ],
+      "actionStatus": "https://schema.org/PotentialActionStatus",
+      "result": {
+        "@type": "DefinedTerm",
+        "name": "acceptance",
+        "description": "results-2026-10.md has one row per smoke ID: CLI + version, pass/fail per step, transcript excerpt for every failure. The Claude nested-dispatch question (Black as subagent dispatching Green) is answered yes/no."
+      },
+      "additionalProperty": [
+        {
+          "@type": "PropertyValue",
+          "name": "dependsOn",
+          "value": "urn:voltron:mission:verify-and-release-multi-cli-agent-formation-v1:assignment:1"
+        }
+      ]
+    },
+    {
+      "@type": "Action",
+      "@id": "urn:voltron:mission:verify-and-release-multi-cli-agent-formation-v1:assignment:4",
+      "name": "Fix defects and cut release candidate",
+      "description": "Fix every failure from the smoke round and any shared-code change Codex needs; if Claude cannot nest dispatch, switch the Claude start-mission branch to session-plays-Black. Bump src/VERSION to 1.0.0 as the last step and regenerate dist/ and the root marketplace.",
+      "agent": {
+        "@id": "urn:voltron:lion:red"
+      },
+      "object": [
+        {
+          "@id": "urn:voltron:file:src/"
+        },
+        {
+          "@id": "urn:voltron:file:adapters/claude/"
+        },
+        {
+          "@id": "urn:voltron:file:adapters/opencode/"
+        },
+        {
+          "@id": "urn:voltron:file:adapters/antigravity/"
+        },
+        {
+          "@id": "urn:voltron:file:adapters/common/"
+        },
+        {
+          "@id": "urn:voltron:file:scripts/"
+        },
+        {
+          "@id": "urn:voltron:file:dist/"
+        },
+        {
+          "@id": "urn:voltron:file:.claude-plugin/marketplace.json"
+        }
+      ],
+      "actionStatus": "https://schema.org/PotentialActionStatus",
+      "result": {
+        "@type": "DefinedTerm",
+        "name": "acceptance",
+        "description": "`py scripts/build.py --check` prints 'dist/ is up to date'; every failing row in results-2026-10.md links a commit; GitHub CI on the pushed branch is green on all jobs; plugin.json versions read 1.0.0."
+      },
+      "additionalProperty": [
+        {
+          "@type": "PropertyValue",
+          "name": "dependsOn",
+          "value": "urn:voltron:mission:verify-and-release-multi-cli-agent-formation-v1:assignment:2"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "dependsOn",
+          "value": "urn:voltron:mission:verify-and-release-multi-cli-agent-formation-v1:assignment:3"
+        }
+      ]
+    },
+    {
+      "@type": "Action",
+      "@id": "urn:voltron:mission:verify-and-release-multi-cli-agent-formation-v1:assignment:5",
+      "name": "Regression tests, Codex smoke and retest",
+      "description": "Add a failing-before/passing-after test for every defect fixed in the previous assignment; add the new test directory to CI; run smoke 6.6 (Codex) and re-run every failed row on the release candidate; security re-review any change under src/hooks/ or adapters/*/hooks.",
+      "agent": {
+        "@id": "urn:voltron:lion:yellow"
+      },
+      "object": [
+        {
+          "@id": "urn:voltron:file:tests/regressions/test_live_findings.py"
+        },
+        {
+          "@id": "urn:voltron:file:tests/smoke/results-retest-2026-10.md"
+        },
+        {
+          "@id": "urn:voltron:file:.github/workflows/ci.yml"
+        }
+      ],
+      "actionStatus": "https://schema.org/PotentialActionStatus",
+      "result": {
+        "@type": "DefinedTerm",
+        "name": "acceptance",
+        "description": "All four CLIs show pass for every smoke step in results-retest-2026-10.md; each fixed defect has a named test; CI green on Windows, macOS, Linux; guard review lists zero open High findings."
+      },
+      "additionalProperty": [
+        {
+          "@type": "PropertyValue",
+          "name": "dependsOn",
+          "value": "urn:voltron:mission:verify-and-release-multi-cli-agent-formation-v1:assignment:4"
+        }
+      ]
+    },
+    {
+      "@type": "Action",
+      "@id": "urn:voltron:mission:verify-and-release-multi-cli-agent-formation-v1:assignment:6",
+      "name": "Release documentation",
+      "description": "Update README (tested CLI versions, install per CLI, known gaps), flip capability-matrix ⚠️ rows to ✅/❌ with evidence, port docs/index.html to multi-CLI, write the 1.0.0 CHANGELOG entry, tick PLAN.md Definition of Done.",
+      "agent": {
+        "@id": "urn:voltron:lion:red"
+      },
+      "object": [
+        {
+          "@id": "urn:voltron:file:README.md"
+        },
+        {
+          "@id": "urn:voltron:file:docs/capability-matrix.md"
+        },
+        {
+          "@id": "urn:voltron:file:docs/index.html"
+        },
+        {
+          "@id": "urn:voltron:file:CHANGELOG.md"
+        },
+        {
+          "@id": "urn:voltron:file:PLAN.md"
+        }
+      ],
+      "actionStatus": "https://schema.org/PotentialActionStatus",
+      "result": {
+        "@type": "DefinedTerm",
+        "name": "acceptance",
+        "description": "docs/capability-matrix.md contains no ⚠️; README lists the exact CLI versions from the retest file; CHANGELOG has a dated 1.0.0 section; every PLAN.md DoD box is ticked or has a linked reason."
+      },
+      "additionalProperty": [
+        {
+          "@type": "PropertyValue",
+          "name": "dependsOn",
+          "value": "urn:voltron:mission:verify-and-release-multi-cli-agent-formation-v1:assignment:5"
+        }
+      ]
+    },
+    {
+      "@type": "Action",
+      "@id": "urn:voltron:mission:verify-and-release-multi-cli-agent-formation-v1:assignment:7",
+      "name": "Deprecation note on the v0.6.1 repo",
+      "description": "Open (do not merge) a PR on Cloudscockpit/actionboard-build-mission-pipeline adding a README banner that points to Cloudscockpit/ab-mission-command-center. Outward-facing: needs explicit user approval before the PR is created.",
+      "agent": {
+        "@id": "urn:voltron:lion:blue"
+      },
+      "object": [
+        {
+          "@id": "urn:voltron:file:actionboard-build-mission-pipeline/README.md"
+        }
+      ],
+      "actionStatus": "https://schema.org/PotentialActionStatus",
+      "result": {
+        "@type": "DefinedTerm",
+        "name": "acceptance",
+        "description": "A PR URL on the old repo whose diff touches only README.md and links the new repo; it stays open for the user to merge."
+      },
+      "additionalProperty": [
+        {
+          "@type": "PropertyValue",
+          "name": "dependsOn",
+          "value": "urn:voltron:mission:verify-and-release-multi-cli-agent-formation-v1:assignment:6"
+        }
+      ]
+    },
+    {
+      "@type": "SoftwareSourceCode",
+      "@id": "urn:voltron:file:adapters/codex/adapter.py",
+      "name": "adapters/codex/adapter.py",
+      "codeRepository": "https://github.com/Cloudscockpit/ab-mission-command-center"
+    },
+    {
+      "@type": "SoftwareSourceCode",
+      "@id": "urn:voltron:file:adapters/codex/hooks.json",
+      "name": "adapters/codex/hooks.json",
+      "codeRepository": "https://github.com/Cloudscockpit/ab-mission-command-center"
+    },
+    {
+      "@type": "SoftwareSourceCode",
+      "@id": "urn:voltron:file:adapters/codex/actionboard.rules",
+      "name": "adapters/codex/actionboard.rules",
+      "codeRepository": "https://github.com/Cloudscockpit/ab-mission-command-center"
+    },
+    {
+      "@type": "SoftwareSourceCode",
+      "@id": "urn:voltron:file:tests/smoke/results-2026-10.md",
+      "name": "tests/smoke/results-2026-10.md",
+      "codeRepository": "https://github.com/Cloudscockpit/ab-mission-command-center"
+    },
+    {
+      "@type": "SoftwareSourceCode",
+      "@id": "urn:voltron:file:tests/smoke/stub/openshell",
+      "name": "tests/smoke/stub/openshell",
+      "codeRepository": "https://github.com/Cloudscockpit/ab-mission-command-center"
+    },
+    {
+      "@type": "SoftwareSourceCode",
+      "@id": "urn:voltron:file:src/",
+      "name": "src/",
+      "codeRepository": "https://github.com/Cloudscockpit/ab-mission-command-center"
+    },
+    {
+      "@type": "SoftwareSourceCode",
+      "@id": "urn:voltron:file:adapters/claude/",
+      "name": "adapters/claude/",
+      "codeRepository": "https://github.com/Cloudscockpit/ab-mission-command-center"
+    },
+    {
+      "@type": "SoftwareSourceCode",
+      "@id": "urn:voltron:file:adapters/opencode/",
+      "name": "adapters/opencode/",
+      "codeRepository": "https://github.com/Cloudscockpit/ab-mission-command-center"
+    },
+    {
+      "@type": "SoftwareSourceCode",
+      "@id": "urn:voltron:file:adapters/antigravity/",
+      "name": "adapters/antigravity/",
+      "codeRepository": "https://github.com/Cloudscockpit/ab-mission-command-center"
+    },
+    {
+      "@type": "SoftwareSourceCode",
+      "@id": "urn:voltron:file:adapters/common/",
+      "name": "adapters/common/",
+      "codeRepository": "https://github.com/Cloudscockpit/ab-mission-command-center"
+    },
+    {
+      "@type": "SoftwareSourceCode",
+      "@id": "urn:voltron:file:scripts/",
+      "name": "scripts/",
+      "codeRepository": "https://github.com/Cloudscockpit/ab-mission-command-center"
+    },
+    {
+      "@type": "SoftwareSourceCode",
+      "@id": "urn:voltron:file:dist/",
+      "name": "dist/",
+      "codeRepository": "https://github.com/Cloudscockpit/ab-mission-command-center"
+    },
+    {
+      "@type": "SoftwareSourceCode",
+      "@id": "urn:voltron:file:.claude-plugin/marketplace.json",
+      "name": ".claude-plugin/marketplace.json",
+      "codeRepository": "https://github.com/Cloudscockpit/ab-mission-command-center"
+    },
+    {
+      "@type": "SoftwareSourceCode",
+      "@id": "urn:voltron:file:tests/regressions/test_live_findings.py",
+      "name": "tests/regressions/test_live_findings.py",
+      "codeRepository": "https://github.com/Cloudscockpit/ab-mission-command-center"
+    },
+    {
+      "@type": "SoftwareSourceCode",
+      "@id": "urn:voltron:file:tests/smoke/results-retest-2026-10.md",
+      "name": "tests/smoke/results-retest-2026-10.md",
+      "codeRepository": "https://github.com/Cloudscockpit/ab-mission-command-center"
+    },
+    {
+      "@type": "SoftwareSourceCode",
+      "@id": "urn:voltron:file:.github/workflows/ci.yml",
+      "name": ".github/workflows/ci.yml",
+      "codeRepository": "https://github.com/Cloudscockpit/ab-mission-command-center"
+    },
+    {
+      "@type": "SoftwareSourceCode",
+      "@id": "urn:voltron:file:README.md",
+      "name": "README.md",
+      "codeRepository": "https://github.com/Cloudscockpit/ab-mission-command-center"
+    },
+    {
+      "@type": "SoftwareSourceCode",
+      "@id": "urn:voltron:file:docs/capability-matrix.md",
+      "name": "docs/capability-matrix.md",
+      "codeRepository": "https://github.com/Cloudscockpit/ab-mission-command-center"
+    },
+    {
+      "@type": "SoftwareSourceCode",
+      "@id": "urn:voltron:file:docs/index.html",
+      "name": "docs/index.html",
+      "codeRepository": "https://github.com/Cloudscockpit/ab-mission-command-center"
+    },
+    {
+      "@type": "SoftwareSourceCode",
+      "@id": "urn:voltron:file:CHANGELOG.md",
+      "name": "CHANGELOG.md",
+      "codeRepository": "https://github.com/Cloudscockpit/ab-mission-command-center"
+    },
+    {
+      "@type": "SoftwareSourceCode",
+      "@id": "urn:voltron:file:PLAN.md",
+      "name": "PLAN.md",
+      "codeRepository": "https://github.com/Cloudscockpit/ab-mission-command-center"
+    },
+    {
+      "@type": "SoftwareSourceCode",
+      "@id": "urn:voltron:file:actionboard-build-mission-pipeline/README.md",
+      "name": "actionboard-build-mission-pipeline/README.md",
+      "codeRepository": "https://github.com/Cloudscockpit/actionboard-build-mission-pipeline"
+    },
+    {
+      "@type": "DefinedTerm",
+      "@id": "urn:voltron:mission:verify-and-release-multi-cli-agent-formation-v1:gap:1",
+      "name": "Mandatory Context7 MCP (current library, MCP, plugin, CLI versions)",
+      "additionalProperty": [
+        {
+          "@type": "PropertyValue",
+          "name": "status",
+          "value": "covered"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "notes",
+          "value": "version-lookup -> green-agent; configured for all four CLIs by install.py; verified connected in OpenCode 1.19.4"
+        }
+      ]
+    },
+    {
+      "@type": "DefinedTerm",
+      "@id": "urn:voltron:mission:verify-and-release-multi-cli-agent-formation-v1:gap:2",
+      "name": "Code-graph recon with Graphify",
+      "additionalProperty": [
+        {
+          "@type": "PropertyValue",
+          "name": "status",
+          "value": "use-existing-skill:mission-preflight"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "notes",
+          "value": "Asks before installing graphifyy 0.9.95; builds ./graphify-out/ offline with no API key; graphify benchmark measured 11-25x fewer tokens per recon question on this repository"
+        }
+      ]
+    },
+    {
+      "@type": "DefinedTerm",
+      "@id": "urn:voltron:mission:verify-and-release-multi-cli-agent-formation-v1:gap:3",
+      "name": "Output-token reduction for agent chatter",
+      "additionalProperty": [
+        {
+          "@type": "PropertyValue",
+          "name": "status",
+          "value": "use-existing-skill:terse-output"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "notes",
+          "value": "Conditional: only after the user says yes in preflight; mission documents, code, commits and security reviews stay full prose"
+        }
+      ]
+    },
+    {
+      "@type": "DefinedTerm",
+      "@id": "urn:voltron:mission:verify-and-release-multi-cli-agent-formation-v1:gap:4",
+      "name": "Environment and codebase recon",
+      "additionalProperty": [
+        {
+          "@type": "PropertyValue",
+          "name": "status",
+          "value": "covered"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "notes",
+          "value": "codebase-recon -> green-agent, graph-backed after Step 0"
+        }
+      ]
+    },
+    {
+      "@type": "DefinedTerm",
+      "@id": "urn:voltron:mission:verify-and-release-multi-cli-agent-formation-v1:gap:5",
+      "name": "Scripted CLI smoke runs (claude -p, opencode run, agy -p, codex exec)",
+      "additionalProperty": [
+        {
+          "@type": "PropertyValue",
+          "name": "status",
+          "value": "covered"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "notes",
+          "value": "test-authoring -> yellow-agent via Bash; costs model tokens; needs each CLI authenticated"
+        }
+      ]
+    },
+    {
+      "@type": "DefinedTerm",
+      "@id": "urn:voltron:mission:verify-and-release-multi-cli-agent-formation-v1:gap:6",
+      "name": "Codex CLI install and auth",
+      "additionalProperty": [
+        {
+          "@type": "PropertyValue",
+          "name": "status",
+          "value": "covered"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "notes",
+          "value": "api-integration -> blue-agent; precondition NOT yet met: user must run `codex login`"
+        }
+      ]
+    },
+    {
+      "@type": "DefinedTerm",
+      "@id": "urn:voltron:mission:verify-and-release-multi-cli-agent-formation-v1:gap:7",
+      "name": "Visual TUI checks (/ menu, Codex /hooks trust)",
+      "additionalProperty": [
+        {
+          "@type": "PropertyValue",
+          "name": "status",
+          "value": "needs-new-skill"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "notes",
+          "value": "No automation for interactive TUIs; proposed: tui-checklist skill that walks the user through manual checks and records answers. Until then the user does these steps"
+        }
+      ]
+    },
+    {
+      "@type": "DefinedTerm",
+      "@id": "urn:voltron:mission:verify-and-release-multi-cli-agent-formation-v1:gap:8",
+      "name": "Adapter and core fixes",
+      "additionalProperty": [
+        {
+          "@type": "PropertyValue",
+          "name": "status",
+          "value": "covered"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "notes",
+          "value": "code-implementation -> red-agent"
+        }
+      ]
+    },
+    {
+      "@type": "DefinedTerm",
+      "@id": "urn:voltron:mission:verify-and-release-multi-cli-agent-formation-v1:gap:9",
+      "name": "Regression tests and CI wiring",
+      "additionalProperty": [
+        {
+          "@type": "PropertyValue",
+          "name": "status",
+          "value": "covered"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "notes",
+          "value": "test-authoring -> yellow-agent"
+        }
+      ]
+    },
+    {
+      "@type": "DefinedTerm",
+      "@id": "urn:voltron:mission:verify-and-release-multi-cli-agent-formation-v1:gap:10",
+      "name": "Guard security re-review",
+      "additionalProperty": [
+        {
+          "@type": "PropertyValue",
+          "name": "status",
+          "value": "covered"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "notes",
+          "value": "security-review -> yellow-agent"
+        }
+      ]
+    },
+    {
+      "@type": "DefinedTerm",
+      "@id": "urn:voltron:mission:verify-and-release-multi-cli-agent-formation-v1:gap:11",
+      "name": "Multi-CLI docs site port (docs/index.html)",
+      "additionalProperty": [
+        {
+          "@type": "PropertyValue",
+          "name": "status",
+          "value": "covered"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "notes",
+          "value": "file-scaffolding -> red-agent"
+        }
+      ]
+    },
+    {
+      "@type": "DefinedTerm",
+      "@id": "urn:voltron:mission:verify-and-release-multi-cli-agent-formation-v1:gap:12",
+      "name": "Cross-repo PR, tag and GitHub release",
+      "additionalProperty": [
+        {
+          "@type": "PropertyValue",
+          "name": "status",
+          "value": "needs-new-skill"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "notes",
+          "value": "No registry action; proposed: release-publish skill (gh pr create, tag, release notes). Tag + release stay a user step after the report"
+        }
+      ]
+    },
+    {
+      "@type": "DefinedTerm",
+      "@id": "urn:voltron:mission:verify-and-release-multi-cli-agent-formation-v1:gap:13",
+      "name": "Mission report with JSON-LD",
+      "additionalProperty": [
+        {
+          "@type": "PropertyValue",
+          "name": "status",
+          "value": "use-existing-skill:mission-report"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "notes",
+          "value": "mission-report-authoring; requires this plan to exist (met once written)"
+        }
+      ]
+    },
+    {
+      "@type": "Thing",
+      "@id": "urn:voltron:mission:verify-and-release-multi-cli-agent-formation-v1:risk:1",
+      "additionalType": "Risk",
+      "name": "A guard regression lets a smoke test run a real destructive openshell command",
+      "additionalProperty": [
+        {
+          "@type": "PropertyValue",
+          "name": "category",
+          "value": "data-loss"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "severity",
+          "value": "H"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "mitigation",
+          "value": "openshell is not installed here; smoke runs put a stub openshell (echo only) first on PATH and assert it was never reached for denied commands"
+        }
+      ]
+    },
+    {
+      "@type": "Thing",
+      "@id": "urn:voltron:mission:verify-and-release-multi-cli-agent-formation-v1:risk:2",
+      "additionalType": "Risk",
+      "name": "Terse output leaks into mission briefs, plans, reports, code, commits or security reviews",
+      "additionalProperty": [
+        {
+          "@type": "PropertyValue",
+          "name": "category",
+          "value": "scope"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "severity",
+          "value": "H"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "mitigation",
+          "value": "Full-prose rule in the three document skills, in every agent's operating policy and in terse-output itself; build tests assert the rule ships to every CLI; smoke round checks the documents with terse output on"
+        }
+      ]
+    },
+    {
+      "@type": "Thing",
+      "@id": "urn:voltron:mission:verify-and-release-multi-cli-agent-formation-v1:risk:3",
+      "additionalType": "Risk",
+      "name": "Hosted Context7 server is rate limited or unreachable, and preflight stops every mission",
+      "additionalProperty": [
+        {
+          "@type": "PropertyValue",
+          "name": "category",
+          "value": "integration"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "severity",
+          "value": "M"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "mitigation",
+          "value": "Preflight states the failure and the fix in full sentences; optional CONTEXT7_API_KEY raises limits; a user-configured context7 server (local or keyed) is detected and left untouched"
+        }
+      ]
+    },
+    {
+      "@type": "Thing",
+      "@id": "urn:voltron:mission:verify-and-release-multi-cli-agent-formation-v1:risk:4",
+      "additionalType": "Risk",
+      "name": "Installing Graphify changes the user's Python environment",
+      "additionalProperty": [
+        {
+          "@type": "PropertyValue",
+          "name": "category",
+          "value": "data-loss"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "severity",
+          "value": "L"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "mitigation",
+          "value": "Asked first with an explanatory note; isolated installers preferred (uv tool, then pipx); version pinned; graphify install/hook commands that edit global CLI config are never run"
+        }
+      ]
+    },
+    {
+      "@type": "Thing",
+      "@id": "urn:voltron:mission:verify-and-release-multi-cli-agent-formation-v1:risk:5",
+      "additionalType": "Risk",
+      "name": "Claude Code subagents cannot dispatch subagents, so Black-as-subagent never runs Green",
+      "additionalProperty": [
+        {
+          "@type": "PropertyValue",
+          "name": "category",
+          "value": "technical"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "severity",
+          "value": "H"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "mitigation",
+          "value": "Smoke 4.3 answers it first; fallback is the session-plays-Black branch already used on the other CLIs"
+        }
+      ]
+    },
+    {
+      "@type": "Thing",
+      "@id": "urn:voltron:mission:verify-and-release-multi-cli-agent-formation-v1:risk:6",
+      "additionalType": "Risk",
+      "name": "Codex assumptions are wrong (hyphenated names, Windows hook quoting, exec_command payload)",
+      "additionalProperty": [
+        {
+          "@type": "PropertyValue",
+          "name": "category",
+          "value": "integration"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "severity",
+          "value": "H"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "mitigation",
+          "value": "Blue verifies each item live before Red cuts the RC; x-codex name overrides and commandWindows tweaks are adapter-only changes"
+        }
+      ]
+    },
+    {
+      "@type": "Thing",
+      "@id": "urn:voltron:mission:verify-and-release-multi-cli-agent-formation-v1:risk:7",
+      "additionalType": "Risk",
+      "name": "Antigravity workspace plugin loads but the hook 'allow' result auto-approves commands",
+      "additionalProperty": [
+        {
+          "@type": "PropertyValue",
+          "name": "category",
+          "value": "integration"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "severity",
+          "value": "M"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "mitigation",
+          "value": "Smoke 7.6 checks a harmless command still prompts per normal agy permissions; if not, emit {} instead of allow"
+        }
+      ]
+    },
+    {
+      "@type": "Thing",
+      "@id": "urn:voltron:mission:verify-and-release-multi-cli-agent-formation-v1:risk:8",
+      "additionalType": "Risk",
+      "name": "Model nondeterminism makes smoke results flaky",
+      "additionalProperty": [
+        {
+          "@type": "PropertyValue",
+          "name": "category",
+          "value": "technical"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "severity",
+          "value": "M"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "mitigation",
+          "value": "Fixed objective, throwaway repo, record CLI + model version; a step fails only if it fails twice"
+        }
+      ]
+    },
+    {
+      "@type": "Thing",
+      "@id": "urn:voltron:mission:verify-and-release-multi-cli-agent-formation-v1:risk:9",
+      "additionalType": "Risk",
+      "name": "Private repo blocks marketplace / agy installs from GitHub on other machines",
+      "additionalProperty": [
+        {
+          "@type": "PropertyValue",
+          "name": "category",
+          "value": "integration"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "severity",
+          "value": "M"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "mitigation",
+          "value": "Smoke from the local clone; flipping to public is a user decision at release"
+        }
+      ]
+    },
+    {
+      "@type": "Thing",
+      "@id": "urn:voltron:mission:verify-and-release-multi-cli-agent-formation-v1:risk:10",
+      "additionalType": "Risk",
+      "name": "Optional work creeps in (npx/uvx package, default non-Anthropic model maps, new CLIs)",
+      "additionalProperty": [
+        {
+          "@type": "PropertyValue",
+          "name": "category",
+          "value": "scope"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "severity",
+          "value": "M"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "mitigation",
+          "value": "Out of scope for this mission; logged as follow-ups in the report"
+        }
+      ]
+    },
+    {
+      "@type": "Thing",
+      "@id": "urn:voltron:mission:verify-and-release-multi-cli-agent-formation-v1:risk:11",
+      "additionalType": "Risk",
+      "name": "Installer or smoke runs edit a real project's AGENTS.md or .codex/hooks.json",
+      "additionalProperty": [
+        {
+          "@type": "PropertyValue",
+          "name": "category",
+          "value": "data-loss"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "severity",
+          "value": "L"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "mitigation",
+          "value": "Throwaway repos only; installer refuses foreign files and uninstall is manifest-tracked"
+        }
+      ]
+    },
+    {
+      "@type": "Thing",
+      "@id": "urn:voltron:mission:verify-and-release-multi-cli-agent-formation-v1:risk:12",
+      "additionalType": "Risk",
+      "name": "CLI updates change formats between test and release",
+      "additionalProperty": [
+        {
+          "@type": "PropertyValue",
+          "name": "category",
+          "value": "technical"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "severity",
+          "value": "L"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "mitigation",
+          "value": "Pin tested versions in README; golden/dist drift check in CI catches build-side drift"
+        }
+      ]
+    }
+  ]
+}

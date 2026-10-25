@@ -15,6 +15,22 @@ Multi-CLI rebuild of ActionBoard V5 Agent Formation (from the Claude-only v0.6.1
   `sandbox-warden` as a subtask, as on Claude Code.
 - `sandbox-warden` may load skills (needed to run `/mission-harness`).
 - CI: guard, build/drift/lint, installer, and OpenCode plugin tests on 3 OSes × Python 3.9–3.12.
+- Cost and context layer:
+  - **Context7 MCP is mandatory** on every CLI (hosted server, no Node); the installer adds it
+    and never touches a `context7` server the user already configured. Missions stop without it.
+  - `mission-preflight` skill (Step 0 of every mission): checks Context7, asks before installing
+    Graphify, builds the code graph offline, asks before enabling terse output.
+  - `terse-output` skill: output-token rules derived from Caveman v4.0.1 (Apache-2.0, LICENSE and
+    NOTICE bundled), limited to agent chatter.
+  - Shared operating policy in every agent: graph-first recon, Context7 version checks, terse
+    chatter only when enabled, full prose for mission documents/code/commits/security reviews,
+    and a `Files created/changed:` list at the end of every report.
+  - `install.py --with graphify,terse` / `--without …`, with an explanatory note before each prompt.
+  - Registry actions `version-lookup`, `mission-preflight`, `output-compression`.
+
+### Fixed
+- Green Agent's "10–50× cheaper" claim replaced with the measured `graphify benchmark` figure,
+  and its `/graphify` suggestions with the offline `graphify update .` / preflight.
 
 ### Changed
 - Guard splits operator chains quote-aware (`sh -c 'a && openshell …'` is now evaluated instead of
