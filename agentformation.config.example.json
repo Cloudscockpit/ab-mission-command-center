@@ -1,0 +1,8 @@
+{
+  "models": {
+    "claude": { "strong": "opus", "fast": "sonnet" },
+    "opencode": { "strong": "anthropic/claude-opus-5-5", "fast": "anthropic/claude-sonnet-5-5" },
+    "codex": { "strong": "gpt-6.1-sol", "strong_effort": "high", "fast_effort": "medium" },
+    "antigravity": { "strong": "pro", "fast": "flash" }
+  }
+}

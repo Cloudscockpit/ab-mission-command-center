@@ -1,0 +1,27 @@
+# ActionBoard OpenShell approval rules for Codex CLI.
+#
+# Codex hooks cannot "ask", so the ActionBoard hook denies every guard "ask"
+# except a plain `openshell ...` command whose rule is listed here, which it
+# lets through for these rules to prompt on. Keep this file in sync with
+# STATIC_ASK["codex"] in adapters/common/hooks/cli_hook.py.
+
+# global-policy: prompts on every `policy set`, since --global may come later in argv.
+prefix_rule(
+    pattern = ["openshell", "policy", "set"],
+    decision = "prompt",
+    justification = "A --global policy blocks every per-sandbox policy update until deleted.",
+)
+
+# workspace-delete
+prefix_rule(
+    pattern = ["openshell", "workspace", "delete"],
+    decision = "prompt",
+    justification = "Deleting a workspace removes membership records and inference routes.",
+)
+
+# cross-workspace-delete (also denied by the hook)
+prefix_rule(
+    pattern = ["openshell", "sandbox", "delete", ["--all", "--all-workspaces"]],
+    decision = "forbidden",
+    justification = "Target one workspace with --workspace, or delete by explicit name.",
+)

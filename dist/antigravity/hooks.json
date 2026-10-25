@@ -1,0 +1,28 @@
+{
+  "actionboard-openshell-guard": {
+    "PreToolUse": [
+      {
+        "matcher": "^run_command$",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"__PYTHON__\" ./actionboard/hooks/cli_hook.py --cli antigravity --event pre",
+            "timeout": 30
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "^run_command$",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"__PYTHON__\" ./actionboard/hooks/cli_hook.py --cli antigravity --event post",
+            "timeout": 30
+          }
+        ]
+      }
+    ]
+  }
+}

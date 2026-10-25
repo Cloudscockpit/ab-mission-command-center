@@ -1,0 +1,41 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  python:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        python: ["3.9", "3.10", "3.11", "3.12"]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+      - name: dist/ drift check
+        run: python scripts/build.py --check
+      - name: Guard + hook adapter tests
+        run: python -m unittest discover -s tests/guard -v
+      - name: Build, golden, and schema lint tests
+        run: python -m unittest discover -s tests/build -v
+      - name: Installer round trip
+        run: python -m unittest discover -s tests/install -v
+
+  opencode-plugin:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+      - name: OpenCode guard plugin
+        run: node --test tests/opencode/plugin.test.mjs

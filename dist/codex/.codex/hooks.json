@@ -1,0 +1,31 @@
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "^Bash$",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"__PYTHON__\" \"__HOOKS_DIR__/cli_hook.py\" --cli codex --event pre",
+            "commandWindows": "\"__PYTHON__\" \"__HOOKS_DIR__/cli_hook.py\" --cli codex --event pre",
+            "timeout": 30,
+            "statusMessage": "ActionBoard OpenShell guard"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "^Bash$",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"__PYTHON__\" \"__HOOKS_DIR__/cli_hook.py\" --cli codex --event post",
+            "commandWindows": "\"__PYTHON__\" \"__HOOKS_DIR__/cli_hook.py\" --cli codex --event post",
+            "timeout": 30
+          }
+        ]
+      }
+    ]
+  }
+}
