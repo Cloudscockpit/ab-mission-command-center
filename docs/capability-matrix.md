@@ -13,7 +13,7 @@ only, not installed), and Antigravity CLI `agy` 1.4.0.
 | Nested delegation (subagent → subagent) | ⚠️ v0.6.1 relies on it (Black runs as a subagent and dispatches Green); Claude Code docs have said subagents cannot spawn subagents — verify in smoke test 4.3 | ❌ by default (`subagent_depth` = 1) | ❌ by default (`agents.max_depth` = 1) | ✅ up to 10 levels |
 | Slash commands with args | ✅ `commands/*.md`, `$ARGUMENTS` | ✅ `.opencode/commands/*.md`, `$ARGUMENTS` | ❌ prompts are deprecated and user-level only → **skill** `$start-mission` | ❌ workflows are deprecated → **skill** `/start-mission` |
 | Pre-tool hook: block | ✅ | ✅ `tool.execute.before` + throw | ✅ `PreToolUse` | ✅ `PreToolUse` |
-| Pre-tool hook: ask | ✅ | ❌ → static `permission.bash` ask patterns | ❌ (parsed, unsupported) → `.rules` `prompt` | ✅ |
+| Pre-tool hook: ask | ✅ | ✅ 2.x `ctx.permission.hook("evaluate")`; ❌ 1.x → static ask patterns | ❌ (parsed, unsupported) → `.rules` `prompt` | ✅ |
 | Post-tool hook (audit) | ✅ | ✅ `tool.execute.after` | ✅ `PostToolUse` | ✅ `PostToolUse` |
 | Shell tool name | `Bash` | `bash` | `Bash` | `run_command` |
 | Per-agent model | ✅ `opus`/`sonnet`/`inherit` | ✅ `provider/model` | ✅ `model` in agent TOML | ⚠️ tier only: `inherit`/`flash`/`pro` |
@@ -38,9 +38,19 @@ only, not installed), and Antigravity CLI `agy` 1.4.0.
 | Codex hooks on Windows (`commandWindows`, quoting) | Codex is not installed here | Guard not enforced on Codex/Windows |
 | Codex agent names with hyphens (`red-agent`) | Docs examples use underscores | Black Agent has to spawn by a different name |
 | Codex plugin hooks in the CLI | Docs only cover the desktop app | The adapter does not use plugin hooks; it installs `.codex/hooks.json` |
-| Antigravity PreToolUse failure semantics | No headless probe | The hook always exits 0 with an explicit JSON decision |
 | Antigravity `{"decision": "allow"}` vs no output | Docs list both `allow` and `auto_approve` | Treated as "no objection"; `auto_approve` is never sent |
-| Antigravity workspace plugin loading | `agy agents` prints nothing headlessly | `agy plugin validate --strict` passes |
+| Codex hook command quoting on Windows | Same risk agy had (see below) | Installer now writes unquoted paths when they contain no spaces |
+
+## Live verification (2026-10-25)
+
+Real CLI runs in throwaway projects, with `openshell` absent from PATH so nothing could execute.
+
+| CLI | Version | Result |
+|---|---|---|
+| OpenCode | **2.1.4** (`@opencode/cli`) | Six agents load with the right modes; v1-style `permission` rules are translated to 2.x `shell` rules; Context7 shows `connected`. **2.x dropped `tool.execute.before`** and renamed the shell tool to `shell`, so the 1.x plugin never fired. Replaced by a 2.x plugin (`default { id, setup }`, `ctx.permission.hook("evaluate")`, native **ask**). Live run: `openshell sandbox delete --all-workspaces` → `permission.rejected: ActionBoard guard: Refusing a cross-workspace sandbox delete…`. The 1.x plugin ships as `actionboard/legacy/` and `install.py` picks it when it detects OpenCode 1.x. |
+| Antigravity CLI | **1.4.7** | Workspace plugin loads and its PreToolUse hook runs. **Bug found and fixed:** agy re-escapes quotes as `\"` before `cmd /c`, so a quoted Python path failed; when the hook failed, agy blocked the tool (fail-closed, previously unverified). After the fix, live run → `tool call denied by pre-tool hook: Refusing a cross-workspace sandbox delete…`. |
+| Claude Code | 2.1.310 | `claude plugin validate` passes for the plugin and marketplace; Context7 connected. Live mission run pending (smoke 4.3). |
+| Codex CLI | not installed | Pending (assignment 2). |
 
 ## Guard limits
 

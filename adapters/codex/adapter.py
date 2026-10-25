@@ -8,7 +8,7 @@ and the session itself plays Black Agent. That also respects Codex's default
 agent depth of 1: the root session spawns the specialists, they spawn nothing.
 
 Hooks cannot "ask" in Codex; asks go to .codex/rules (decision = "prompt").
-__PYTHON__ and __HOOKS_DIR__ in hooks.json are filled in by scripts/install.py.
+__PYTHON_CMD__ and __HOOK_SCRIPT__ in hooks.json are filled in by scripts/install.py.
 """
 
 import json

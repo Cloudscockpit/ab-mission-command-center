@@ -58,7 +58,7 @@ class RoundTrip(unittest.TestCase):
                 self.assertEqual(run("--target", t, "--project", self.project)[0], 0, t)
         pre = self.hooks()["PreToolUse"]
         self.assertEqual(len(pre), 2)
-        self.assertNotIn("__PYTHON__", json.dumps(pre))
+        self.assertNotRegex(json.dumps(pre), r"__[A-Z_]+__")
         with open(os.path.join(self.project, "AGENTS.md"), encoding="utf-8") as fh:
             self.assertEqual(fh.read().count("actionboard:begin"), 1)
         for rel in (".opencode/agents/black-agent.md", ".opencode/plugins/actionboard-guard.ts",
@@ -68,7 +68,7 @@ class RoundTrip(unittest.TestCase):
             self.assertTrue(os.path.exists(os.path.join(self.project, rel)), rel)
         with open(os.path.join(self.project, ".agents/plugins/actionboard-v5-agentformation/hooks.json"),
                   encoding="utf-8") as fh:
-            self.assertNotIn("__PYTHON__", fh.read())
+            self.assertNotRegex(fh.read(), r"__[A-Z_]+__")
 
         for t in ("opencode", "codex", "antigravity"):
             self.assertEqual(run("--target", t, "--project", self.project, "--uninstall")[0], 0, t)

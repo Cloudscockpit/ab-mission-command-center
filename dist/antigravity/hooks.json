@@ -6,7 +6,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "\"__PYTHON__\" ./actionboard/hooks/cli_hook.py --cli antigravity --event pre",
+            "command": "__PYTHON_CMD__ ./actionboard/hooks/cli_hook.py --cli antigravity --event pre",
             "timeout": 30
           }
         ]
@@ -18,7 +18,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "\"__PYTHON__\" ./actionboard/hooks/cli_hook.py --cli antigravity --event post",
+            "command": "__PYTHON_CMD__ ./actionboard/hooks/cli_hook.py --cli antigravity --event post",
             "timeout": 30
           }
         ]

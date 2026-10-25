@@ -6,8 +6,8 @@
         "hooks": [
           {
             "type": "command",
-            "command": "\"__PYTHON__\" \"__HOOKS_DIR__/cli_hook.py\" --cli codex --event pre",
-            "commandWindows": "\"__PYTHON__\" \"__HOOKS_DIR__/cli_hook.py\" --cli codex --event pre",
+            "command": "__PYTHON_CMD__ __HOOK_SCRIPT__ --cli codex --event pre",
+            "commandWindows": "__PYTHON_CMD__ __HOOK_SCRIPT__ --cli codex --event pre",
             "timeout": 30,
             "statusMessage": "ActionBoard OpenShell guard"
           }
@@ -20,8 +20,8 @@
         "hooks": [
           {
             "type": "command",
-            "command": "\"__PYTHON__\" \"__HOOKS_DIR__/cli_hook.py\" --cli codex --event post",
-            "commandWindows": "\"__PYTHON__\" \"__HOOKS_DIR__/cli_hook.py\" --cli codex --event post",
+            "command": "__PYTHON_CMD__ __HOOK_SCRIPT__ --cli codex --event post",
+            "commandWindows": "__PYTHON_CMD__ __HOOK_SCRIPT__ --cli codex --event post",
             "timeout": 30
           }
         ]

@@ -1,104 +1,63 @@
-// ActionBoard OpenShell guard + audit for OpenCode.
+// ActionBoard OpenShell guard + audit for OpenCode 2.x.
 //
-// tool.execute.before runs the neutral guard (actionboard/hooks/core/guard.py)
-// on every bash call (no text pre-filter: "ope"nshell must not slip past). A
-// plugin hook cannot "ask" in OpenCode, so:
-//   deny -> throw (the message goes back to the model)
-//   ask  -> pass through ONLY when the command is one literal openshell call
-//           that the agents' permission.bash ask pattern for that rule really
-//           matches (OpenCode then prompts the user); otherwise throw.
-// Fails CLOSED: if Python is unavailable or the guard crashes, any command
-// that could mention openshell is blocked.
+// permission "evaluate" hook: runs after the agents' configured permission rules
+// and before a shell command runs or a prompt is shown. OpenCode passes each
+// command the shell scanner found as a resource; the neutral guard
+// (actionboard/hooks/core/guard.py) checks every one and the most severe wins:
+//   deny -> effect "deny" with the reason
+//   ask  -> effect "ask" with the reason (OpenCode 2.x prompts natively)
+// An explicit configured deny is final and never reaches this hook.
+// Fails CLOSED: if Python is unavailable or the guard crashes, a command that
+// mentions openshell is denied.
 //
-// tool.execute.after appends state-changing openshell calls to
+// tool "execute.after" hook: appends state-changing openshell calls to
 // .openshell-audit.log via audit.py and never throws.
+//
+// OpenCode 1.x loads named exports instead; scripts/install.py installs
+// actionboard/legacy/actionboard-guard.v1.ts there.
 
-import { spawnSync } from "node:child_process"
-import { existsSync, readFileSync } from "node:fs"
-import { dirname, join } from "node:path"
-import { fileURLToPath } from "node:url"
+import { audit, evaluate, GUARD_UNAVAILABLE, mentionsOpenshell } from "../actionboard/guard-client.ts"
 
-const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..", "actionboard")
-const CORE = join(ROOT, "hooks", "core")
-// Mirrors OPENSHELL_BASH in adapters/opencode/adapter.py (glob patterns).
-const STATIC_ASK: Record<string, (cmd: string) => boolean> = {
-  "global-policy": (cmd) => cmd.startsWith("openshell policy set ") && cmd.includes("--global"),
-  "workspace-delete": (cmd) => cmd.startsWith("openshell workspace delete"),
-  "full-endpoint": (cmd) => cmd.startsWith("openshell ") && cmd.includes(":full"),
+type Evaluation = {
+  readonly sessionID: string
+  readonly action: string
+  readonly resources: readonly string[]
+  effect: "allow" | "ask" | "deny"
+  message?: string
 }
 
-const mentions = (text: string) => text.replace(/["'\\^`]/g, "").toLowerCase().includes("openshell")
+const RANK = { allow: 0, ask: 1, deny: 2 } as const
 
-type Verdict = { decision: string; reason: string; rule: string; plain: boolean }
+export function decide(resources: readonly string[], cwd: string): { effect: "allow" | "ask" | "deny"; message: string } {
+  let best: { effect: "allow" | "ask" | "deny"; message: string } = { effect: "allow", message: "" }
+  for (const command of resources) {
+    const verdict = evaluate(command, cwd)
+    const found = verdict
+      ? { effect: verdict.decision, message: verdict.reason ? `ActionBoard guard: ${verdict.reason}` : "" }
+      : mentionsOpenshell(command)
+        ? { effect: "deny" as const, message: GUARD_UNAVAILABLE }
+        : { effect: "allow" as const, message: "" }
+    if (RANK[found.effect] > RANK[best.effect]) best = found
+  }
+  return best
+}
 
-let python: string[] | null | undefined
-
-function findPython(): string[] | null {
-  if (python !== undefined) return python
-  const candidates: string[][] = []
-  try {
-    const configured = JSON.parse(readFileSync(join(ROOT, "config.json"), "utf8")).python
-    if (configured && !configured.startsWith("__") && existsSync(configured)) candidates.push([configured])
-  } catch {}
-  candidates.push(["python3"], ["python"], ["py", "-3"])
-  python = null
-  for (const c of candidates) {
-    const probe = spawnSync(c[0], [...c.slice(1), "-c", "import sys; sys.exit(sys.version_info < (3, 9))"], {
-      stdio: "ignore",
+export default {
+  id: "actionboard-guard",
+  async setup(ctx: any) {
+    const cwd: string = ctx.directory ?? ctx.project?.directory ?? process.cwd()
+    await ctx.permission.hook("evaluate", (event: Evaluation) => {
+      if (event.action !== "shell") return
+      const verdict = decide(event.resources, cwd)
+      if (RANK[verdict.effect] > RANK[event.effect]) {
+        event.effect = verdict.effect
+        event.message = verdict.message
+      }
     })
-    if (probe.status === 0) {
-      python = c
-      break
-    }
-  }
-  return python
-}
-
-function run(script: string, payload: object, cwd: string): string | null {
-  const py = findPython()
-  if (!py) return null
-  const res = spawnSync(py[0], [...py.slice(1), join(CORE, script)], {
-    input: JSON.stringify(payload),
-    encoding: "utf8",
-    cwd,
-    timeout: 15000,
-  })
-  return res.status === 0 ? res.stdout : null
-}
-
-export const ActionBoardGuard = async ({ directory }: { directory: string }) => {
-  return {
-    "tool.execute.before": async (input: { tool: string }, output: { args: any }) => {
-      if (input.tool !== "bash") return
-      const command: string = String(output.args?.command ?? "")
-      const raw = run("guard.py", { tool: "bash", command }, directory)
-      let verdict: Verdict
-      try {
-        verdict = JSON.parse(raw ?? "")
-      } catch {
-        if (!mentions(command)) return
-        throw new Error(
-          "ActionBoard guard could not run (Python 3.9+ unavailable or guard failed) and this " +
-            "command mentions openshell. Blocked; review it and run it yourself if intended.",
-        )
-      }
-      if (verdict.decision === "deny") throw new Error(`ActionBoard guard: ${verdict.reason}`)
-      const staticAsk = STATIC_ASK[verdict.rule]
-      if (verdict.decision === "ask" && !(verdict.plain && staticAsk && staticAsk(command.trim()))) {
-        throw new Error(
-          `ActionBoard guard: ${verdict.reason} OpenCode cannot ask from a plugin, so the command ` +
-            "was blocked. Run it as one plain `openshell ...` command so the permission prompt " +
-            "can catch it, or run it yourself.",
-        )
-      }
-    },
-    "tool.execute.after": async (input: { tool: string; sessionID: string; args?: any }) => {
-      if (input.tool !== "bash") return
-      const command: string = String(input.args?.command ?? "")
-      if (!mentions(command)) return
-      try {
-        run("audit.py", { tool: "bash", command, session: input.sessionID, cwd: directory }, directory)
-      } catch {}
-    },
-  }
+    await ctx.tool.hook("execute.after", (event: any) => {
+      if (event.tool !== "shell") return
+      const input = event.input ?? {}
+      audit(String(input.command ?? input.cmd ?? ""), String(event.sessionID ?? "nosession"), cwd)
+    })
+  },
 }

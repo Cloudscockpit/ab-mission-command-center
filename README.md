@@ -134,7 +134,7 @@ ActionBoard works with Caveman but is not Caveman and is not endorsed by its aut
 
 | CLI | Gap | Effect |
 |---|---|---|
-| OpenCode | Plugins cannot "ask" | An ask is let through only for a plain `openshell …` command that the agents' `permission.bash` ask patterns catch; otherwise it is denied. |
+| OpenCode 1.x | Plugins cannot "ask" | OpenCode 2.x asks natively through its permission hook. On 1.x (legacy plugin) an ask is let through only for a plain `openshell …` command that the agents' `permission.bash` ask patterns catch; otherwise it is denied. |
 | Codex | Hooks cannot "ask" | Same, with `.codex/rules/actionboard.rules` (`prompt`). `--add-endpoint …:full` is denied rather than asked. |
 | Codex | No per-agent tool restriction | Read-only roles are enforced by instructions only. |
 | Codex | No custom commands | `/start-mission` is the `$start-mission` skill; the session plays Black Agent. |

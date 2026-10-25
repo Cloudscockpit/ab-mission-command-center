@@ -36,8 +36,9 @@ GLOSSARY = [
     ("Load a skill", "`skill`", "skills"),
 ]
 
-# Static asks for the rules the guard plugin hands back to OpenCode (see
-# adapters/opencode/plugins/actionboard-guard.ts). Last matching rule wins.
+# Static rules in every agent's bash permission. OpenCode 2.x translates them to
+# `shell` rules and the 2.x plugin adds the guard on top; the 1.x legacy plugin
+# (adapters/opencode/legacy/) relies on these asks. Last matching rule wins.
 OPENSHELL_BASH = OrderedDict([
     ("openshell policy set *--global*", "ask"),
     ("openshell workspace delete*", "ask"),
@@ -127,6 +128,10 @@ def build(src, out, models):
             out.add("commands/%s.md" % s.name, skill_command(s))
 
     out.add("plugins/actionboard-guard.ts", adapter_file("opencode", "plugins", "actionboard-guard.ts"))
+    out.add("actionboard/guard-client.ts", adapter_file("opencode", "actionboard", "guard-client.ts"))
+    # scripts/install.py swaps this in as plugins/actionboard-guard.ts on OpenCode 1.x.
+    out.add("actionboard/legacy/actionboard-guard.v1.ts",
+            adapter_file("opencode", "legacy", "actionboard-guard.v1.ts"))
     out.add_tree("actionboard/hooks/core/", src.hooks_core)
     # Merged into opencode.json by scripts/install.py (project root or global config dir).
     out.add("actionboard/mcp.json", context7_json("opencode"))

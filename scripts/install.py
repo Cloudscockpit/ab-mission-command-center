@@ -98,13 +98,23 @@ def write_atomic(path, text):
     os.replace(tmp, path)
 
 
+def shell_arg(path):
+    """A path as one hook-command argument. Bare when it has no whitespace: some CLIs
+    (agy on Windows) re-escape quotes as \\" before handing the line to cmd.exe,
+    which then fails. Quoted only when a space forces it."""
+    path = path.replace("\\", "/")
+    return '"%s"' % path if re.search(r"\s", path) else path
+
+
 def substitute(rel, content, extras):
     if not isinstance(content, str):
         return content
     py = python_path().replace("\\", "/")
+    content = content.replace("__PYTHON_CMD__", shell_arg(py))
     content = content.replace("__PYTHON__", py)
     if "hooks_dir" in extras:
-        content = content.replace("__HOOKS_DIR__", extras["hooks_dir"].replace("\\", "/"))
+        content = content.replace("__HOOK_SCRIPT__",
+                                  shell_arg(os.path.join(extras["hooks_dir"], "cli_hook.py")))
     return content
 
 
@@ -318,8 +328,32 @@ def load_manifest(path):
     return None
 
 
+def opencode_major():
+    """Installed OpenCode major version; 2 when unknown (the current release line).
+    ACTIONBOARD_OPENCODE_MAJOR overrides detection."""
+    forced = os.environ.get("ACTIONBOARD_OPENCODE_MAJOR")
+    if forced:
+        return int(forced)
+    exe = shutil.which("opencode")
+    if not exe:
+        return 2
+    try:
+        out = subprocess.run([exe, "--version"], capture_output=True, text=True, timeout=60).stdout
+    except Exception:
+        return 2
+    m = re.search(r"(\d+)\.\d+\.\d+", out)
+    return int(m.group(1)) if m else 2
+
+
 def install(target, scope, project, files, version, force, dry):
     mapping, manifest_path, extras = plan(target, scope, project)
+    if target == "opencode":
+        # OpenCode 2.x uses the permission-hook plugin; 1.x needs the legacy one.
+        files = dict(files)
+        legacy = files.pop("actionboard/legacy/actionboard-guard.v1.ts", None)
+        if legacy is not None and opencode_major() < 2:
+            files["plugins/actionboard-guard.ts"] = legacy
+            print("OpenCode 1.x detected: installing the legacy guard plugin.")
     check_path(python_path(), "The Python interpreter path")
     for _, root in mapping:
         check_path(root, "The install directory")

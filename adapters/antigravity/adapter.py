@@ -6,7 +6,7 @@ as the `start-mission` skill, which agy exposes as `/start-mission`. The
 session plays Black Agent; black-agent is also shipped as a main agent for
 `agy --agent black-agent`. Hooks support "ask" natively.
 
-__PYTHON__ in hooks.json is filled in by scripts/install.py; hook commands run
+__PYTHON_CMD__ in hooks.json is filled in by scripts/install.py; hook commands run
 from the plugin folder, so paths are relative to it.
 """
 

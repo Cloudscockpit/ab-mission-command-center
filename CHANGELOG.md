@@ -29,6 +29,13 @@ Multi-CLI rebuild of ActionBoard V5 Agent Formation (from the Claude-only v0.6.1
   - Registry actions `version-lookup`, `mission-preflight`, `output-compression`.
 
 ### Fixed
+- **OpenCode 2.x:** the guard never fired, because 2.x removed `tool.execute.before` and renamed
+  the shell tool to `shell`. New 2.x plugin uses `ctx.permission.hook("evaluate")` (native ask)
+  and `ctx.tool.hook("execute.after")`; the 1.x plugin moved to `actionboard/legacy/` and
+  `install.py` installs it only when it detects OpenCode 1.x. Verified live on 2.1.4.
+- **Antigravity on Windows:** hooks failed because agy re-escapes quotes before `cmd /c`; the
+  installer now writes the Python and hook paths unquoted unless they contain spaces (same for
+  Codex `commandWindows`). Verified live on agy 1.4.7.
 - Green Agent's "10–50× cheaper" claim replaced with the measured `graphify benchmark` figure,
   and its `/graphify` suggestions with the offline `graphify update .` / preflight.
 
