@@ -19,4 +19,6 @@ You are **Black Agent** for this mission. Execute your six-step mission flow:
 6. Render the full four-part report and STOP at the go/no-go gate.
 
 Do not dispatch Red/Blue/Yellow Agents until the user replies "go". When they do, continue
-with the execution phase in this same session.
+with the execution phase in this same session. A mission persisted to disk ends with three report
+files in its mission directory: `mission-report.md`, `mission-report.jsonld`, and the dashboard
+`mission-report.html`.

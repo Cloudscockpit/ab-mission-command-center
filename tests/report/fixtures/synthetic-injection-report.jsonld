@@ -1,0 +1,53 @@
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Project",
+      "@id": "urn:voltron:mission:synthetic-dashboard-fixture",
+      "name": "Synthetic injection check",
+      "identifier": "synthetic-dashboard-fixture",
+      "description": "SYNTHETIC TEST FIXTURE. Not a real mission."
+    },
+    {
+      "@type": "Action",
+      "@id": "urn:voltron:mission:synthetic-dashboard-fixture:assignment:1",
+      "name": "Fix the unlock button",
+      "agent": {
+        "@id": "urn:voltron:lion:red"
+      },
+      "actionStatus": "https://schema.org/CompletedActionStatus",
+      "result": [
+        {
+          "@type": "DefinedTerm",
+          "name": "acceptance",
+          "description": "Synthetic acceptance text for assignment 1."
+        },
+        {
+          "@type": "DefinedTerm",
+          "name": "outcome",
+          "description": "Fixed the unlock button — it was broken → now fine. Unlocked users can log in."
+        }
+      ],
+      "object": [
+        {
+          "@id": "urn:voltron:file:src/unlock.py"
+        },
+        {
+          "@id": "urn:voltron:file:docs/unlock-flow.md"
+        },
+        {
+          "@id": "urn:voltron:file:src/Unlocked/arrow→name.txt"
+        },
+        {
+          "@id": "urn:voltron:file:notes/em—dash.md"
+        },
+        {
+          "@id": "urn:voltron:file:notes/en–dash.md"
+        },
+        {
+          "@id": "urn:voltron:file:keep/UNLOCKING.txt"
+        }
+      ]
+    }
+  ]
+}

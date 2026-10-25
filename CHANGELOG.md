@@ -1,5 +1,46 @@
 # Changelog
 
+## 1.2.0 — 2026-10-26
+
+Every mission report now ships with a visual dashboard.
+
+### Added
+- `mission-report.html`: a single offline dashboard written next to `mission-report.md` and
+  `mission-report.jsonld`. It shows the mission header and status, four key figures (duration,
+  files changed, tests passed, autonomy clean runs), an Agent workload donut with a card per Agent,
+  five stage-maturity bars and a touched-files accordion with one-click path copy.
+- `src/skills/mission-report/scripts/render_dashboard.py` (with `dashboard_template.py`): standard
+  library only, Python 3.9+. The `metrics` subcommand writes `mission-metrics.json` (start and end
+  time, test counts, and the file list from `git diff --name-status` plus untracked files); the
+  `render` subcommand builds the page from the report graph, `.actionboard/registry.json` and
+  that metrics file. A figure with no source prints "Not recorded", never zero.
+- A status badge state "Stage failed", for a mission whose runs were all first attempts but in
+  which a stage did not pass. "Clean run" and "Retried" are unchanged.
+- A one-line `render_dashboard: WARNING ...` on stderr, with the page still written, when maturity
+  figures cannot be read from `maturity.py`.
+- `tests/report/` suite (zero network, HTML validity, escaping, Hallmark floor checks, contrast,
+  no-JavaScript content, data honesty, determinism, CLI and build checks) and a "Mission report
+  dashboard" step in CI.
+- README section "Mission dashboard" with desktop and mobile previews and a sample file in
+  `docs/assets/`.
+
+### Changed
+- The `mission-report` skill and Black Agent now run `metrics` and `render` after the Markdown
+  and JSON-LD reports are written, and list `mission-report.html` and `mission-metrics.json`
+  among the mission documents Black Agent may write.
+- `npx` and `uvx` download the tag matching their own version, so the installer packages
+  (`@actionboard/install`, `actionboard-install`) are bumped to 1.2.0 with everything else.
+
+### Notes
+- The page is offline by construction: no URL, `@import`, font file or external script, and a
+  Content-Security-Policy meta tag (`default-src 'none'`) with the inline style and script pinned
+  by hash. Text from reports is HTML-escaped, and file paths with control or direction characters
+  are shown escaped and get no copy button.
+- The design follows the Hallmark floor (tokens at `:root`, dark palette, 44px touch targets,
+  reduced-motion fallback, no tracked-capital labels). The Markdown and JSON-LD reports remain
+  authoritative; the dashboard is a view of them.
+- `npx` and `uvx` work only once v1.2.0 is tagged and published.
+
 ## 1.1.0 — 2026-10-26
 
 Zero-footprint install: no clone left in your project, and uninstall without a clone.

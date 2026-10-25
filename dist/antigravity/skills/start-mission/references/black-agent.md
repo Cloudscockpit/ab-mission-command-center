@@ -72,11 +72,13 @@ STOP. Do not proceed without user approval.
 ## After go: execution phase
 
 When the user says "go":
+0. Before dispatching anyone, record the mission start: the UTC time (for example `date -u +%Y-%m-%dT%H:%M:%SZ`, or `(Get-Date).ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ssZ")` in PowerShell) and the git base commit (`git rev-parse HEAD`). The report flow needs both for the dashboard. If the directory is not a git repository, record the time only.
 1. Dispatch Red/Blue/Yellow Agents **in parallel** when their assignments have no inter-dependencies. Call `invoke_subagent` for every independent agent in the same turn.
 2. Dispatch sequentially when one Agent's output is another's input.
 3. As each Agent reports back, append its result to a running "Mission Log" section, including the Agent's `Files created/changed:` list.
 4. When all Agents report `done` or `blocked`, score every dispatched assignment on the five formation stages and record the runs in `.actionboard/registry.json`, following step 6 of the `mission-report` skill. Every mission counts toward the project's AI-ops maturity, whether or not it is written to disk.
-5. Render a final Mission Summary: what shipped, what didn't, what's deferred, the `## Maturity & Progress Summary` table, and one combined `Files created/changed:` list for the whole mission (including `.actionboard/registry.json`). If the mission was persisted to disk, invoke `mission-report` to record the outcome against the plan's graph nodes.
+5. Render a final Mission Summary: what shipped, what didn't, what's deferred, the `## Maturity & Progress Summary` table, and one combined `Files created/changed:` list for the whole mission (including `.actionboard/registry.json`). If the mission was persisted to disk, invoke `mission-report` to record the outcome against the plan's graph nodes. Pass it the start time and git base commit from the go step, and the test suites and counts exactly as Yellow Agent reported them. The skill writes `mission-report.md`, `mission-report.jsonld`, `mission-metrics.json`, and the dashboard `mission-report.html`. Mention the dashboard in the final Mission Summary and include all of these files in the combined `Files created/changed:` list.
+6. When a Skill or audit tool is available, you may run a design audit on the generated `mission-report.html` and report its findings. This is optional and never blocks the report. If the dashboard fails to render, report that as a defect; the Markdown and JSON-LD stay on disk. If the renderer prints a stderr line containing `WARNING` (for example `render_dashboard: WARNING ...`), include it in the Mission Summary rather than ignoring it.
 
 ## Skill creation protocol
 
@@ -93,7 +95,7 @@ Mission briefs, plans, and reports are the exception to brevity: write them in f
 
 ## What you never do
 
-- Do NOT write code yourself (that's Red/Blue Agent). Your write access exists for mission documents only — briefs, plans, reports, their JSON-LD graphs, `.actionboard/preferences.json`, and the scored runs in `.actionboard/registry.json` (append through `maturity.py` only; never edit past runs).
+- Do NOT write code yourself (that's Red/Blue Agent). Your write access exists for mission documents only — briefs, plans, reports, their JSON-LD graphs, the `mission-report.html` dashboard and `mission-metrics.json` in the mission directory, `.actionboard/preferences.json`, and the scored runs in `.actionboard/registry.json` (append through `maturity.py` only; never edit past runs). You produce the dashboard and metrics only by running `render_dashboard.py` through Bash (as the `mission-report` skill directs), never by hand-authoring HTML.
 - Do NOT run tests yourself (that's Yellow Agent). The one exception is maturity scoring: re-run the exact test command from Yellow Agent's report to verify Yellow's own work, without editing or adding tests.
 - Do NOT do recon yourself (that's Green Agent).
 - Do NOT dispatch building Agents before the user approves at the go/no-go gate.

@@ -8,7 +8,8 @@
       "end_condition": "Recon report lists every CLI version, auth state and blocking environment fact",
       "missions": [
         "verify-and-release-multi-cli-agent-formation-v1",
-        "zero-footprint-installer-npx-zero-clone-v1-1-0"
+        "zero-footprint-installer-npx-zero-clone-v1-1-0",
+        "mission-analytics-dashboard-v1-2-0"
       ],
       "runs": [
         {
@@ -48,6 +49,25 @@
           },
           "notes": "Green recon: tool table, npm scope unconfirmed, no tags, install.py clone dependencies with line numbers; first pass, no rework.",
           "mission": "zero-footprint-installer-npx-zero-clone-v1-1-0"
+        },
+        {
+          "run_id": "mission-analytics-dashboard-v1-2-0-1",
+          "completed_at": "2026-10-25T22:56:10Z",
+          "mode": "formation",
+          "stages": {
+            "orchestrator": true,
+            "data": true,
+            "analysis": true,
+            "action": true,
+            "defense": true
+          },
+          "first_attempt": true,
+          "provenance": "scored",
+          "environment": {
+            "target": "claude"
+          },
+          "notes": "Green recon: 9-part report. Black spot-checked version sites and build paths by git grep and successful builds. Graph was stale, filesystem used, no files changed.",
+          "mission": "mission-analytics-dashboard-v1-2-0"
         }
       ]
     },
@@ -58,7 +78,8 @@
       "end_condition": "The CLI runs the formation end to end with Context7 and the guard enforced",
       "missions": [
         "verify-and-release-multi-cli-agent-formation-v1",
-        "zero-footprint-installer-npx-zero-clone-v1-1-0"
+        "zero-footprint-installer-npx-zero-clone-v1-1-0",
+        "mission-analytics-dashboard-v1-2-0"
       ],
       "runs": [
         {
@@ -98,6 +119,25 @@
           },
           "notes": "Blue npx/uvx wrappers met acceptance first pass; Yellow found a Medium symlink-chain escape in the legacy extractor plus venv-python and stream issues, fixed in a second round and verified on Linux.",
           "mission": "zero-footprint-installer-npx-zero-clone-v1-1-0"
+        },
+        {
+          "run_id": "mission-analytics-dashboard-v1-2-0-3",
+          "completed_at": "2026-10-25T22:56:11Z",
+          "mode": "formation",
+          "stages": {
+            "orchestrator": true,
+            "data": true,
+            "analysis": false,
+            "action": false,
+            "defense": true
+          },
+          "first_attempt": false,
+          "provenance": "scored",
+          "environment": {
+            "target": "claude"
+          },
+          "notes": "Blue report-flow wiring: neutrality and build tests passed. SKILL warning wording did not match renderer stderr and git add -N became obsolete, so two follow-up edits. Final wording verified by tests/report and tests/build re-run by Black.",
+          "mission": "mission-analytics-dashboard-v1-2-0"
         }
       ]
     },
@@ -108,7 +148,8 @@
       "end_condition": "Every smoke step passes on every CLI, verified independently",
       "missions": [
         "verify-and-release-multi-cli-agent-formation-v1",
-        "zero-footprint-installer-npx-zero-clone-v1-1-0"
+        "zero-footprint-installer-npx-zero-clone-v1-1-0",
+        "mission-analytics-dashboard-v1-2-0"
       ],
       "runs": [
         {
@@ -186,6 +227,44 @@
           },
           "notes": "Yellow live smoke on Codex/Antigravity/OpenCode x one-liner/npx recorded honestly; found D1-D5; D1 retest passed on all four failing rows.",
           "mission": "zero-footprint-installer-npx-zero-clone-v1-1-0"
+        },
+        {
+          "run_id": "mission-analytics-dashboard-v1-2-0-4",
+          "completed_at": "2026-10-25T22:56:11Z",
+          "mode": "formation",
+          "stages": {
+            "orchestrator": true,
+            "data": true,
+            "analysis": false,
+            "action": false,
+            "defense": true
+          },
+          "first_attempt": false,
+          "provenance": "scored",
+          "environment": {
+            "target": "claude"
+          },
+          "notes": "Yellow tests and security review: mutation-proofed suite, 0 High findings, 4 Medium found. One warning test was too strict and hidden behind expectedFailure until a later round. Black re-ran: report 126 OK on 3.14 and 3.9.25; guard 32, build 21, install 55, maturity 18, installer 23, node 28 pass 1 skipped, opencode 9.",
+          "mission": "mission-analytics-dashboard-v1-2-0"
+        },
+        {
+          "run_id": "mission-analytics-dashboard-v1-2-0-5",
+          "completed_at": "2026-10-25T22:56:11Z",
+          "mode": "formation",
+          "stages": {
+            "orchestrator": false,
+            "data": true,
+            "analysis": true,
+            "action": true,
+            "defense": true
+          },
+          "first_attempt": true,
+          "provenance": "scored",
+          "environment": {
+            "target": "claude"
+          },
+          "notes": "Yellow browser verification. Plan criterion net-log count 0 was unattainable as written (Chrome background traffic); Yellow proved 0 page requests with controls. Black re-ran with puppeteer: 4 widths no scroll, 0 requests, 0 console, JS-off 12 details.",
+          "mission": "mission-analytics-dashboard-v1-2-0"
         }
       ]
     },
@@ -196,7 +275,8 @@
       "end_condition": "build.py --check passes, CI green on all jobs, manifests at the target version",
       "missions": [
         "verify-and-release-multi-cli-agent-formation-v1",
-        "zero-footprint-installer-npx-zero-clone-v1-1-0"
+        "zero-footprint-installer-npx-zero-clone-v1-1-0",
+        "mission-analytics-dashboard-v1-2-0"
       ],
       "runs": [
         {
@@ -275,6 +355,44 @@
           },
           "notes": "Red release docs, CHANGELOG 1.1.0, VERSION bump and dist regeneration; build --check clean, all suites green.",
           "mission": "zero-footprint-installer-npx-zero-clone-v1-1-0"
+        },
+        {
+          "run_id": "mission-analytics-dashboard-v1-2-0-2",
+          "completed_at": "2026-10-25T22:56:11Z",
+          "mode": "formation",
+          "stages": {
+            "orchestrator": true,
+            "data": true,
+            "analysis": false,
+            "action": false,
+            "defense": true
+          },
+          "first_attempt": false,
+          "provenance": "scored",
+          "environment": {
+            "target": "claude"
+          },
+          "notes": "Red renderer: delivered, then Yellow found 4 Medium and 7 Low defects (silent maturity failure, badge ignoring stages, agent text rewriting, untracked files, content model). Fixed in a follow-up round plus a subdirectory fix. Final 126 report tests pass on 3.14 and 3.9.25, re-run by Black. Red follow-up report text was not delivered to Black; ownership verified by git status.",
+          "mission": "mission-analytics-dashboard-v1-2-0"
+        },
+        {
+          "run_id": "mission-analytics-dashboard-v1-2-0-6",
+          "completed_at": "2026-10-25T22:56:11Z",
+          "mode": "formation",
+          "stages": {
+            "orchestrator": true,
+            "data": true,
+            "analysis": true,
+            "action": true,
+            "defense": false
+          },
+          "first_attempt": true,
+          "provenance": "scored",
+          "environment": {
+            "target": "claude"
+          },
+          "notes": "Red release: README section, CHANGELOG 1.2.0, versions 1.2.0, dist regenerated. Black verified build --check, git grep, all suites. Defense scored fail: Red report text with its Files created/changed list never reached Black, so the list could not be matched; git status shows only owned files changed.",
+          "mission": "mission-analytics-dashboard-v1-2-0"
         }
       ]
     }

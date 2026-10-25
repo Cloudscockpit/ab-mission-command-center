@@ -1,0 +1,171 @@
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Project",
+      "@id": "urn:voltron:mission:synthetic-dashboard-fixture",
+      "name": "Synthetic Fixture Mission: Add Health Endpoint",
+      "identifier": "synthetic-dashboard-fixture",
+      "description": "SYNTHETIC TEST FIXTURE. Not a real mission."
+    },
+    {
+      "@type": "Action",
+      "@id": "urn:voltron:mission:synthetic-dashboard-fixture:assignment:1",
+      "name": "Recon of the service layout",
+      "agent": {
+        "@id": "urn:voltron:lion:green"
+      },
+      "actionStatus": "https://schema.org/CompletedActionStatus",
+      "result": [
+        {
+          "@type": "DefinedTerm",
+          "name": "acceptance",
+          "description": "Synthetic acceptance text for assignment 1."
+        },
+        {
+          "@type": "DefinedTerm",
+          "name": "outcome",
+          "description": "Mapped the routes and the config loader."
+        }
+      ]
+    },
+    {
+      "@type": "Action",
+      "@id": "urn:voltron:mission:synthetic-dashboard-fixture:assignment:2",
+      "name": "Implement the health endpoint",
+      "agent": {
+        "@id": "urn:voltron:lion:red"
+      },
+      "actionStatus": "https://schema.org/CompletedActionStatus",
+      "result": [
+        {
+          "@type": "DefinedTerm",
+          "name": "acceptance",
+          "description": "Synthetic acceptance text for assignment 2."
+        },
+        {
+          "@type": "DefinedTerm",
+          "name": "outcome",
+          "description": "Added GET /health returning status and version."
+        }
+      ],
+      "object": [
+        {
+          "@id": "urn:voltron:file:src/health.py"
+        },
+        {
+          "@id": "urn:voltron:file:src/routes/status.py"
+        }
+      ]
+    },
+    {
+      "@type": "Action",
+      "@id": "urn:voltron:mission:synthetic-dashboard-fixture:assignment:3",
+      "name": "Wire the route table",
+      "agent": {
+        "@id": "urn:voltron:lion:red"
+      },
+      "actionStatus": "https://schema.org/CompletedActionStatus",
+      "result": [
+        {
+          "@type": "DefinedTerm",
+          "name": "acceptance",
+          "description": "Synthetic acceptance text for assignment 3."
+        },
+        {
+          "@type": "DefinedTerm",
+          "name": "outcome",
+          "description": "Registered the route and kept the order stable."
+        }
+      ],
+      "object": [
+        {
+          "@id": "urn:voltron:file:src/routes/__init__.py"
+        },
+        {
+          "@id": "urn:voltron:file:src/health.py"
+        }
+      ]
+    },
+    {
+      "@type": "Action",
+      "@id": "urn:voltron:mission:synthetic-dashboard-fixture:assignment:4",
+      "name": "Package the release",
+      "agent": {
+        "@id": "urn:voltron:lion:blue"
+      },
+      "actionStatus": "https://schema.org/CompletedActionStatus",
+      "result": [
+        {
+          "@type": "DefinedTerm",
+          "name": "acceptance",
+          "description": "Synthetic acceptance text for assignment 4."
+        },
+        {
+          "@type": "DefinedTerm",
+          "name": "outcome",
+          "description": "Bumped the version and documented the endpoint."
+        }
+      ],
+      "object": [
+        {
+          "@id": "urn:voltron:file:pyproject.toml"
+        },
+        {
+          "@id": "urn:voltron:file:docs/health.md"
+        }
+      ]
+    },
+    {
+      "@type": "Action",
+      "@id": "urn:voltron:mission:synthetic-dashboard-fixture:assignment:5",
+      "name": "Write the endpoint tests",
+      "agent": {
+        "@id": "urn:voltron:lion:yellow"
+      },
+      "actionStatus": "https://schema.org/CompletedActionStatus",
+      "result": [
+        {
+          "@type": "DefinedTerm",
+          "name": "acceptance",
+          "description": "Synthetic acceptance text for assignment 5."
+        },
+        {
+          "@type": "DefinedTerm",
+          "name": "outcome",
+          "description": "Added tests for the happy path and for a 503."
+        }
+      ],
+      "object": [
+        {
+          "@id": "urn:voltron:file:tests/test_health.py"
+        }
+      ]
+    },
+    {
+      "@type": "Action",
+      "@id": "urn:voltron:mission:synthetic-dashboard-fixture:assignment:6",
+      "name": "Security review",
+      "agent": {
+        "@id": "urn:voltron:lion:yellow"
+      },
+      "actionStatus": "https://schema.org/FailedActionStatus",
+      "result": [
+        {
+          "@type": "DefinedTerm",
+          "name": "acceptance",
+          "description": "Synthetic acceptance text for assignment 6."
+        },
+        {
+          "@type": "DefinedTerm",
+          "name": "outcome",
+          "description": "Reviewed the handler."
+        }
+      ],
+      "error": {
+        "@type": "Thing",
+        "description": "Two findings are still open."
+      }
+    }
+  ]
+}

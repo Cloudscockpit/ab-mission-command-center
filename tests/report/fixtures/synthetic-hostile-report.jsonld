@@ -1,0 +1,109 @@
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Project",
+      "@id": "urn:voltron:mission:synthetic-dashboard-fixture",
+      "name": "Hostile \"><script>alert(1)</script> title 'onmouseover=alert(2) x='",
+      "identifier": "synthetic-dashboard-fixture",
+      "description": "SYNTHETIC TEST FIXTURE. Not a real mission."
+    },
+    {
+      "@type": "Action",
+      "@id": "urn:voltron:mission:synthetic-dashboard-fixture:assignment:1",
+      "name": "</style><script>alert(3)</script> recon",
+      "agent": {
+        "@id": "urn:voltron:lion:green"
+      },
+      "actionStatus": "https://schema.org/CompletedActionStatus",
+      "result": [
+        {
+          "@type": "DefinedTerm",
+          "name": "acceptance",
+          "description": "Synthetic acceptance text for assignment 1."
+        },
+        {
+          "@type": "DefinedTerm",
+          "name": "outcome",
+          "description": "'onmouseover=alert(2) x=' <img src=x onerror=alert(5)>"
+        }
+      ],
+      "object": [
+        {
+          "@id": "urn:voltron:file:src/\"><script>alert(1)</script>.py"
+        },
+        {
+          "@id": "urn:voltron:file:lib/'onmouseover=alert(2) x='.js"
+        },
+        {
+          "@id": "urn:voltron:file:css/</style><script>alert(3)</script>.css"
+        }
+      ]
+    },
+    {
+      "@type": "Action",
+      "@id": "urn:voltron:mission:synthetic-dashboard-fixture:assignment:2",
+      "name": "Build \"><script>alert(1)</script>",
+      "agent": {
+        "@id": "urn:voltron:lion:red"
+      },
+      "actionStatus": "https://schema.org/FailedActionStatus",
+      "result": [
+        {
+          "@type": "DefinedTerm",
+          "name": "acceptance",
+          "description": "Synthetic acceptance text for assignment 2."
+        },
+        {
+          "@type": "DefinedTerm",
+          "name": "outcome",
+          "description": "Outcome </script><script>alert(4)</script>"
+        }
+      ],
+      "object": [
+        {
+          "@id": "urn:voltron:file:js/</script><script>alert(4)</script>.js"
+        },
+        {
+          "@id": "urn:voltron:file:img/<img src=x onerror=alert(5)>.png"
+        },
+        {
+          "@id": "urn:voltron:file:docs/a&amp;b &lt;i&gt;.md"
+        },
+        {
+          "@id": "urn:voltron:file:win\\path\\with space.txt"
+        }
+      ],
+      "error": {
+        "@type": "Thing",
+        "description": "Error \"><script>alert(1)</script></script><script>alert(4)</script>"
+      }
+    },
+    {
+      "@type": "Action",
+      "@id": "urn:voltron:mission:synthetic-dashboard-fixture:assignment:3",
+      "name": "Review",
+      "agent": {
+        "@id": "urn:voltron:lion:yellow"
+      },
+      "actionStatus": "https://schema.org/CompletedActionStatus",
+      "result": [
+        {
+          "@type": "DefinedTerm",
+          "name": "acceptance",
+          "description": "Synthetic acceptance text for assignment 3."
+        },
+        {
+          "@type": "DefinedTerm",
+          "name": "outcome",
+          "description": "ok"
+        }
+      ],
+      "object": [
+        {
+          "@id": "urn:voltron:file:src/\"><script>alert(1)</script>.py"
+        }
+      ]
+    }
+  ]
+}
