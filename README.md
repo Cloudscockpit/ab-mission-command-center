@@ -24,67 +24,243 @@ Every CLI ran two full missions live (October 2026): preflight, Green recon, fou
 the go/no-go gate, build, tests re-run independently, maturity scoring. Results:
 [`tests/smoke/results-2026-10.md`](tests/smoke/results-2026-10.md).
 
-### Slash commands
+## Installation & Usage Guide
 
-Besides `/start-mission`, each user-facing skill is a command of its own:
-`/mission-brief`, `/mission-plan`, `/mission-report`, `/skills-registry`,
-`/actionboard-devops-mission`, `/mission-harness`, `/sandbox-up`, `/sandbox-status`,
-`/sandbox-down`, `/policy-widen` (and `/browser-actions` on Claude Code).
+Pick your CLI and follow only that guide; each one is complete on its own. Every mission works
+the same way everywhere: Black Agent plans, stops at the go/no-go gate, and nothing changes in
+your project until you reply `go`.
 
-| CLI | How they appear |
-|---|---|
-| Claude Code | Skills are listed in the `/` menu natively. |
-| OpenCode | OpenCode does not list skills in `/`, so the build generates one thin command per skill in `.opencode/commands/` that loads it. |
-| Antigravity CLI | Every skill is a `/command` natively (internal ones such as `/openshell-admin` show too). |
-| Codex CLI | Skills are invoked as `$mission-brief`, … or picked from `/skills`. |
+### 1. Claude Code
 
-## Install
+**Requirements:** Claude Code (tested with 2.1.310). Python 3.9+ on PATH for the OpenShell guard
+hook.
 
-Requires **Python 3.9+** (hooks and installer use the standard library only).
+**Installation** — inside Claude Code:
 
 ```sh
-git clone https://github.com/Cloudscockpit/ab-mission-command-center
-cd ab-mission-command-center
-python scripts/install.py                       # detects CLIs on PATH, asks which, installs into ./
-python scripts/install.py --target opencode --project ../my-app
-python scripts/install.py --target codex --global
-python scripts/install.py --target antigravity --project ../my-app --uninstall
-```
-
-The installer records every file it creates and `--uninstall` removes only those (and only
-if unchanged). It refuses to overwrite files it did not create unless `--force`.
-
-| CLI | `--project <dir>` installs to | `--global` installs to |
-|---|---|---|
-| Claude Code | — use the plugin marketplace (below) | — |
-| OpenCode | `<dir>/.opencode/` | `~/.config/opencode/` |
-| Codex CLI | `<dir>/.agents/skills/`, `<dir>/.codex/{agents,rules,hooks.json}`, block in `<dir>/AGENTS.md` | `~/.agents/skills/`, `~/.codex/…`, `~/.codex/AGENTS.md` |
-| Antigravity CLI | `<dir>/.agents/plugins/actionboard-v5-agentformation/` | `~/.gemini/config/plugins/actionboard-v5-agentformation/` |
-
-**Claude Code** — in Claude Code:
-
-```
 /plugin marketplace add Cloudscockpit/ab-mission-command-center
 /plugin install actionboard-v5-agentformation@actionboard-v5-agentformation
 ```
 
-The marketplace at `.claude-plugin/marketplace.json` points at `./dist/claude`.
+If the install summary says `Run /reload-plugins to activate.`, run `/reload-plugins`.
 
-**Codex** — hooks must be trusted once with `/hooks` (Codex re-asks when they change). Until
-then the OpenShell guard does not run on Codex.
-
-**Antigravity** — if your agy `toolPermission` is `always-proceed`, agy approves every prompt,
-so the guard turns its "ask" rules into denies (see Known gaps).
-
-### Choosing models
-
-By default Claude uses `opus` for Black and `sonnet` for the specialists, Antigravity uses
-`pro`/`flash`, and OpenCode and Codex inherit the session model. Override per CLI with a
-config file (see `agentformation.config.example.json`):
+**Check it loaded** — in a terminal:
 
 ```sh
-python scripts/install.py --target opencode --config agentformation.config.json
+claude plugin details actionboard-v5-agentformation@actionboard-v5-agentformation
 ```
+
+The plugin brings its own Context7 MCP server; `/mcp` inside Claude Code lists it.
+
+**Start a mission:**
+
+```
+/start-mission add a /health endpoint that returns the service version
+```
+
+Your session plays Black Agent. It runs preflight, sends Green Agent on recon, shows the Mission
+Brief, Agent Assignments, Skills Gap and Risk Register, then stops. Reply `go`, `no-go`, or
+`edit <section>`.
+
+**Slash commands:** every skill is in the `/` menu: `/mission-brief`, `/mission-plan`,
+`/mission-report`, `/mission-preflight`, `/skills-registry`, `/actionboard-devops-mission`,
+`/mission-harness`, `/sandbox-up`, `/sandbox-status`, `/sandbox-down`, `/policy-widen`,
+`/terse-output`, `/browser-actions` (Claude in Chrome; Claude Code only).
+
+**Cost options:** the first mission's preflight asks whether to install Graphify and whether to
+turn on terse output, and saves your answers in `.actionboard/preferences.json`.
+
+**Models:** Black Agent uses `opus`, the specialists use `sonnet`.
+
+**Update / remove:**
+
+```sh
+claude plugin marketplace update
+claude plugin update actionboard-v5-agentformation@actionboard-v5-agentformation
+claude plugin uninstall actionboard-v5-agentformation@actionboard-v5-agentformation
+```
+
+**Notes for Claude Code:** on Windows the shell tool may be `PowerShell`; the guard covers both
+`Bash` and `PowerShell`.
+
+### 2. OpenCode
+
+**Requirements:** OpenCode 2.x (tested with 2.1.4; 1.x gets a legacy guard plugin), Python 3.9+,
+Git.
+
+**Installation** — in a terminal:
+
+```sh
+git clone https://github.com/Cloudscockpit/ab-mission-command-center
+cd ab-mission-command-center
+python scripts/install.py --target opencode --project /path/to/your-project
+```
+
+Use `--global` instead of `--project …` to install for every project
+(`~/.config/opencode/`). A project install writes to `<project>/.opencode/` and adds Context7 to
+`<project>/opencode.json` (a `context7` server you already have is left alone). The installer
+asks whether to install Graphify and whether to turn on terse output; skip the questions with
+`--with graphify,terse` or `--without graphify,terse`.
+
+**Check it loaded** — from the project directory:
+
+```sh
+opencode mcp list        # context7 should show as connected
+```
+
+Then start `opencode` and type `/`: `start-mission` and the other commands are listed.
+
+**Start a mission** — in the interactive TUI:
+
+```
+/start-mission add a /health endpoint that returns the service version
+```
+
+It runs as the `black-agent` primary agent, stops at the gate, and waits for `go`.
+
+> `opencode run "/start-mission …"` does **not** expand commands on OpenCode 2.x; the text goes to
+> the default `build` agent, which skips the gate. For scripts, use
+> `opencode run --agent black-agent "<objective>"`.
+
+**Slash commands:** OpenCode does not show skills in `/`, so the package adds one command per
+skill: `/mission-brief`, `/mission-plan`, `/mission-report`, `/mission-preflight`,
+`/skills-registry`, `/actionboard-devops-mission`, `/mission-harness`, `/sandbox-up`,
+`/sandbox-status`, `/sandbox-down`, `/policy-widen`, `/terse-output`.
+
+**Models:** agents inherit the session model. To pin them, copy
+`agentformation.config.example.json` to `agentformation.config.json`, edit the `opencode`
+entry, and install with `--config agentformation.config.json`.
+
+**Update / remove** — from the cloned repository:
+
+```sh
+git pull
+python scripts/install.py --target opencode --project /path/to/your-project            # update
+python scripts/install.py --target opencode --project /path/to/your-project --uninstall
+```
+
+Uninstall removes only the files the installer created, and only if you did not change them.
+
+**Notes for OpenCode:** on 2.x the guard asks natively. On 1.x the legacy plugin cannot ask:
+it lets a plain `openshell …` command reach the agents' ask rules and denies anything else.
+
+### 3. Codex CLI
+
+**Requirements:** Codex CLI (tested with 0.164.0), signed in with `codex login`. Python 3.9+,
+Git.
+
+**Installation** — in a terminal:
+
+```sh
+git clone https://github.com/Cloudscockpit/ab-mission-command-center
+cd ab-mission-command-center
+python scripts/install.py --target codex --project /path/to/your-project
+```
+
+A project install writes skills to `<project>/.agents/skills/`, agents, rules and hooks to
+`<project>/.codex/`, a block in `<project>/AGENTS.md`, and Context7 to
+`<project>/.codex/config.toml`. Use `--global` for `~/.agents/skills/` and `~/.codex/`. The
+installer asks about Graphify and terse output (or pass `--with` / `--without graphify,terse`).
+
+**Trust the hooks (required once):** start `codex` in the project, run `/hooks`, and trust the
+ActionBoard hooks. Until you do, the OpenShell guard does not run; Codex asks again whenever
+the hooks change.
+
+**Check it loaded:**
+
+```sh
+codex mcp list           # context7 should be listed
+```
+
+In Codex, `/skills` lists `start-mission` and the other skills.
+
+**Start a mission** — Codex has no custom commands, so the mission is a skill:
+
+```
+$start-mission add a /health endpoint that returns the service version
+```
+
+Your session plays Black Agent and dispatches the specialists with `spawn_agent`. It stops at
+the gate and waits for `go`.
+
+**Skills:** invoke as `$mission-brief`, `$mission-plan`, `$mission-report`,
+`$mission-preflight`, `$skills-registry`, `$actionboard-devops-mission`, `$mission-harness`,
+`$sandbox-up`, `$sandbox-status`, `$sandbox-down`, `$policy-widen`, `$terse-output`, or pick
+them from `/skills`.
+
+**Models:** agents inherit the session model. To pin them, copy
+`agentformation.config.example.json` to `agentformation.config.json`, edit the `codex` entry,
+and install with `--config agentformation.config.json`.
+
+**Update / remove** — from the cloned repository:
+
+```sh
+git pull
+python scripts/install.py --target codex --project /path/to/your-project               # update
+python scripts/install.py --target codex --project /path/to/your-project --uninstall
+```
+
+After an update, trust the changed hooks again with `/hooks`.
+
+**Notes for Codex:** hooks cannot ask, so the guard denies risky commands unless a plain
+`openshell …` command matches a `prompt` rule in `.codex/rules/actionboard.rules`, which then
+asks. Codex has no per-agent tool limits, so read-only roles rely on their instructions.
+
+### 4. Antigravity CLI (`agy`)
+
+**Requirements:** Antigravity CLI (tested with 1.4.7). Python 3.9+, Git.
+
+**Installation** — in a terminal:
+
+```sh
+git clone https://github.com/Cloudscockpit/ab-mission-command-center
+cd ab-mission-command-center
+python scripts/install.py --target antigravity --project /path/to/your-project
+```
+
+A project install writes the plugin to
+`<project>/.agents/plugins/actionboard-v5-agentformation/`, with its own Context7 MCP config. Use
+`--global` for `~/.gemini/config/plugins/actionboard-v5-agentformation/`. The installer asks
+about Graphify and terse output (or pass `--with` / `--without graphify,terse`).
+
+**Check it loaded** — from the project directory:
+
+```sh
+agy plugin list
+```
+
+In `agy`, type `/`: `start-mission` and the other skills are listed.
+
+**Start a mission:**
+
+```
+/start-mission add a /health endpoint that returns the service version
+```
+
+Your session plays Black Agent (you can also run `agy --agent black-agent`). It stops at the
+gate and waits for `go`.
+
+**Slash commands:** every skill is a `/command`: `/mission-brief`, `/mission-plan`,
+`/mission-report`, `/mission-preflight`, `/skills-registry`, `/actionboard-devops-mission`,
+`/mission-harness`, `/sandbox-up`, `/sandbox-status`, `/sandbox-down`, `/policy-widen`,
+`/terse-output` (internal skills such as `/openshell-admin` show too).
+
+**Models:** Black Agent uses `pro`, the specialists use `flash`. To change them, copy
+`agentformation.config.example.json` to `agentformation.config.json`, edit the `antigravity`
+entry, and install with `--config agentformation.config.json`.
+
+**Update / remove** — from the cloned repository:
+
+```sh
+git pull
+python scripts/install.py --target antigravity --project /path/to/your-project         # update
+python scripts/install.py --target antigravity --project /path/to/your-project --uninstall
+```
+
+**Notes for Antigravity:** the guard asks with `force_ask`. If your agy `toolPermission` is
+`always-proceed`, agy approves even that, so the guard **denies** its "ask" commands instead; run
+them yourself or switch to `request-review`. Runs started with `--mode auto` or
+`--dangerously-skip-permissions` may approve asks; denies still block.
 
 ## The Agents
 
