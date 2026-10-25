@@ -6,6 +6,12 @@
     python scripts/install.py --target codex --global
     python scripts/install.py --target antigravity --project . --uninstall
     python scripts/install.py --target all --project . --dry-run
+    python ab-mission-command-center/scripts/install.py --target codex --project . --cleanup
+
+    # no clone needed to uninstall; the installer leaves a copy next to its manifest:
+    python .codex/actionboard/actionboard_uninstall.py
+    python .opencode/actionboard/actionboard_uninstall.py
+    python .agents/plugins/actionboard-v5-agentformation/actionboard_uninstall.py
 
 Copies dist/<target> (or a fresh build when --config is given) into the CLI's
 project or user directory and records every file it creates in an install
@@ -13,6 +19,14 @@ manifest. --uninstall removes only those files, and only if they are
 unchanged since install. Existing files it did not create are never
 overwritten unless --force is given. Claude Code installs through its plugin
 marketplace, so for that target this script prints the two commands to run.
+
+--cleanup (git-clone one-liner) deletes this checkout after a successful install.
+It refuses, leaving the clone and the install intact, unless the checkout is a
+strict subdirectory of --project (of the current directory with --global), is a
+clean git work tree whose origin is Cloudscockpit/ab-mission-command-center, and
+no --config file lives inside it. Installed files never depend on the checkout.
+actionboard_uninstall.py (copied next to each install manifest) removes an
+install with no checkout present.
 
 Standard library only; Python 3.9+.
 """
@@ -23,6 +37,7 @@ import json
 import os
 import re
 import shutil
+import stat
 import subprocess
 import sys
 import tempfile
@@ -32,17 +47,14 @@ REPO = os.path.dirname(HERE)
 sys.path.insert(0, HERE)
 
 import build  # noqa: E402
+from actionboard_uninstall import (  # noqa: E402,F401
+    AGENTS_BEGIN, AGENTS_END, CONTEXT7_BEGIN, CONTEXT7_END, HOOK_MARK, MANIFEST, PLUGIN,
+    SHARED_DIRS, _strip_block, load_manifest, plan, sha, uninstall, unmerge_agents_md,
+    unmerge_codex_mcp, unmerge_hooks, unmerge_opencode_mcp, write_atomic)
 
-PLUGIN = "actionboard-v5-agentformation"
 CLI_BINARIES = {"claude": "claude", "opencode": "opencode", "codex": "codex", "antigravity": "agy"}
-MANIFEST = "actionboard-install.json"
-HOOK_MARK = "--cli codex --event"
-SHARED_DIRS = {".agents", "plugins", "skills"}
-AGENTS_BEGIN, AGENTS_END = "<!-- actionboard:begin -->", "<!-- actionboard:end -->"
-
-
-def sha(data):
-    return hashlib.sha256(data).hexdigest()
+GITHUB_REPO = "Cloudscockpit/ab-mission-command-center"
+UNINSTALLER = "actionboard_uninstall.py"
 
 
 def python_path():
@@ -55,30 +67,6 @@ def detect():
 
 # ---------------------------------------------------------------- layouts
 
-def plan(target, scope, project):
-    """Return (mapping, manifest_path, extras): mapping is [(dist_rel_prefix, dest_dir)]."""
-    home = os.path.expanduser("~")
-    if target == "opencode":
-        root = os.path.join(project, ".opencode") if scope == "project" else \
-            os.path.join(os.environ.get("XDG_CONFIG_HOME") or os.path.join(home, ".config"), "opencode")
-        config = os.path.join(project if scope == "project" else root, "opencode.json")
-        return [("", root)], os.path.join(root, "actionboard", MANIFEST), {"opencode_json": config}
-    if target == "codex":
-        base = project if scope == "project" else home
-        codex = os.path.join(base, ".codex") if scope == "project" else \
-            os.environ.get("CODEX_HOME") or os.path.join(home, ".codex")
-        agents_md = os.path.join(project, "AGENTS.md") if scope == "project" else os.path.join(codex, "AGENTS.md")
-        return ([(".agents/", os.path.join(base, ".agents")), (".codex/", codex)],
-                os.path.join(codex, "actionboard", MANIFEST),
-                {"agents_md": agents_md, "hooks_dir": os.path.join(codex, "actionboard", "hooks"),
-                 "config_toml": os.path.join(codex, "config.toml")})
-    if target == "antigravity":
-        root = os.path.join(project, ".agents", "plugins", PLUGIN) if scope == "project" else \
-            os.path.join(home, ".gemini", "config", "plugins", PLUGIN)
-        return [("", root)], os.path.join(root, MANIFEST), {}
-    raise ValueError(target)
-
-
 UNSAFE_PATH = set('"`$%!&^')
 
 
@@ -88,14 +76,6 @@ def check_path(path, what):
     if bad:
         raise SystemExit("%s contains shell metacharacters %s: %s. Move it, or install with "
                          "a Python/project path without them." % (what, " ".join(bad), path))
-
-
-def write_atomic(path, text):
-    os.makedirs(os.path.dirname(path) or ".", exist_ok=True)
-    tmp = path + ".actionboard-tmp"
-    with open(tmp, "w", encoding="utf-8", newline="\n") as fh:
-        fh.write(text)
-    os.replace(tmp, path)
 
 
 def shell_arg(path):
@@ -137,29 +117,6 @@ def merged_hooks(path, ours):
     return json.dumps(data, indent=2) + "\n"
 
 
-def unmerge_hooks(path):
-    if not os.path.exists(path):
-        return
-    with open(path, encoding="utf-8") as fh:
-        data = json.load(fh)
-    for event in list(data.get("hooks", {})):
-        data["hooks"][event] = [g for g in data["hooks"][event]
-                                if not any(HOOK_MARK in h.get("command", "") for h in g.get("hooks", []))]
-        if not data["hooks"][event]:
-            del data["hooks"][event]
-    if not data.get("hooks"):
-        os.remove(path)
-        return
-    write_atomic(path, json.dumps(data, indent=2) + "\n")
-
-
-def _strip_block(text):
-    start, end = text.find(AGENTS_BEGIN), text.find(AGENTS_END)
-    if start == -1 or end == -1:
-        return text
-    return (text[:start].rstrip("\n") + "\n" + text[end + len(AGENTS_END):].lstrip("\n")).strip("\n")
-
-
 def merge_agents_md(path, block, dry):
     text = ""
     if os.path.exists(path):
@@ -170,21 +127,7 @@ def merge_agents_md(path, block, dry):
         write_atomic(path, text)
 
 
-def unmerge_agents_md(path):
-    if not os.path.exists(path):
-        return
-    with open(path, encoding="utf-8") as fh:
-        text = _strip_block(fh.read())
-    if text.strip():
-        write_atomic(path, text + "\n")
-    else:
-        os.remove(path)
-
-
 # ---------------------------------------------------------------- merges (Context7 MCP)
-
-CONTEXT7_BEGIN, CONTEXT7_END = "# actionboard:begin context7", "# actionboard:end context7"
-
 
 def merged_opencode_mcp(path, ours):
     """opencode.json with mcp.context7 added; None when a context7 server already exists."""
@@ -203,20 +146,6 @@ def merged_opencode_mcp(path, ours):
     return json.dumps(data, indent=2) + "\n"
 
 
-def unmerge_opencode_mcp(path, created):
-    if not os.path.exists(path):
-        return
-    with open(path, encoding="utf-8") as fh:
-        data = json.load(fh)
-    (data.get("mcp") or {}).pop("context7", None)
-    if "mcp" in data and not data["mcp"]:
-        del data["mcp"]
-    if created and set(data) <= {"$schema"}:
-        os.remove(path)
-    else:
-        write_atomic(path, json.dumps(data, indent=2) + "\n")
-
-
 def merged_codex_mcp(path, block):
     """config.toml with a marked [mcp_servers.context7] block; None when one exists."""
     text = ""
@@ -227,21 +156,6 @@ def merged_codex_mcp(path, block):
         return None
     body = "%s\n%s%s\n" % (CONTEXT7_BEGIN, block.rstrip("\n") + "\n", CONTEXT7_END)
     return (text.rstrip("\n") + "\n\n" if text.strip() else "") + body
-
-
-def unmerge_codex_mcp(path, created):
-    if not os.path.exists(path):
-        return
-    with open(path, encoding="utf-8") as fh:
-        text = fh.read()
-    start, end = text.find(CONTEXT7_BEGIN), text.find(CONTEXT7_END)
-    if start == -1 or end == -1:
-        return
-    text = (text[:start].rstrip("\n") + "\n" + text[end + len(CONTEXT7_END):].lstrip("\n")).strip("\n")
-    if created and not text.strip():
-        os.remove(path)
-    else:
-        write_atomic(path, text + "\n")
 
 
 # ---------------------------------------------------------------- optional cost tools
@@ -321,13 +235,6 @@ def preferences(project, chosen, refused, interactive, dry):
 
 # ---------------------------------------------------------------- install / uninstall
 
-def load_manifest(path):
-    if os.path.exists(path):
-        with open(path, encoding="utf-8") as fh:
-            return json.load(fh)
-    return None
-
-
 def opencode_major():
     """Installed OpenCode major version; 2 when unknown (the current release line).
     ACTIONBOARD_OPENCODE_MAJOR overrides detection."""
@@ -358,8 +265,8 @@ def install(target, scope, project, files, version, force, dry):
     for _, root in mapping:
         check_path(root, "The install directory")
     previous = load_manifest(manifest_path) or {"files": {}}
-    record = {"target": target, "scope": scope, "version": version, "files": {}, "merges": [],
-              "dirs": previous.get("dirs", [])}
+    record = {"target": target, "scope": scope, "project": project, "version": version, "files": {},
+              "merges": [], "dirs": previous.get("dirs", [])}
     writes, conflicts = [], []
 
     for rel, content in files.items():
@@ -388,6 +295,16 @@ def install(target, scope, project, files, version, force, dry):
                     continue
         writes.append((dest, data))
         record["files"][dest] = sha(data)
+
+    with open(os.path.join(HERE, UNINSTALLER), "rb") as fh:
+        uninstaller = fh.read()
+    dest = os.path.join(os.path.dirname(manifest_path), UNINSTALLER)
+    if os.path.exists(dest) and dest not in previous["files"] and not force:
+        with open(dest, "rb") as fh:
+            if fh.read() != uninstaller:
+                conflicts.append(dest)
+    writes.append((dest, uninstaller))
+    record["files"][dest] = sha(uninstaller)
 
     if conflicts:
         print("Refusing to overwrite files ActionBoard did not create (use --force):")
@@ -445,58 +362,101 @@ def install(target, scope, project, files, version, force, dry):
     return 0
 
 
-def uninstall(target, scope, project):
-    mapping, manifest_path, _ = plan(target, scope, project)
-    record = load_manifest(manifest_path)
-    if not record:
-        print("no ActionBoard install manifest at " + manifest_path)
-        return 1
-    kept = []
-    dirs = set()
-    for path, digest in record["files"].items():
-        if not os.path.exists(path):
-            continue
-        with open(path, "rb") as fh:
-            if sha(fh.read()) != digest:
-                kept.append(path)
-                continue
-        os.remove(path)
-        dirs.add(os.path.dirname(path))
-    for m in record.get("merges", []):
-        if m["kind"] == "codex-hooks":
-            unmerge_hooks(m["path"])
-        elif m["kind"] == "agents-md":
-            unmerge_agents_md(m["path"])
-        elif m["kind"] == "codex-mcp":
-            unmerge_codex_mcp(m["path"], m.get("created", False))
-        elif m["kind"] == "opencode-mcp":
-            unmerge_opencode_mcp(m["path"], m.get("created", False))
-    os.remove(manifest_path)
-    dirs.add(os.path.dirname(manifest_path))
-    roots = {os.path.abspath(d) for _, d in mapping}
-    for d in sorted(dirs, key=len, reverse=True):  # prune empty dirs we emptied
-        d = os.path.abspath(d)
-        while d not in roots and os.path.isdir(d) and not os.listdir(d):
-            os.rmdir(d)
-            d = os.path.dirname(d)
-    for d in sorted(set(record.get("dirs", [])) | roots, key=len, reverse=True):
-        # Also prune empty CLI directories another ActionBoard target created
-        # (Codex and Antigravity share .agents/).
-        while os.path.isdir(d) and not os.listdir(d) and (
-                d in record.get("dirs", []) or d in roots or os.path.basename(d) in SHARED_DIRS):
-            os.rmdir(d)
-            d = os.path.dirname(d)
-    for k in kept:
-        print("kept (modified since install): " + k)
-    print("uninstalled %s (%s)" % (target, scope))
-    return 0
-
-
-def claude_instructions():
+def claude_instructions(source=None):
     print("Claude Code installs from its plugin marketplace. In Claude Code, run:\n"
           "  /plugin marketplace add %s\n"
-          "  /plugin install %s@%s" % (REPO.replace("\\", "/"), PLUGIN, PLUGIN))
+          "  /plugin install %s@%s" % (source or REPO.replace("\\", "/"), PLUGIN, PLUGIN))
     return 0
+
+
+# ---------------------------------------------------------------- --cleanup
+
+ORIGIN_RE = re.compile(r"^(https://([^/@]+@)?github\.com/|git@github\.com:|ssh://git@github\.com/)%s(\.git)?/?$"
+                       % re.escape(GITHUB_REPO), re.I)
+
+
+def _inside(path, parent):
+    """True when path is a strict descendant of parent (both already real paths)."""
+    path, parent = os.path.normcase(path), os.path.normcase(parent)
+    try:
+        return path != parent and os.path.commonpath([path, parent]) == parent
+    except ValueError:
+        return False
+
+
+def _git(repo, *args):
+    return subprocess.run(["git", "-C", repo] + list(args), capture_output=True, text=True, timeout=120)
+
+
+def cleanup_refusal(repo, project, config, scope):
+    """Why --cleanup must not delete repo, or None when every guard holds."""
+    repo = os.path.realpath(repo)
+    base = os.path.realpath(os.getcwd() if scope == "global" else project)
+    if not _inside(repo, base):
+        return "%s is not a subdirectory of %s" % (repo, base)
+    if config:
+        cfg = os.path.realpath(config)
+        if cfg == repo or _inside(cfg, repo):
+            return "--config %s is inside %s" % (config, repo)
+    if not shutil.which("git"):
+        return "git is not available to verify the checkout"
+    if not os.path.exists(os.path.join(repo, ".git")):
+        return "%s is not a git checkout" % repo
+    try:
+        origin = _git(repo, "remote", "get-url", "origin")
+        status = _git(repo, "status", "--porcelain", "--ignored")
+        unpushed = _git(repo, "rev-list", "--count", "HEAD", "--not", "--remotes")
+        stash = _git(repo, "stash", "list")
+    except (OSError, subprocess.SubprocessError):
+        return "git could not inspect %s" % repo
+    if origin.returncode != 0 or not ORIGIN_RE.match(origin.stdout.strip()):
+        return "origin of %s is not %s" % (repo, GITHUB_REPO)
+    if status.returncode != 0:
+        return "git could not inspect %s" % repo
+    lines = [ln for ln in status.stdout.splitlines() if ln.strip()]
+    if any(not ln.startswith("!!") for ln in lines):
+        return "%s has uncommitted or untracked changes" % repo
+    if any(not re.search(r"(^|/)__pycache__/?$|\.pyc$", ln[3:].strip().strip('"')) for ln in lines):
+        return "ignored files present in %s" % repo
+    if unpushed.returncode != 0 or unpushed.stdout.strip() != "0":
+        return "unpushed commits in %s" % repo
+    if stash.returncode != 0 or stash.stdout.strip():
+        return "git stash entries in %s" % repo
+    return None
+
+
+def _clear_readonly(func, path, _exc):
+    os.chmod(path, stat.S_IWRITE)
+    func(path)
+
+
+def remove_tree(path):
+    """rmtree that clears read-only bits (git objects on Windows) and retries."""
+    if sys.version_info >= (3, 12):
+        shutil.rmtree(path, onexc=_clear_readonly)
+    else:
+        shutil.rmtree(path, onerror=_clear_readonly)
+
+
+def cleanup(repo, project, config, scope, remove=None):
+    """Delete the installer's own checkout if every guard passes. Never raises."""
+    remove = remove or remove_tree
+    reason = cleanup_refusal(repo, project, config, scope)
+    if reason:
+        print("--cleanup skipped, checkout left in place: " + reason)
+        return False
+    repo = os.path.realpath(repo)
+    try:
+        cwd = os.path.realpath(os.getcwd())
+        if cwd == repo or _inside(cwd, repo):
+            os.chdir(os.path.dirname(repo))
+        remove(repo)
+    except OSError as exc:
+        print("--cleanup could not remove %s (%s). Delete it yourself, e.g. %s" % (
+            repo, exc, 'rmdir /s /q "%s"' % repo if os.name == "nt" else 'rm -rf "%s"' % repo))
+        return False
+    print("removed " + repo)
+    return True
 
 
 def target_files(target, config):
@@ -509,8 +469,11 @@ def target_files(target, config):
         if not os.path.isdir(root):
             raise SystemExit("dist/%s is missing; run python scripts/build.py first" % target)
         files = {}
-        for dp, _, fn in os.walk(root):
+        for dp, dn, fn in os.walk(root):
+            dn[:] = [d for d in dn if d != "__pycache__"]
             for f in sorted(fn):
+                if f.endswith((".pyc", ".pyo")):
+                    continue
                 full = os.path.join(dp, f)
                 rel = os.path.relpath(full, root).replace(os.sep, "/")
                 with open(full, "rb") as fh:
@@ -535,6 +498,8 @@ def main(argv=None):
     ap.add_argument("--config", help="agentformation.config.json with per-target model overrides")
     ap.add_argument("--force", action="store_true", help="overwrite files ActionBoard did not create")
     ap.add_argument("--dry-run", action="store_true")
+    ap.add_argument("--cleanup", action="store_true",
+                    help="after a successful install, delete this checkout (guarded)")
     ap.add_argument("--yes", action="store_true", help="do not prompt")
     ap.add_argument("--with", dest="with_", default="", metavar="graphify,terse",
                     help="opt in without a prompt: install Graphify and/or enable terse output")
@@ -571,7 +536,7 @@ def main(argv=None):
     status = 0
     for t in targets:
         if t == "claude":
-            status |= claude_instructions()
+            status |= claude_instructions(GITHUB_REPO if args.cleanup else None)
         elif args.uninstall:
             status |= uninstall(t, scope_name, project)
         else:
@@ -584,6 +549,11 @@ def main(argv=None):
     if not args.uninstall and status == 0 and scope_name == "project":
         interactive = not args.yes and sys.stdin.isatty()
         preferences(project, chosen, refused, interactive, args.dry_run)
+    if args.cleanup and not args.uninstall and not args.dry_run:
+        if status == 0 and any(t != "claude" for t in targets):
+            cleanup(REPO, project, args.config, scope_name)
+        elif status == 0:
+            print("--cleanup skipped: nothing is installed for claude, checkout left in place")
     return status
 
 

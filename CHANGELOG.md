@@ -1,5 +1,46 @@
 # Changelog
 
+## 1.1.0 — 2026-10-26
+
+Zero-footprint install: no clone left in your project, and uninstall without a clone.
+
+### Added
+- `install.py --cleanup`: after a successful install, deletes the installer's own checkout
+  (the `git clone --depth 1 … && python …/install.py --target <cli> --project . --cleanup`
+  one-liner). Clears read-only git object files on Windows.
+- `scripts/actionboard_uninstall.py`: standalone, standard-library uninstaller copied next to the
+  install manifest for Codex, OpenCode and Antigravity
+  (`.codex/actionboard/`, `.opencode/actionboard/`,
+  `.agents/plugins/actionboard-v5-agentformation/`). It removes exactly the manifest's unchanged
+  files with no clone present; the manifest now also records `project`.
+- `@actionboard/install` npm package (`npx @actionboard/install --target <cli>`) and a
+  standard-library Python wrapper for `uvx`, both downloading the tagged source into a temporary
+  folder that is always removed.
+- Tag-triggered release workflow that publishes to npm only when an `NPM_TOKEN` secret exists.
+
+### Security
+- `--cleanup` refuses (install left intact, exit 0) unless the checkout is a strict subfolder of
+  the project, is a git work tree whose origin is Cloudscockpit/ab-mission-command-center, has no
+  edits, untracked or ignored files, no unpushed commits or stashes, and holds no `--config` file.
+- Wrappers extract archives safely (no path traversal) and download over HTTPS only.
+
+### Fixed
+- D1: uninstall left `__pycache__/` folders that Python created beside installed hook scripts, so
+  a project never returned to its pre-install listing. Uninstall now removes a `__pycache__/` only
+  when every entry is a `.pyc` of a script it installed.
+- On Python 3.9 the uvx wrapper crashed with a traceback on a download error (for example "tag not
+  published yet") because closing an `HTTPError` without a body raises there. Closing is now
+  best-effort.
+- The installer no longer copies `__pycache__/` folders or `.pyc` files that local test runs leave in
+  `dist/` into user projects. Fresh clones and release tarballs were never affected.
+
+### Known gaps / open
+- Bundle checksum pin for the downloaded tarball (Medium) is not implemented yet.
+- Smoke defects D2-D4 remain open; see `tests/smoke/results-2026-10-v1.1.md`.
+- `npx` and `uvx` work only once v1.1.0 is tagged and published.
+- Codex hook-layer guard still needs the one-time `/hooks` trust; Codex may need prompting to find
+  Context7; OpenCode shows a generic "Permission denied: shell" on guard denials.
+
 ## 1.0.0 — 2026-10-25
 
 Multi-CLI rebuild of ActionBoard V5 Agent Formation (from the Claude-only v0.6.1).

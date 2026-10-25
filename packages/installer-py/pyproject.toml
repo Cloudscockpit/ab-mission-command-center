@@ -1,0 +1,20 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "actionboard-install"
+version = "1.1.0"
+description = "Zero-clone installer for ActionBoard (Codex, Antigravity, OpenCode). Run with uvx."
+requires-python = ">=3.9"
+license = { text = "MIT" }
+dependencies = []
+
+[project.urls]
+Repository = "https://github.com/Cloudscockpit/ab-mission-command-center"
+
+[project.scripts]
+actionboard-install = "actionboard_install.__main__:main"
+
+[tool.setuptools]
+packages = ["actionboard_install"]

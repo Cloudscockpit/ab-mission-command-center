@@ -7,7 +7,8 @@
       "risk_tier": "T2",
       "end_condition": "Recon report lists every CLI version, auth state and blocking environment fact",
       "missions": [
-        "verify-and-release-multi-cli-agent-formation-v1"
+        "verify-and-release-multi-cli-agent-formation-v1",
+        "zero-footprint-installer-npx-zero-clone-v1-1-0"
       ],
       "runs": [
         {
@@ -28,6 +29,25 @@
           },
           "notes": "Found OpenCode 2.1.4 plugin-API break; confirmed independently by live opencode runs.",
           "mission": "verify-and-release-multi-cli-agent-formation-v1"
+        },
+        {
+          "run_id": "zero-footprint-installer-npx-zero-clone-v1-1-0-1",
+          "completed_at": "2026-10-25T19:57:54Z",
+          "mode": "actionlist",
+          "stages": {
+            "orchestrator": true,
+            "data": true,
+            "analysis": true,
+            "action": true,
+            "defense": true
+          },
+          "first_attempt": true,
+          "provenance": "scored",
+          "environment": {
+            "target": "claude"
+          },
+          "notes": "Green recon: tool table, npm scope unconfirmed, no tags, install.py clone dependencies with line numbers; first pass, no rework.",
+          "mission": "zero-footprint-installer-npx-zero-clone-v1-1-0"
         }
       ]
     },
@@ -37,7 +57,8 @@
       "risk_tier": "T2",
       "end_condition": "The CLI runs the formation end to end with Context7 and the guard enforced",
       "missions": [
-        "verify-and-release-multi-cli-agent-formation-v1"
+        "verify-and-release-multi-cli-agent-formation-v1",
+        "zero-footprint-installer-npx-zero-clone-v1-1-0"
       ],
       "runs": [
         {
@@ -58,6 +79,25 @@
           },
           "notes": "Codex mission passed end to end; guard hook denial on Codex not verified live (hooks need /hooks trust), so acceptance unmet.",
           "mission": "verify-and-release-multi-cli-agent-formation-v1"
+        },
+        {
+          "run_id": "zero-footprint-installer-npx-zero-clone-v1-1-0-3",
+          "completed_at": "2026-10-25T19:57:54Z",
+          "mode": "actionlist",
+          "stages": {
+            "orchestrator": true,
+            "data": true,
+            "analysis": true,
+            "action": false,
+            "defense": true
+          },
+          "first_attempt": false,
+          "provenance": "scored",
+          "environment": {
+            "target": "claude"
+          },
+          "notes": "Blue npx/uvx wrappers met acceptance first pass; Yellow found a Medium symlink-chain escape in the legacy extractor plus venv-python and stream issues, fixed in a second round and verified on Linux.",
+          "mission": "zero-footprint-installer-npx-zero-clone-v1-1-0"
         }
       ]
     },
@@ -67,7 +107,8 @@
       "risk_tier": "T2",
       "end_condition": "Every smoke step passes on every CLI, verified independently",
       "missions": [
-        "verify-and-release-multi-cli-agent-formation-v1"
+        "verify-and-release-multi-cli-agent-formation-v1",
+        "zero-footprint-installer-npx-zero-clone-v1-1-0"
       ],
       "runs": [
         {
@@ -107,6 +148,44 @@
           },
           "notes": "Round 2: counts rose and Yellow verification works on all CLIs, but .graphifyignore was skipped when a graph existed and Claude test-authoring failed Data; fixes applied, live re-verification outstanding.",
           "mission": "verify-and-release-multi-cli-agent-formation-v1"
+        },
+        {
+          "run_id": "zero-footprint-installer-npx-zero-clone-v1-1-0-4",
+          "completed_at": "2026-10-25T19:57:55Z",
+          "mode": "actionlist",
+          "stages": {
+            "orchestrator": true,
+            "data": true,
+            "analysis": true,
+            "action": false,
+            "defense": true
+          },
+          "first_attempt": true,
+          "provenance": "scored",
+          "environment": {
+            "target": "claude"
+          },
+          "notes": "Yellow regression suites green on Windows and Linux (WSL) and prove fail-before on 1.0.0; acceptance item 'CI green on the pushed branch' unmet because nothing was pushed and macOS was never run.",
+          "mission": "zero-footprint-installer-npx-zero-clone-v1-1-0"
+        },
+        {
+          "run_id": "zero-footprint-installer-npx-zero-clone-v1-1-0-5",
+          "completed_at": "2026-10-25T19:57:55Z",
+          "mode": "actionlist",
+          "stages": {
+            "orchestrator": true,
+            "data": true,
+            "analysis": true,
+            "action": true,
+            "defense": true
+          },
+          "first_attempt": true,
+          "provenance": "scored",
+          "environment": {
+            "target": "claude"
+          },
+          "notes": "Yellow live smoke on Codex/Antigravity/OpenCode x one-liner/npx recorded honestly; found D1-D5; D1 retest passed on all four failing rows.",
+          "mission": "zero-footprint-installer-npx-zero-clone-v1-1-0"
         }
       ]
     },
@@ -116,7 +195,8 @@
       "risk_tier": "T3",
       "end_condition": "build.py --check passes, CI green on all jobs, manifests at the target version",
       "missions": [
-        "verify-and-release-multi-cli-agent-formation-v1"
+        "verify-and-release-multi-cli-agent-formation-v1",
+        "zero-footprint-installer-npx-zero-clone-v1-1-0"
       ],
       "runs": [
         {
@@ -157,6 +237,44 @@
           },
           "notes": "Release docs done (no warning marks left in the capability matrix, README versions, dated CHANGELOG, DoD). Found and fixed Antigravity security defect 9 (hook auto-approved commands), verified live; that fix touched adapters/common/hooks and tests/guard, outside the assignment's file ownership and without a re-plan, so Orchestrator fails.",
           "mission": "verify-and-release-multi-cli-agent-formation-v1"
+        },
+        {
+          "run_id": "zero-footprint-installer-npx-zero-clone-v1-1-0-2",
+          "completed_at": "2026-10-25T19:57:54Z",
+          "mode": "actionlist",
+          "stages": {
+            "orchestrator": true,
+            "data": true,
+            "analysis": true,
+            "action": false,
+            "defense": true
+          },
+          "first_attempt": false,
+          "provenance": "scored",
+          "environment": {
+            "target": "claude"
+          },
+          "notes": "Red --cleanup + standalone uninstaller met acceptance first pass, but needed two follow-up rounds: cleanup guard hardening (unpushed commits, stash, ignored files) from security review, and D1 (uninstall left runtime __pycache__) from live smoke.",
+          "mission": "zero-footprint-installer-npx-zero-clone-v1-1-0"
+        },
+        {
+          "run_id": "zero-footprint-installer-npx-zero-clone-v1-1-0-6",
+          "completed_at": "2026-10-25T19:57:55Z",
+          "mode": "actionlist",
+          "stages": {
+            "orchestrator": true,
+            "data": true,
+            "analysis": true,
+            "action": true,
+            "defense": true
+          },
+          "first_attempt": true,
+          "provenance": "scored",
+          "environment": {
+            "target": "claude"
+          },
+          "notes": "Red release docs, CHANGELOG 1.1.0, VERSION bump and dist regeneration; build --check clean, all suites green.",
+          "mission": "zero-footprint-installer-npx-zero-clone-v1-1-0"
         }
       ]
     }
