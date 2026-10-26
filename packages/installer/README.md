@@ -1,4 +1,4 @@
-# @actionboard/install
+# @actionboard-ai/install
 
 Zero-clone installer for ActionBoard on Codex, Antigravity and OpenCode. It downloads the matching release bundle into a temporary directory, runs the installer from it, and deletes the temp directory afterwards. Nothing is cloned into your project.
 
@@ -12,9 +12,9 @@ Claude Code is not installed this way. Use `/plugin marketplace add Cloudscockpi
 ## Usage
 
 ```sh
-npx @actionboard/install --target codex            # current directory
-npx @actionboard/install --target opencode --project ./my-app --yes
-npx @actionboard/install --target antigravity --global
+npx @actionboard-ai/install --target codex            # current directory
+npx @actionboard-ai/install --target opencode --project ./my-app --yes
+npx @actionboard-ai/install --target antigravity --global
 ```
 
 With uvx (before the tag is on PyPI, run it from git):
@@ -28,7 +28,7 @@ Options: `--target <codex|antigravity|opencode>`, `--global`, `--project DIR`, `
 ## Uninstall
 
 ```sh
-npx @actionboard/install --target codex --uninstall
+npx @actionboard-ai/install --target codex --uninstall
 ```
 
 This also removes installs made by 1.0.0.

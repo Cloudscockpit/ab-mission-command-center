@@ -381,7 +381,7 @@ test("e2e: usage errors exit 2 before any download; --help and --version exit 0"
 })
 
 test("package metadata: bin, no runtime dependencies, no install scripts, no shell spawn", () => {
-  assert.equal(PKG.name, "@actionboard/install")
+  assert.equal(PKG.name, "@actionboard-ai/install")
   assert.equal(PKG.bin["actionboard-install"], "bin/install.js")
   assert.ok(!PKG.dependencies || Object.keys(PKG.dependencies).length === 0)
   for (const k of ["preinstall", "install", "postinstall", "prepare"]) assert.ok(!(PKG.scripts || {})[k], k)

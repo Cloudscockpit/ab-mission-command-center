@@ -43,19 +43,19 @@ your project until you reply `go`.
 > **2. OpenCode CLI (npx, nothing left behind):**
 > Run in your project folder (needs Node 18+ and Python 3.9+):
 > ```sh
-> npx @actionboard/install --target opencode
+> npx @actionboard-ai/install --target opencode
 > ```
 >
 > **3. Antigravity CLI (npx, nothing left behind):**
 > Run in your project folder (needs Node 18+ and Python 3.9+):
 > ```sh
-> npx @actionboard/install --target antigravity
+> npx @actionboard-ai/install --target antigravity
 > ```
 >
 > **4. Codex CLI (npx, nothing left behind):**
 > Run in your project folder (needs Node 18+ and Python 3.9+):
 > ```sh
-> npx @actionboard/install --target codex
+> npx @actionboard-ai/install --target codex
 > ```
 >
 > **No Node?** Use uv: `uvx --from "git+https://github.com/Cloudscockpit/ab-mission-command-center#subdirectory=packages/installer-py" actionboard-install --target <cli>`, or the git one-liner, which deletes its own clone:
@@ -141,7 +141,7 @@ clone paths.
 **Installation (npx, recommended)** — open a terminal in your project folder and run:
 
 ```sh
-npx @actionboard/install --target opencode
+npx @actionboard-ai/install --target opencode
 ```
 
 This downloads the installer into a temporary folder, installs into your project, and deletes the
@@ -216,7 +216,7 @@ entry, and install with `--config agentformation.config.json`.
 **Update / remove** — re-run the install command to update. To remove, no clone is needed:
 
 ```sh
-npx @actionboard/install --target opencode --uninstall
+npx @actionboard-ai/install --target opencode --uninstall
 python .opencode/actionboard/actionboard_uninstall.py
 ```
 
@@ -247,7 +247,7 @@ clone paths.
 **Installation (npx, recommended)** — open a terminal in your project folder and run:
 
 ```sh
-npx @actionboard/install --target codex
+npx @actionboard-ai/install --target codex
 ```
 
 This downloads the installer into a temporary folder, installs into your project, and deletes the
@@ -322,7 +322,7 @@ and install with `--config agentformation.config.json`.
 **Update / remove** — re-run the install command to update. To remove, no clone is needed:
 
 ```sh
-npx @actionboard/install --target codex --uninstall
+npx @actionboard-ai/install --target codex --uninstall
 python .codex/actionboard/actionboard_uninstall.py
 ```
 
@@ -353,7 +353,7 @@ delegate to `scripts/install.py`), Node 18+ for `npx`, Git only for the clone pa
 **Installation (npx, recommended)** — open a terminal in your project folder and run:
 
 ```sh
-npx @actionboard/install --target antigravity
+npx @actionboard-ai/install --target antigravity
 ```
 
 This downloads the installer into a temporary folder, installs into your project, and deletes the
@@ -424,7 +424,7 @@ entry, and install with `--config agentformation.config.json`.
 **Update / remove** — re-run the install command to update. To remove, no clone is needed:
 
 ```sh
-npx @actionboard/install --target antigravity --uninstall
+npx @actionboard-ai/install --target antigravity --uninstall
 python .agents/plugins/actionboard-v5-agentformation/actionboard_uninstall.py
 ```
 
