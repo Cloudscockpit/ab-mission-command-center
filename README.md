@@ -36,7 +36,7 @@ your project until you reply `go`.
 > **1. Claude Code (In-Chat / Zero Cloning):**
 > Paste into Claude Code chat:
 > ```sh
->  /plugin marketplace add Cloudscockpit/actionboard-build-mission-pipeline
+> /plugin marketplace add Cloudscockpit/ab-mission-command-center
 >  /plugin install actionboard-v5-agentformation@actionboard-v5-agentformation
 > ```
 >
@@ -62,8 +62,6 @@ your project until you reply `go`.
 > ```sh
 > git clone --depth 1 https://github.com/Cloudscockpit/ab-mission-command-center.git && python ab-mission-command-center/scripts/install.py --target <opencode|antigravity|codex> --project . --cleanup
 > ```
->
-> Until v1.2.0 is tagged and published, `npx` and `uvx` answer "tag not published yet"; use the git one-liner until then.
 >
 > *(After installing, start a mission with `/start-mission <objective>`, or `$start-mission` on Codex)*
 
