@@ -38,8 +38,8 @@ python <skill-dir>/../mission-report/scripts/submit_mission.py login
 ```
 
 Tell the user: "Sign in to ActionBoard in the browser tab that just opened (email and password,
-Google, LinkedIn, or GitHub). If no tab opened, open the link printed above." The command finishes
-by itself once they sign in. Add `--provider Google` (or `LinkedIn`, `GitHub`) when the user says
+Google, or LinkedIn). If no tab opened, open the link printed above." The command finishes
+by itself once they sign in. Add `--provider Google` (or `LinkedIn`) when the user says
 which one they use.
 
 **Never ask for the password in this conversation.** The browser sign-in keeps it out of the CLI
