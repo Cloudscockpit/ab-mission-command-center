@@ -76,3 +76,4 @@ Useful flags for `fetch`:
 3. Proceed with the ActionBoard V5 mission workflow (`black-agent`):
    - If `mission-plan.md` already contains concrete assignments, present the Go/No-Go gate (or dispatch Green Agent if recon is still needed).
    - Once the work and Yellow Agent verification are complete, generate the report and run `python ${CLAUDE_PLUGIN_ROOT}/skills/mission-report/scripts/submit_mission.py submit --mission-dir <mission_dir>` to publish the completed Mission Report back to the boss's board.
+

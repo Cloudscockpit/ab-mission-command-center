@@ -48,6 +48,7 @@ class MockActionBoardTransport:
         self.graphql_calls = []
         self.s3_puts = []
         self.fail_submit_reports_folder = fail_submit_reports_folder
+        self.folder_files = []
         exp = int(time.time()) + 3600
         self.main_access_token = make_jwt({"sub": "user-main-1", "exp": exp})
         self.main_id_token = make_jwt({"sub": "user-main-1", "custom:profileId": "prof-agent-007", "exp": exp})
@@ -100,6 +101,24 @@ class MockActionBoardTransport:
                                 "userId": "user-main-1",
                                 "email": variables["input"]["email"],
                                 "name": "Dev User",
+                            },
+                        },
+                    }
+                }
+            }
+        elif "auth_refreshToken" in query:
+            resp = {
+                "data": {
+                    "auth_refreshToken": {
+                        "success": True,
+                        "message": "Token refreshed",
+                        "data": {
+                            "tokens": {
+                                "accessToken": self.main_access_token,
+                                "idToken": self.main_id_token,
+                                "refreshToken": "refresh-tok-456",
+                                "expiresIn": 3600,
+                                "tokenType": "Bearer",
                             },
                         },
                     }
@@ -309,7 +328,7 @@ class MockActionBoardTransport:
                     "filemanager_filesByBoardAndFolder": {
                         "success": True,
                         "message": "ok",
-                        "data": {"nextToken": None, "items": []},
+                        "data": {"nextToken": None, "items": self.folder_files},
                     }
                 }
             }
@@ -570,6 +589,40 @@ class TestSubmitMissionCLI(unittest.TestCase):
             "mission-plan.md",
         ])
 
+    def test_list_missions_omits_unused_null_next_token_argument(self):
+        def reject_null_next_token(req, timeout=30):
+            payload = json.loads((req.data or b"{}").decode("utf-8"))
+            query = payload.get("query") or ""
+            if "nextToken: $nextToken" in query:
+                body = {
+                    "errors": [{
+                        "message": "Invalid input: expected string, received null",
+                        "path": ["nextToken"],
+                    }]
+                }
+            else:
+                body = {
+                    "data": {
+                        "assistprofile_listMissionsByBoard": {
+                            "nextToken": None,
+                            "items": [],
+                        }
+                    }
+                }
+            return FakeHTTPResponse(json.dumps(body).encode("utf-8"))
+
+        missions = submit_mission.fetch_missions_by_board(
+            {
+                "endpoint": "https://example.appsync-api.ap-southeast-1.amazonaws.com/graphql",
+                "api_key": "test-api-key",
+            },
+            "pod-id-token",
+            "board-123",
+            opener=reject_null_next_token,
+        )
+
+        self.assertEqual(missions, [])
+
     def test_end_to_end_login_select_and_submit_with_s3_sigv4(self):
         transport = MockActionBoardTransport()
         submit_mission.main([
@@ -796,6 +849,201 @@ class TestSubmitMissionCLI(unittest.TestCase):
                     flags = set(re.findall(r"--[a-z0-9][a-z0-9-]*", match.group(1)))
                     for flag in flags:
                         self.assertIn(flag, proc.stdout, "%s: %s %s not in --help" % (skill_dir, sub, flag))
+
+    def test_refresh_token_and_cached_pod_token_when_main_token_expired(self):
+        transport = MockActionBoardTransport()
+        expired_main = make_jwt({"sub": "user-main-1", "exp": int(time.time()) - 3600})
+        valid_pod = transport.pod_id_token
+        submit_mission.save_secure_json(self.cred_file, {
+            "appsync_endpoint": "https://example.appsync-api.ap-southeast-1.amazonaws.com/graphql",
+            "appsync_api_key": "da2-testapikey123",
+            "email": "dev@actionboard.ai",
+            "user_id": "user-main-1",
+            "profile_id": "prof-agent-007",
+            "access_token": expired_main,
+            "refresh_token": "refresh-tok-123",
+            "pod_tokens": {
+                "pod-alpha-1": {
+                    "id_token": valid_pod,
+                    "expires_at": int(time.time()) + 86400,
+                }
+            },
+        })
+        submit_mission.save_config_json(self.cfg_file, {
+            "pod_id": "pod-alpha-1",
+            "pod_name": "Alpha Engineering Pod",
+            "board_id": "board-eng-42",
+            "board_name": "Investor & Engineering Board",
+        })
+
+        # 1. Submit succeeds using the valid 24h cached pod token without needing pods_getMyPods
+        rc_submit = submit_mission.main([
+            "--credentials-file", self.cred_file,
+            "--config", self.cfg_file,
+            "submit",
+            "--mission-dir", self.mission_dir,
+            "--skip-s3",
+            "--no-input",
+        ], opener=transport)
+        self.assertEqual(rc_submit, 0)
+        queries_so_far = [c["query"] for c in transport.graphql_calls]
+        self.assertFalse(any("pods_getMyPods" in q for q in queries_so_far))
+
+        # 2. Listing pods refreshes the expired main access_token via auth_refreshToken
+        rc_pods = submit_mission.main([
+            "--credentials-file", self.cred_file,
+            "--config", self.cfg_file,
+            "pods",
+            "--no-input",
+        ], opener=transport)
+        self.assertEqual(rc_pods, 0)
+        all_queries = [c["query"] for c in transport.graphql_calls]
+        self.assertTrue(any("auth_refreshToken" in q for q in all_queries))
+
+    def test_submit_without_aws_keys_uploads_through_pod_route(self):
+        transport = MockActionBoardTransport()
+        pod_uploads = []
+
+        def opener(req, timeout=30):
+            if "/api/s3/knowledge-base/upload" in req.full_url:
+                pod_uploads.append(req)
+                body = {"bucket": "pod-bucket", "key": "board-eng-42/missions/1-file", "region": "ap-southeast-1"}
+                return FakeHTTPResponse(json.dumps(body).encode("utf-8"))
+            return transport(req, timeout=timeout)
+
+        base = ["--credentials-file", self.cred_file, "--config", self.cfg_file]
+        submit_mission.main(base + [
+            "configure", "--endpoint", "https://example.appsync-api.ap-southeast-1.amazonaws.com/graphql",
+            "--api-key", "da2-testapikey123",
+        ])
+        submit_mission.main(base + ["login", "--email", "dev@actionboard.ai", "--password", "pw"], opener=opener)
+        submit_mission.main(base + ["select", "--pod", "alpha-pod", "--board", "board-eng-42"], opener=opener)
+
+        saved_env = dict(os.environ)
+        for key in ("AWS_ACCESS_KEY_ID", "AWS_SECRET_ACCESS_KEY", "AWS_SESSION_TOKEN"):
+            os.environ.pop(key, None)
+        os.environ["AWS_SHARED_CREDENTIALS_FILE"] = os.path.join(self.tmp, "no-aws-credentials")
+        try:
+            rc = submit_mission.main(base + ["submit", "--mission-dir", self.mission_dir, "--no-input"], opener=opener)
+        finally:
+            os.environ.clear()
+            os.environ.update(saved_env)
+
+        self.assertEqual(rc, 0)
+        self.assertEqual(len(transport.s3_puts), 0)
+        self.assertEqual(len(pod_uploads), 5)
+        first = pod_uploads[0]
+        self.assertEqual(first.full_url, "https://alpha.actionboard.ai/api/s3/knowledge-base/upload")
+        self.assertEqual(first.get_header("Cookie"), "podId=pod-alpha-1")
+        self.assertIn(b'name="boardId"\r\n\r\nboard-eng-42', first.data)
+        self.assertIn(b"All assignments completed.", first.data)
+        reports_call = [c for c in transport.graphql_calls if "assistprofile_submitReports(" in c["query"]][0]
+        s3_object = reports_call["variables"]["input"]["reports"][0]["s3Object"]
+        self.assertEqual(s3_object["bucket"], "pod-bucket")
+        self.assertEqual(s3_object["key"], "board-eng-42/missions/1-file")
+
+    def test_date_only_values_become_aws_datetime(self):
+        self.assertEqual(submit_mission.to_aws_datetime("2026-11-13"), "2026-11-13T00:00:00Z")
+        self.assertEqual(submit_mission.to_aws_datetime("2026-11-13T09:00:00Z"), "2026-11-13T09:00:00Z")
+        self.assertIsNone(submit_mission.to_aws_datetime(None))
+
+    def test_graphql_error_exits_cleanly_without_traceback(self):
+        def opener(req, timeout=30):
+            return FakeHTTPResponse(json.dumps({"errors": [{"message": "Variable 'x' has an invalid value."}]}).encode("utf-8"))
+
+        with open(self.cred_file, "w", encoding="utf-8") as fh:
+            json.dump({
+                "appsync_endpoint": "https://example.appsync-api.ap-southeast-1.amazonaws.com/graphql",
+                "appsync_api_key": "da2-testapikey123",
+                "access_token": make_jwt({"sub": "u", "exp": int(time.time()) + 3600}),
+            }, fh)
+        with self.assertRaises(SystemExit) as ctx:
+            submit_mission.main(["--credentials-file", self.cred_file, "--config", self.cfg_file, "pods", "--no-input"], opener=opener)
+        self.assertEqual(ctx.exception.code, 2)
+
+    def test_edge_proxy_mode_needs_no_api_key(self):
+        transport = MockActionBoardTransport()
+        signs = []
+        downloads = []
+
+        def opener(req, timeout=30):
+            url = req.full_url
+            if url.endswith("/s3/sign"):
+                body = json.loads(req.data.decode("utf-8"))
+                signs.append({"body": body, "edge": req.get_header("X-edge-auth")})
+                signed = "https://%s.s3.ap-southeast-1.amazonaws.com/%s?X-Amz-Signature=x" % (body["bucket"], body["key"])
+                return FakeHTTPResponse(json.dumps({"url": signed, "region": "ap-southeast-1"}).encode("utf-8"))
+            if req.get_method() == "GET" and ".s3." in url:
+                downloads.append(url)
+                return FakeHTTPResponse(b"# Mission Brief from S3\n")
+            return transport(req, timeout=timeout)
+
+        base = ["--credentials-file", self.cred_file, "--config", self.cfg_file]
+        saved_env = dict(os.environ)
+        for key in ("AWS_ACCESS_KEY_ID", "AWS_SECRET_ACCESS_KEY", "AWS_SESSION_TOKEN", "APPSYNC_API_KEY",
+                    "APPSYNC_GRAPHQL_ENDPOINT", "APPSYNC_URL", "ACTIONBOARD_EDGE_PROXY_URL"):
+            os.environ.pop(key, None)
+        os.environ["AWS_SHARED_CREDENTIALS_FILE"] = os.path.join(self.tmp, "no-aws-credentials")
+        try:
+            # No configure step at all: a fresh user only logs in.
+            self.assertEqual(submit_mission.main(base + ["login", "--email", "dev@actionboard.ai", "--password", "pw"], opener=opener), 0)
+            submit_mission.main(base + ["select", "--pod", "alpha-pod", "--board", "board-eng-42"], opener=opener)
+            rc = submit_mission.main(base + ["submit", "--mission-dir", self.mission_dir, "--no-input"], opener=opener)
+            self.assertEqual(rc, 0)
+
+            transport.folder_files.append({
+                "fileName": "mission-brief.md",
+                "s3Object": {"bucket": "actionboard-kb-agent", "key": "PremiumBoardKB/Boards/b/missions/m/1-mission-brief.md"},
+            })
+            out_dir = os.path.join(self.tmp, "fetched")
+            rc_fetch = submit_mission.main(base + ["fetch", "--invitation-id", "inv-boss-888", "--out-dir", out_dir, "--no-input"], opener=opener)
+            self.assertEqual(rc_fetch, 0)
+        finally:
+            os.environ.clear()
+            os.environ.update(saved_env)
+
+        edge_graphql = submit_mission.DEFAULT_EDGE_PROXY_URL + "/graphql"
+        self.assertTrue(transport.graphql_calls)
+        for call in transport.graphql_calls:
+            self.assertEqual(call["url"], edge_graphql)
+            self.assertNotIn("x-api-key", call["headers"])
+        pod_calls = [c for c in transport.graphql_calls if c["headers"].get("authorization") == "Bearer " + transport.pod_id_token]
+        self.assertTrue(pod_calls)
+        for call in pod_calls:
+            self.assertEqual(call["headers"]["x-edge-auth"], "Bearer " + transport.main_access_token)
+
+        puts = [s for s in signs if s["body"]["method"] == "PUT"]
+        self.assertEqual(len(puts), 5)
+        self.assertEqual(len(transport.s3_puts), 5)
+        self.assertEqual(puts[0]["body"]["bucket"], "actionboard-kb-agent")
+        self.assertTrue(puts[0]["body"]["key"].startswith(
+            "PremiumBoardKB/Boards/Investor+Boards/board-eng-42/missions/mission-uuid-1001/"))
+        self.assertEqual(puts[0]["edge"], "Bearer " + transport.main_access_token)
+        self.assertEqual(len(downloads), 1)
+
+        with open(self.cred_file, encoding="utf-8") as fh:
+            saved = json.load(fh)
+        self.assertNotIn("appsync_api_key", saved)
+        cfg = submit_mission.load_json_file(self.cfg_file)
+        self.assertEqual(cfg["pod_bucket"], "actionboard-kb-agent")
+
+    def test_configured_api_key_keeps_direct_mode(self):
+        with open(self.cred_file, "w", encoding="utf-8") as fh:
+            json.dump({"appsync_endpoint": "https://example.appsync-api.ap-southeast-1.amazonaws.com/graphql",
+                       "appsync_api_key": "da2-testapikey123"}, fh)
+        saved_env = dict(os.environ)
+        os.environ.pop("ACTIONBOARD_EDGE_PROXY_URL", None)
+        try:
+            settings = submit_mission.resolve_settings(self.cred_file, self.cfg_file)
+            self.assertEqual(settings["edge_proxy"], "")
+            self.assertEqual(settings["api_key"], "da2-testapikey123")
+            os.environ["ACTIONBOARD_EDGE_PROXY_URL"] = "https://edge.example.dev/"
+            settings = submit_mission.resolve_settings(self.cred_file, self.cfg_file)
+            self.assertEqual(settings["endpoint"], "https://edge.example.dev/graphql")
+            self.assertIsNone(settings["api_key"])
+        finally:
+            os.environ.clear()
+            os.environ.update(saved_env)
 
 
 if __name__ == "__main__":

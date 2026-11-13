@@ -9,6 +9,11 @@ Uploads a mission's **Brief**, **Plan**, and **Report** (Markdown, HTML dashboar
 
 ## How it works
 
+By default every call goes through the ActionBoard edge proxy (the same one the mobile app
+uses). The proxy holds the AppSync API key and the AWS keys, so the user needs only their
+ActionBoard login: no API key, no AWS keys, no `configure` step. A setup that already has an
+AppSync API key configured keeps calling AppSync directly.
+
 The submission CLI (`{{skills_root}}/mission-report/scripts/submit_mission.py`, Python 3.9+ standard library only) executes the full ActionBoard control-plane and data-plane flow:
 
 1. **Authenticate (`auth_login` / `auth_refreshToken`):** Signs in to the ActionBoard main user pool and caches tokens with `0600` permissions in `~/.actionboard/credentials.json` (falling back to `.actionboard/credentials.json` inside restricted sandboxes).
@@ -16,10 +21,17 @@ The submission CLI (`{{skills_root}}/mission-report/scripts/submit_mission.py`, 
 3. **Select Board (`boards_getMyBoards`):** Lists boards inside the chosen Pod and saves the selected `pod_id` and `board_id` in `.actionboard/config.json`.
 4. **Create or Match Mission (`assistprofile_listMissionsByBoard` / `assistprofile_createMission`):** Reuses an existing mission ID (from `.actionboard/config.json`, `--mission-id`, or title match) or creates a new mission on the board with its dedicated `missionFolderId` and `reportsSubfolderId`.
 5. **Submit Mission Plan (`assistprofile_createMissionPlan` / `assistprofile_updateMissionPlan` / `assistprofile_submitMissionPlan`):** Publishes the combined Mission Brief and Mission Plan Markdown to the board's mission plan record.
-6. **Upload Deliverables to S3 & Register Reports (`assistprofile_submitReports`):** Uploads `mission-report.md`, `mission-report.html`, `mission-report.jsonld`, `mission-brief.md`, `mission-brief.jsonld`, `mission-plan.md`, `mission-plan.jsonld`, and `mission-metrics.json` to `s3://<S3_BUCKET_NAME>/<S3_PREFIX>/<boardId>/missions/<missionId>/` using AWS SigV4 and registers them on the mission (with automatic fallback to `filemanager_createFolder` + `filemanager_createFile` for legacy missions).
+6. **Upload Deliverables to S3 & Register Reports (`assistprofile_submitReports`):** Uploads `mission-report.md`, `mission-report.html`, `mission-report.jsonld`, `mission-brief.md`, `mission-brief.jsonld`, `mission-plan.md`, `mission-plan.jsonld`, and `mission-metrics.json` through the Pod's own upload route (`https://<pod-hostname>/api/s3/knowledge-base/upload`, the same one the web app uses, so the user needs no AWS keys) and registers them on the mission. When AWS keys are configured it uploads with AWS SigV4 to `s3://<S3_BUCKET_NAME>/<S3_PREFIX>/<boardId>/missions/<missionId>/` instead (with automatic fallback to `filemanager_createFolder` + `filemanager_createFile` for legacy missions).
 7. **Mark Completed (`assistprofile_updateMissionStatus`):** Sets mission status to `COMPLETED` when `mission-report.md` is present.
 
 ## Step-by-step execution
+
+You run inside an agent session with no interactive terminal, so the script cannot prompt for
+a login or show its Pod/Board picker. Before submitting, run `status --json`. If `logged_in` is
+`false`, or `default_pod_id` or `default_board_id` is empty, follow
+`{{skills_root}}/ab-login/SKILL.md` first: it asks the user to log in and to choose the Pod and
+Board, then saves them. Then run `submit` with `--no-input`. If `submit` itself reports
+"not logged in", do the same and retry the exact command.
 
 ### Step 1 — Check CLI status
 
@@ -31,9 +43,12 @@ python {{skills_root}}/mission-report/scripts/submit_mission.py status
 
 On Windows use `py` instead of `python`.
 
-### Step 2 — Configure endpoint & S3 (first time only)
+### Step 2 — Configure (usually not needed)
 
-If `AppSync endpoint` is `NOT SET`, import settings from an env/config file or pass them explicitly:
+The default edge-proxy connection needs no configuration. To move an existing API-key setup onto
+the edge proxy, run `configure --edge-proxy-url https://actionboard-edge-proxy.ab-mobile.workers.dev`
+(pass `--edge-proxy-url ""` to go back). Only if you deliberately use direct mode, import the
+endpoint and API key from an env file or pass them explicitly:
 
 ```sh
 python {{skills_root}}/mission-report/scripts/submit_mission.py configure \
@@ -51,7 +66,7 @@ python {{skills_root}}/mission-report/scripts/submit_mission.py configure \
   --s3-prefix "PremiumBoardKB/Boards/Investor+Boards"
 ```
 
-To enable binary S3 uploads (in addition to standard `~/.aws/credentials` or `AWS_ACCESS_KEY_ID` / `AWS_SECRET_ACCESS_KEY` environment variables), you can also pass `--aws-access-key-id` and `--aws-secret-access-key` to `configure`.
+AWS keys are optional. Without them, files upload through presigned URLs from the edge proxy (or, in direct mode, through the Pod's own upload route). To upload straight to S3 instead, set `AWS_ACCESS_KEY_ID` / `AWS_SECRET_ACCESS_KEY`, use `~/.aws/credentials`, or pass `--aws-access-key-id` and `--aws-secret-access-key` to `configure`.
 
 ### Step 3 — Log in to ActionBoard (when not authenticated)
 

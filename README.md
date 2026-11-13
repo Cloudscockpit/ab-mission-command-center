@@ -203,7 +203,7 @@ It runs as the `black-agent` primary agent, stops at the gate, and waits for `go
 > `opencode run --agent black-agent "<objective>"`.
 
 **Slash commands:** OpenCode does not show skills in `/`, so the package adds one command per
-skill: `/mission-brief`, `/mission-plan`, `/mission-report`, `/fetch-mission`, `/submit-mission`, `/mission-preflight`,
+skill: `/mission-brief`, `/mission-plan`, `/mission-report`, `/ab-login`, `/fetch-mission`, `/submit-mission`, `/mission-preflight`,
 `/skills-registry`, `/actionboard-devops-mission`, `/mission-harness`, `/sandbox-up`,
 `/sandbox-status`, `/sandbox-down`, `/policy-widen`, `/terse-output`.
 
@@ -558,7 +558,7 @@ request, and any text from the reports is HTML-escaped.
 
 When a manager or board owner assigns you a mission (or sends a mission invitation) on an ActionBoard Board, you can pull its **Mission Brief** and **Mission Plan** directly to your local workspace, start your work, and submit the completed **Mission Report** back from the CLI — without logging into the web UI.
 
-Invoke `/fetch-mission` and `/submit-mission` (`$fetch-mission` and `$submit-mission` on Codex CLI) or run `submit_mission.py` directly:
+Run `/ab-login` once to log in and choose a Pod and Board (`$ab-login` on Codex CLI). Then invoke `/fetch-mission` and `/submit-mission` (`$fetch-mission` and `$submit-mission` on Codex CLI) or run `submit_mission.py` directly:
 
 ```sh
 # 1. Configure AppSync and S3 settings (saved with 0600 permissions)

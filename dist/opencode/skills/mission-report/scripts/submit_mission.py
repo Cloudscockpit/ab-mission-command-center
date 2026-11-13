@@ -11,7 +11,8 @@ Handles:
      `assistprofile_createMission`, `assistprofile_updateMission`)
   5. Mission Plan submission (`assistprofile_createMissionPlan`,
      `assistprofile_updateMissionPlan`, `assistprofile_submitMissionPlan`)
-  6. S3 deliverable upload (pure-stdlib AWS SigV4 PUT) + Mission Report
+  6. Deliverable upload (through the Pod's web upload route, or a pure-stdlib
+     AWS SigV4 PUT when AWS keys are configured) + Mission Report
      registration (`assistprofile_submitReports`, with `filemanager_createFile`
      fallback for legacy missions without `missionFolderId`)
 
@@ -45,6 +46,8 @@ DEFAULT_S3_REGION = "ap-southeast-1"
 DEFAULT_S3_BUCKET = "actionboard-kb-agent"
 DEFAULT_S3_PREFIX = "PremiumBoardKB/Boards/Investor+Boards"
 DEFAULT_COGNITO_DOMAIN = "https://absaas-dev.auth.ap-southeast-1.amazoncognito.com/"
+# Same edge proxy the mobile app uses: it holds the AppSync API key and AWS keys server-side.
+DEFAULT_EDGE_PROXY_URL = "https://actionboard-edge-proxy.ab-mobile.workers.dev"
 
 MISSION_FILES = [
     ("mission-report.md", "text/markdown", ["mission", "report"], "Mission Report (Markdown)"),
@@ -217,6 +220,14 @@ def resolve_settings(cred_path=None, config_path=".actionboard/config.json", arg
         or os.environ.get("APPSYNC_API_KEY")
         or creds.get("appsync_api_key")
     )
+    explicit_edge = os.environ.get("ACTIONBOARD_EDGE_PROXY_URL") or creds.get("edge_proxy_url")
+    edge_proxy = ""
+    if getattr(args, "api_key", None) is None and (explicit_edge or not api_key):
+        # No API key needed: route through the edge proxy. A configured API key keeps the old direct mode.
+        edge_proxy = (explicit_edge or DEFAULT_EDGE_PROXY_URL).strip().rstrip("/")
+        endpoint = edge_proxy + "/graphql"
+        api_key = None
+
     s3_region = (
         getattr(args, "s3_region", None)
         or os.environ.get("S3_REGION")
@@ -239,13 +250,14 @@ def resolve_settings(cred_path=None, config_path=".actionboard/config.json", arg
         or DEFAULT_S3_PREFIX
     ).strip("/")
 
-    return {
+    settings = {
         "cred_file": cred_file,
         "creds": creds,
         "config_file": config_path,
         "cfg": cfg,
         "endpoint": endpoint,
         "api_key": api_key,
+        "edge_proxy": edge_proxy,
         "s3_region": s3_region,
         "s3_bucket": s3_bucket,
         "s3_prefix": s3_prefix,
@@ -260,6 +272,8 @@ def resolve_settings(cred_path=None, config_path=".actionboard/config.json", arg
             or ""
         ),
     }
+    _EDGE_CONTEXT["settings"] = settings
+    return settings
 
 
 def resolve_aws_credentials(creds):
@@ -294,26 +308,117 @@ def resolve_aws_credentials(creds):
 
 # --------------------------------------------------------------- GraphQL client
 
+# Settings of the current command, so edge-mode requests can find the main-pool token.
+_EDGE_CONTEXT = {}
+
+
+def _edge_auth_token(bearer_token, opener=None):
+    """The edge proxy only accepts main-pool tokens in X-Edge-Auth; pod tokens ride in Authorization."""
+    settings = _EDGE_CONTEXT.get("settings")
+    if not bearer_token or not settings:
+        return bearer_token
+    pod_tokens = {
+        (t or {}).get("id_token")
+        for t in ((settings.get("creds") or {}).get("pod_tokens") or {}).values()
+    }
+    pod_tokens.add(os.environ.get("ACTIONBOARD_POD_ID_TOKEN"))
+    if bearer_token in pod_tokens:
+        return ensure_main_token(settings, interactive=False, opener=opener)
+    return bearer_token
+
+
+def edge_http(settings, path, payload, opener=None, timeout=60):
+    """POST JSON to an edge proxy route with the main-pool token."""
+    main_token = ensure_main_token(settings, interactive=False, opener=opener)
+    req = urllib.request.Request(
+        settings["edge_proxy"] + path,
+        data=json.dumps(payload).encode("utf-8"),
+        headers={
+            "Content-Type": "application/json",
+            "Accept": "application/json",
+            "User-Agent": "ActionBoard-CLI/1.2",
+            "X-Edge-Auth": "Bearer %s" % main_token,
+            "Authorization": "Bearer %s" % main_token,
+        },
+        method="POST",
+    )
+    open_fn = opener or urllib.request.urlopen
+    try:
+        with open_fn(req, timeout=timeout) as resp:
+            raw = resp.read().decode("utf-8")
+    except urllib.error.HTTPError as exc:
+        body = ""
+        try:
+            body = exc.read().decode("utf-8", errors="replace")
+        except Exception:
+            pass
+        raise RuntimeError("edge proxy %s HTTP %s: %s" % (path, exc.code, body[:300] or exc.reason))
+    except (urllib.error.URLError, OSError) as exc:
+        raise RuntimeError("edge proxy %s network error: %s" % (path, getattr(exc, "reason", exc)))
+    try:
+        return json.loads(raw)
+    except ValueError:
+        raise RuntimeError("edge proxy %s returned non-JSON: %s" % (path, raw[:200]))
+
+
+def edge_presign(settings, bucket, key, method, opener=None, expires_in=900):
+    res = edge_http(settings, "/s3/sign", {"bucket": bucket, "key": key, "method": method, "expiresIn": expires_in}, opener=opener)
+    if not isinstance(res, dict) or not res.get("url"):
+        raise RuntimeError("edge proxy returned no signed URL for %s" % key)
+    return res["url"], res.get("region") or settings["s3_region"]
+
+
+def upload_bytes_via_edge(settings, bucket, key, body_bytes, content_type, opener=None):
+    url, region = edge_presign(settings, bucket, key, "PUT", opener=opener)
+    req = urllib.request.Request(url, data=body_bytes, headers={"Content-Type": content_type}, method="PUT")
+    open_fn = opener or urllib.request.urlopen
+    try:
+        with open_fn(req, timeout=90) as resp:
+            resp.read()
+    except urllib.error.HTTPError as exc:
+        raise RuntimeError("S3 PUT HTTP %s for %s" % (exc.code, key))
+    except (urllib.error.URLError, OSError) as exc:
+        raise RuntimeError("S3 PUT network error for %s: %s" % (key, getattr(exc, "reason", exc)))
+    return {
+        "bucket": bucket,
+        "key": key,
+        "size": len(body_bytes),
+        "region": region,
+        "s3_uri": "s3://%s/%s" % (bucket, key),
+        "url": "https://%s.s3.%s.amazonaws.com/%s" % (bucket, region, key),
+    }
+
+
+def download_bytes_via_edge(settings, bucket, key, opener=None):
+    url, _region = edge_presign(settings, bucket, key, "GET", opener=opener)
+    req = urllib.request.Request(url, method="GET")
+    open_fn = opener or urllib.request.urlopen
+    try:
+        with open_fn(req, timeout=60) as resp:
+            return resp.read()
+    except urllib.error.HTTPError as exc:
+        raise RuntimeError("S3 GET HTTP %s for %s" % (exc.code, key))
+    except (urllib.error.URLError, OSError) as exc:
+        raise RuntimeError("S3 GET network error for %s: %s" % (key, getattr(exc, "reason", exc)))
+
+
 def graphql_request(endpoint, api_key, query, variables=None, bearer_token=None, opener=None):
     if not endpoint:
         fail(
             "AppSync endpoint is not configured. Run `python submit_mission.py configure "
             "--endpoint <url> --api-key <key>` or set APPSYNC_GRAPHQL_ENDPOINT."
         )
-    if not api_key:
-        fail(
-            "AppSync API key is not configured. Run `python submit_mission.py configure "
-            "--endpoint <url> --api-key <key>` or set APPSYNC_API_KEY."
-        )
-
     headers = {
         "Content-Type": "application/json",
         "Accept": "application/json",
-        "x-api-key": api_key,
         "User-Agent": "ActionBoard-CLI/1.2",
     }
+    if api_key:
+        headers["x-api-key"] = api_key
     if bearer_token:
         headers["Authorization"] = "Bearer %s" % bearer_token
+        if not api_key:
+            headers["X-Edge-Auth"] = "Bearer %s" % _edge_auth_token(bearer_token, opener=opener)
 
     payload = {"query": query, "variables": variables or {}}
     body = json.dumps(payload).encode("utf-8")
@@ -321,7 +426,7 @@ def graphql_request(endpoint, api_key, query, variables=None, bearer_token=None,
     open_fn = opener or urllib.request.urlopen
 
     try:
-        with open_fn(req, timeout=30) as resp:
+        with open_fn(req, timeout=60) as resp:
             raw = resp.read().decode("utf-8")
     except urllib.error.HTTPError as exc:
         err_body = ""
@@ -332,6 +437,9 @@ def graphql_request(endpoint, api_key, query, variables=None, bearer_token=None,
         fail("AppSync HTTP %s: %s" % (exc.code, err_body or exc.reason))
     except urllib.error.URLError as exc:
         fail("network error contacting AppSync (%s): %s" % (endpoint, exc.reason))
+    except OSError as exc:
+        # socket.timeout while reading the response is not a URLError.
+        fail("network error contacting AppSync (%s): %s. Retry the command." % (endpoint, exc))
 
     try:
         parsed = json.loads(raw)
@@ -384,12 +492,7 @@ mutation Auth_refreshToken($input: Auth_RefreshTokenInput!) {
         idToken
         refreshToken
         expiresIn
-      }
-      user {
-        profileId
-        userId
-        email
-        name
+        tokenType
       }
     }
   }
@@ -464,6 +567,27 @@ mutation Pods_consumeExchangeCode($code: String!, $podId: String!) {
 """
 
 QUERY_MY_BOARDS = """
+query Boards_getMyBoards($podId: String) {
+  boards_getMyBoards(podId: $podId) {
+    success
+    message
+    data {
+      boardId
+      name
+      description
+      ownerId
+      podId
+      memberCount
+      boardStatus
+      boardType
+      createdAt
+      updatedAt
+    }
+  }
+}
+"""
+
+QUERY_MY_BOARDS_SEARCH = """
 query Boards_getMyBoards($podId: String, $searchTerm: String) {
   boards_getMyBoards(podId: $podId, searchTerm: $searchTerm) {
     success
@@ -485,8 +609,8 @@ query Boards_getMyBoards($podId: String, $searchTerm: String) {
 """
 
 QUERY_LIST_MISSIONS_BY_BOARD = """
-query Assistprofile_listMissionsByBoard($boardId: ID!, $limit: Int, $nextToken: String) {
-  assistprofile_listMissionsByBoard(boardId: $boardId, limit: $limit, nextToken: $nextToken) {
+query Assistprofile_listMissionsByBoard($boardId: ID!, $limit: Int) {
+  assistprofile_listMissionsByBoard(boardId: $boardId, limit: $limit) {
     nextToken
     items {
       boardId
@@ -540,8 +664,33 @@ query Assistprofile_getMissionInvitation($invitationId: ID!, $boardId: ID!) {
 """
 
 QUERY_GET_MY_MISSION_INVITATIONS = """
-query Assistprofile_getMyMissionInvitations($status: Assistprofile_MissionInvitationStatus, $limit: Int, $nextToken: String) {
-  assistprofile_getMyMissionInvitations(status: $status, limit: $limit, nextToken: $nextToken) {
+query Assistprofile_getMyMissionInvitations($limit: Int) {
+  assistprofile_getMyMissionInvitations(limit: $limit) {
+    nextToken
+    items {
+      invitationId
+      missionId
+      boardId
+      invitedProfileId
+      invitedBy
+      status
+      message
+      expiresAt
+      acceptedAt
+      declinedAt
+      declineReason
+      planId
+      planSubmittedAt
+      createdAt
+      updatedAt
+    }
+  }
+}
+"""
+
+QUERY_GET_MY_MISSION_INVITATIONS_BY_STATUS = """
+query Assistprofile_getMyMissionInvitations($status: Assistprofile_MissionInvitationStatus, $limit: Int) {
+  assistprofile_getMyMissionInvitations(status: $status, limit: $limit) {
     nextToken
     items {
       invitationId
@@ -610,8 +759,8 @@ query Assistprofile_getMission($boardId: ID!, $missionId: ID!) {
 """
 
 QUERY_LIST_MISSIONS_BY_AGENT = """
-query Assistprofile_listMissionsByAgent($actionAssistAgentId: ID!, $limit: Int, $nextToken: String) {
-  assistprofile_listMissionsByAgent(actionAssistAgentId: $actionAssistAgentId, limit: $limit, nextToken: $nextToken) {
+query Assistprofile_listMissionsByAgent($actionAssistAgentId: ID!, $limit: Int) {
+  assistprofile_listMissionsByAgent(actionAssistAgentId: $actionAssistAgentId, limit: $limit) {
     nextToken
     items {
       boardId
@@ -662,8 +811,8 @@ query Assistprofile_getMissionPlan($missionId: ID!, $planId: ID!) {
 """
 
 QUERY_LIST_MISSION_PLANS_BY_MISSION = """
-query Assistprofile_listMissionPlansByMission($missionId: ID!, $limit: Int, $nextToken: String) {
-  assistprofile_listMissionPlansByMission(missionId: $missionId, limit: $limit, nextToken: $nextToken) {
+query Assistprofile_listMissionPlansByMission($missionId: ID!, $limit: Int) {
+  assistprofile_listMissionPlansByMission(missionId: $missionId, limit: $limit) {
     nextToken
     items {
       missionId
@@ -688,8 +837,8 @@ query Assistprofile_listMissionPlansByMission($missionId: ID!, $limit: Int, $nex
 """
 
 QUERY_FILES_BY_BOARD_AND_FOLDER = """
-query Filemanager_filesByBoardAndFolder($boardId: ID!, $folderId: ID!, $limit: Int, $nextToken: String) {
-  filemanager_filesByBoardAndFolder(boardId: $boardId, folderId: $folderId, limit: $limit, nextToken: $nextToken) {
+query Filemanager_filesByBoardAndFolder($boardId: ID!, $folderId: ID!, $limit: Int) {
+  filemanager_filesByBoardAndFolder(boardId: $boardId, folderId: $folderId, limit: $limit) {
     success
     message
     data {
@@ -950,8 +1099,9 @@ def login_with_credentials(settings, email, password, opener=None):
             pass
 
     creds = dict(settings["creds"])
-    creds["appsync_endpoint"] = settings["endpoint"]
-    creds["appsync_api_key"] = settings["api_key"]
+    if not settings.get("edge_proxy"):
+        creds["appsync_endpoint"] = settings["endpoint"]
+        creds["appsync_api_key"] = settings["api_key"]
     creds["s3_region"] = settings["s3_region"]
     creds["s3_bucket"] = settings["s3_bucket"]
     creds["s3_prefix"] = settings["s3_prefix"]
@@ -970,6 +1120,20 @@ def login_with_credentials(settings, email, password, opener=None):
     return creds
 
 
+def get_cached_pod_id_token(settings, pod_id):
+    env_pod_token = os.environ.get("ACTIONBOARD_POD_ID_TOKEN")
+    if env_pod_token:
+        return env_pod_token
+    if not pod_id:
+        return None
+    pod_tokens = (settings.get("creds") or {}).get("pod_tokens") or {}
+    cached = pod_tokens.get(pod_id) or {}
+    tok = cached.get("id_token")
+    if tok and token_is_valid(tok):
+        return tok
+    return None
+
+
 def ensure_main_token(settings, interactive=True, opener=None):
     env_token = os.environ.get("ACTIONBOARD_ACCESS_TOKEN")
     if env_token:
@@ -982,29 +1146,36 @@ def ensure_main_token(settings, interactive=True, opener=None):
 
     refresh_token = creds.get("refresh_token")
     email = os.environ.get("ACTIONBOARD_EMAIL") or creds.get("email")
-    if refresh_token and email:
-        try:
-            data = graphql_request(
-                settings["endpoint"],
-                settings["api_key"],
-                MUTATION_REFRESH,
-                {"input": {"refreshToken": refresh_token, "username": email}},
-                opener=opener,
-            )
-            res = data.get("auth_refreshToken") or {}
-            if res.get("success"):
-                tokens = (res.get("data") or {}).get("tokens") or {}
-                if tokens.get("accessToken"):
-                    creds["access_token"] = tokens["accessToken"]
-                    if tokens.get("idToken"):
-                        creds["id_token"] = tokens["idToken"]
-                    if tokens.get("refreshToken"):
-                        creds["refresh_token"] = tokens["refreshToken"]
-                    creds["expires_at"] = int(time.time()) + int(tokens.get("expiresIn") or 3600)
-                    save_secure_json(settings["cred_file"], creds)
-                    return creds["access_token"]
-        except Exception:
-            pass
+    jwt_username = decode_jwt_payload(creds.get("id_token")).get("cognito:username")
+    username_candidates = []
+    for candidate in (email, creds.get("user_id"), jwt_username):
+        if candidate and candidate not in username_candidates:
+            username_candidates.append(candidate)
+
+    if refresh_token and username_candidates:
+        for username in username_candidates:
+            try:
+                data = graphql_request(
+                    settings["endpoint"],
+                    settings["api_key"],
+                    MUTATION_REFRESH,
+                    {"input": {"refreshToken": refresh_token, "username": username}},
+                    opener=opener,
+                )
+                res = data.get("auth_refreshToken") or {}
+                if res.get("success"):
+                    tokens = (res.get("data") or {}).get("tokens") or {}
+                    if tokens.get("accessToken"):
+                        creds["access_token"] = tokens["accessToken"]
+                        if tokens.get("idToken"):
+                            creds["id_token"] = tokens["idToken"]
+                        if tokens.get("refreshToken"):
+                            creds["refresh_token"] = tokens["refreshToken"]
+                        creds["expires_at"] = int(time.time()) + int(tokens.get("expiresIn") or 3600)
+                        save_secure_json(settings["cred_file"], creds)
+                        return creds["access_token"]
+            except Exception:
+                pass
 
     env_password = os.environ.get("ACTIONBOARD_PASSWORD")
     if email and env_password:
@@ -1043,15 +1214,15 @@ def fetch_my_pods(settings, main_token, opener=None):
 
 
 def ensure_pod_id_token(settings, main_token, pod_id, pod_hostname=None, opener=None):
-    env_pod_token = os.environ.get("ACTIONBOARD_POD_ID_TOKEN")
-    if env_pod_token:
-        return env_pod_token
+    cached_tok = get_cached_pod_id_token(settings, pod_id)
+    if cached_tok:
+        return cached_tok
+
+    if not main_token:
+        main_token = ensure_main_token(settings, interactive=False, opener=opener)
 
     creds = settings["creds"]
     pod_tokens = creds.get("pod_tokens") or {}
-    cached = pod_tokens.get(pod_id) or {}
-    if cached.get("id_token") and token_is_valid(cached["id_token"]):
-        return cached["id_token"]
 
     if not pod_hostname:
         pods = fetch_my_pods(settings, main_token, opener=opener)
@@ -1115,10 +1286,13 @@ def fetch_my_boards(settings, pod_id_token, pod_id=None, search_term=None, opene
         variables["podId"] = pod_id
     if search_term:
         variables["searchTerm"] = search_term
+        query = QUERY_MY_BOARDS_SEARCH
+    else:
+        query = QUERY_MY_BOARDS
     data = graphql_request(
         settings["endpoint"],
         settings["api_key"],
-        QUERY_MY_BOARDS,
+        query,
         variables,
         bearer_token=pod_id_token,
         opener=opener,
@@ -1161,10 +1335,13 @@ def fetch_my_invitations(settings, pod_id_token, status=None, limit=25, opener=N
     variables = {"limit": limit}
     if status:
         variables["status"] = status
+        query = QUERY_GET_MY_MISSION_INVITATIONS_BY_STATUS
+    else:
+        query = QUERY_GET_MY_MISSION_INVITATIONS
     data = graphql_request(
         settings["endpoint"],
         settings["api_key"],
-        QUERY_GET_MY_MISSION_INVITATIONS,
+        query,
         variables,
         bearer_token=pod_id_token,
         opener=opener,
@@ -1322,6 +1499,65 @@ def upload_bytes_to_s3(bucket, region, key, body_bytes, content_type, aws_creds,
         "region": region,
         "s3_uri": "s3://%s/%s" % (bucket, key.lstrip("/")),
         "url": "https://%s/%s" % (host, key.lstrip("/")),
+    }
+
+
+def upload_bytes_via_pod(pod_hostname, pod_id, board_id, file_name, body_bytes, content_type, folder_name="missions", opener=None):
+    """Upload through the pod web app's own upload route (what the web UI uses), so no AWS keys are needed."""
+    boundary = "----actionboardcli%s" % base64.b16encode(os.urandom(12)).decode("ascii")
+    safe_name = file_name.replace('"', "").replace("\r", "").replace("\n", "")
+    chunks = []
+    for name, value in (("boardId", board_id), ("fileName", safe_name), ("folderName", folder_name)):
+        chunks.append(
+            ('--%s\r\nContent-Disposition: form-data; name="%s"\r\n\r\n%s\r\n' % (boundary, name, value)).encode("utf-8")
+        )
+    chunks.append(
+        ('--%s\r\nContent-Disposition: form-data; name="file"; filename="%s"\r\nContent-Type: %s\r\n\r\n'
+         % (boundary, safe_name, content_type)).encode("utf-8")
+    )
+    chunks.append(body_bytes)
+    chunks.append(("\r\n--%s--\r\n" % boundary).encode("utf-8"))
+
+    url = "https://%s/api/s3/knowledge-base/upload" % pod_hostname
+    req = urllib.request.Request(
+        url,
+        data=b"".join(chunks),
+        headers={
+            "Content-Type": "multipart/form-data; boundary=%s" % boundary,
+            "Cookie": "podId=%s" % pod_id,
+            "Accept": "application/json",
+            "User-Agent": "ActionBoard-CLI/1.2",
+        },
+        method="POST",
+    )
+    open_fn = opener or urllib.request.urlopen
+    try:
+        with open_fn(req, timeout=60) as resp:
+            raw = resp.read().decode("utf-8")
+    except urllib.error.HTTPError as exc:
+        err_body = ""
+        try:
+            err_body = exc.read().decode("utf-8", errors="replace")
+        except Exception:
+            pass
+        raise RuntimeError("pod upload HTTP %s for %s: %s" % (exc.code, file_name, err_body[:300] or exc.reason))
+    except urllib.error.URLError as exc:
+        raise RuntimeError("pod upload network error (%s): %s" % (url, exc.reason))
+
+    try:
+        res = json.loads(raw)
+    except ValueError:
+        res = {}
+    if not isinstance(res, dict) or not res.get("bucket") or not res.get("key"):
+        raise RuntimeError("pod upload for %s returned no S3 location: %s" % (file_name, raw[:300]))
+    region = res.get("region") or DEFAULT_S3_REGION
+    return {
+        "bucket": res["bucket"],
+        "key": res["key"],
+        "size": len(body_bytes),
+        "region": region,
+        "s3_uri": res.get("fileUri") or "s3://%s/%s" % (res["bucket"], res["key"]),
+        "url": res.get("fileUrl") or "https://%s.s3.%s.amazonaws.com/%s" % (res["bucket"], region, res["key"]),
     }
 
 
@@ -1538,6 +1774,13 @@ def find_latest_mission_dir(base_dir="."):
     return candidates[-1]
 
 
+def to_aws_datetime(value):
+    """AppSync AWSDateTime rejects date-only values such as 2026-11-13; give them a UTC midnight time."""
+    if isinstance(value, str) and re.match(r"^\d{4}-\d{2}-\d{2}$", value.strip()):
+        return value.strip() + "T00:00:00Z"
+    return value
+
+
 def parse_mission_metadata(mission_dir):
     """Extract slug, title, objective/shortDescription, and dates from a mission directory."""
     folder_name = os.path.basename(os.path.abspath(mission_dir.rstrip("/\\")))
@@ -1624,8 +1867,8 @@ def parse_mission_metadata(mission_dir):
         "slug": slug,
         "title": title,
         "short_description": short_description or ("ActionBoard mission: %s" % title),
-        "start_date": start_date,
-        "end_date": end_date,
+        "start_date": to_aws_datetime(start_date),
+        "end_date": to_aws_datetime(end_date),
     }
 
 
@@ -1685,42 +1928,60 @@ def prompt_choice(prompt_text, items, label_fn, allow_zero_label=None):
         info("Please enter a valid number.")
 
 
-def select_pod_and_board(settings, main_token, pod_arg=None, board_arg=None, interactive=True, opener=None):
+def select_pod_and_board(settings, main_token=None, pod_arg=None, board_arg=None, interactive=True, opener=None):
     cfg = settings["cfg"]
-    pods = fetch_my_pods(settings, main_token, opener=opener)
-    if not pods:
-        fail("your ActionBoard account has no pods.")
-
-    selected_pod = None
+    if settings.get("edge_proxy") and not main_token:
+        # Every edge request needs the main-pool token, so log in (or refresh) up front.
+        main_token = ensure_main_token(settings, interactive=interactive, opener=opener)
     target_pod_id = pod_arg or cfg.get("pod_id")
-    if target_pod_id:
-        for p in pods:
-            if p.get("podId") == target_pod_id or p.get("slug") == target_pod_id or p.get("podName") == target_pod_id:
-                selected_pod = p
-                break
-        if not selected_pod and pod_arg:
-            fail("pod %r not found in your pods list" % pod_arg)
+    cached_pod_token = get_cached_pod_id_token(settings, target_pod_id)
 
-    if not selected_pod:
-        if len(pods) == 1 and not interactive:
-            selected_pod = pods[0]
-        elif interactive and sys.stdin.isatty():
-            info("\nSelect an ActionBoard Pod:")
-            selected_pod = prompt_choice(
-                "Pod number: ",
-                pods,
-                lambda p: "%s (%s) — role: %s" % (
-                    p.get("podName") or p.get("slug") or p.get("podId"),
-                    p.get("podId"),
-                    p.get("memberRole") or "member",
-                ),
-            )
-        else:
-            fail("no pod selected. Pass --pod <podId> or run `python submit_mission.py select` interactively.")
+    if cached_pod_token and target_pod_id:
+        selected_pod = {
+            "podId": target_pod_id,
+            "podName": cfg.get("pod_name") if cfg.get("pod_id") == target_pod_id else "",
+            "hostname": cfg.get("pod_hostname") if cfg.get("pod_id") == target_pod_id else "",
+            "bucketName": cfg.get("pod_bucket") if cfg.get("pod_id") == target_pod_id else "",
+        }
+        pod_id = target_pod_id
+        pod_hostname = selected_pod.get("hostname")
+        pod_id_token = cached_pod_token
+    else:
+        if not main_token:
+            main_token = ensure_main_token(settings, interactive=interactive, opener=opener)
+        pods = fetch_my_pods(settings, main_token, opener=opener)
+        if not pods:
+            fail("your ActionBoard account has no pods.")
 
-    pod_id = selected_pod["podId"]
-    pod_hostname = selected_pod.get("hostname")
-    pod_id_token = ensure_pod_id_token(settings, main_token, pod_id, pod_hostname=pod_hostname, opener=opener)
+        selected_pod = None
+        if target_pod_id:
+            for p in pods:
+                if p.get("podId") == target_pod_id or p.get("slug") == target_pod_id or p.get("podName") == target_pod_id:
+                    selected_pod = p
+                    break
+            if not selected_pod and pod_arg:
+                fail("pod %r not found in your pods list" % pod_arg)
+
+        if not selected_pod:
+            if len(pods) == 1 and not interactive:
+                selected_pod = pods[0]
+            elif interactive and sys.stdin.isatty():
+                info("\nSelect an ActionBoard Pod:")
+                selected_pod = prompt_choice(
+                    "Pod number: ",
+                    pods,
+                    lambda p: "%s (%s) — role: %s" % (
+                        p.get("podName") or p.get("slug") or p.get("podId"),
+                        p.get("podId"),
+                        p.get("memberRole") or "member",
+                    ),
+                )
+            else:
+                fail("no pod selected. Pass --pod <podId> or run `python submit_mission.py select` interactively.")
+
+        pod_id = selected_pod["podId"]
+        pod_hostname = selected_pod.get("hostname")
+        pod_id_token = ensure_pod_id_token(settings, main_token, pod_id, pod_hostname=pod_hostname, opener=opener)
 
     boards = fetch_my_boards(settings, pod_id_token, pod_id=pod_id, opener=opener)
     if not boards:
@@ -1754,9 +2015,12 @@ def select_pod_and_board(settings, main_token, pod_arg=None, board_arg=None, int
             fail("no board selected. Pass --board <boardId> or run `python submit_mission.py select` interactively.")
 
     cfg["pod_id"] = pod_id
-    cfg["pod_name"] = selected_pod.get("podName") or ""
+    if selected_pod.get("podName"):
+        cfg["pod_name"] = selected_pod.get("podName")
     if pod_hostname:
         cfg["pod_hostname"] = pod_hostname
+    if selected_pod.get("bucketName"):
+        cfg["pod_bucket"] = selected_pod["bucketName"]
     cfg["board_id"] = selected_board["boardId"]
     cfg["board_name"] = selected_board.get("name") or ""
     save_config_json(settings["config_file"], cfg)
@@ -1912,6 +2176,11 @@ def cmd_configure(args):
                 elif k == "AWS_SESSION_TOKEN":
                     creds["aws_session_token"] = v
 
+    if args.edge_proxy_url is not None:
+        if args.edge_proxy_url.strip():
+            creds["edge_proxy_url"] = args.edge_proxy_url.strip()
+        else:
+            creds.pop("edge_proxy_url", None)
     if args.endpoint:
         creds["appsync_endpoint"] = args.endpoint.strip()
     if args.api_key:
@@ -1971,14 +2240,20 @@ def cmd_status(args):
     creds = settings["creds"]
     cfg = settings["cfg"]
     aws_creds = resolve_aws_credentials(creds)
-    has_token = bool(creds.get("access_token") and token_is_valid(creds.get("access_token")))
+    has_main_token = bool(creds.get("access_token") and token_is_valid(creds.get("access_token")))
+    has_pod_token = bool(get_cached_pod_id_token(settings, cfg.get("pod_id")))
+    has_refresh = bool(creds.get("refresh_token"))
+    has_token = has_main_token or has_pod_token or has_refresh
 
     status_obj = {
         "credentials_file": settings["cred_file"],
         "config_file": settings["config_file"],
-        "appsync_configured": bool(settings["endpoint"] and settings["api_key"]),
+        "appsync_configured": bool(settings["endpoint"] and (settings["api_key"] or settings["edge_proxy"])),
+        "connection": "edge" if settings["edge_proxy"] else "direct",
+        "edge_proxy_url": settings["edge_proxy"],
         "appsync_endpoint": settings["endpoint"] or "",
         "logged_in": has_token,
+        "has_refresh_token": has_refresh,
         "email": creds.get("email") or "",
         "profile_id": creds.get("profile_id") or "",
         "s3_bucket": settings["s3_bucket"],
@@ -1996,7 +2271,10 @@ def cmd_status(args):
 
     info("ActionBoard CLI Status:")
     info("  Credentials file : %s" % status_obj["credentials_file"])
-    info("  AppSync endpoint : %s" % (status_obj["appsync_endpoint"] or "NOT SET"))
+    if settings["edge_proxy"]:
+        info("  Connection       : edge proxy %s (no API key needed)" % settings["edge_proxy"])
+    else:
+        info("  AppSync endpoint : %s (direct, API key)" % (status_obj["appsync_endpoint"] or "NOT SET"))
     info("  Authenticated    : %s%s" % (
         "yes" if has_token else "no",
         (" (%s, profileId=%s)" % (status_obj["email"], status_obj["profile_id"] or "n/a")) if status_obj["email"] else "",
@@ -2005,7 +2283,8 @@ def cmd_status(args):
         status_obj["s3_bucket"],
         status_obj["s3_prefix"],
         status_obj["s3_region"],
-        "ready" if status_obj["aws_s3_credentials_ready"] else "missing",
+        "ready" if status_obj["aws_s3_credentials_ready"] else "not set (optional: files upload through the %s)" % (
+            "edge proxy" if settings["edge_proxy"] else "pod"),
     ))
     info("  Selected Pod     : %s" % (
         ("%s (%s)" % (status_obj["default_pod_name"], status_obj["default_pod_id"]))
@@ -2041,15 +2320,18 @@ def cmd_pods(args, opener=None):
 
 def cmd_boards(args, opener=None):
     settings = resolve_settings(args.credentials_file, args.config, args)
-    main_token = ensure_main_token(settings, interactive=not getattr(args, "no_input", False), opener=opener)
+    interactive = not getattr(args, "no_input", False)
     pod_id = args.pod or settings["cfg"].get("pod_id")
-    if not pod_id:
-        pods = fetch_my_pods(settings, main_token, opener=opener)
-        if len(pods) == 1:
-            pod_id = pods[0]["podId"]
-        else:
-            fail("pass --pod <podId> or run `python submit_mission.py select` first")
-    pod_id_token = ensure_pod_id_token(settings, main_token, pod_id, opener=opener)
+    pod_id_token = get_cached_pod_id_token(settings, pod_id)
+    if not pod_id_token:
+        main_token = ensure_main_token(settings, interactive=interactive, opener=opener)
+        if not pod_id:
+            pods = fetch_my_pods(settings, main_token, opener=opener)
+            if len(pods) == 1:
+                pod_id = pods[0]["podId"]
+            else:
+                fail("pass --pod <podId> or run `python submit_mission.py select` first")
+        pod_id_token = ensure_pod_id_token(settings, main_token, pod_id, opener=opener)
     boards = fetch_my_boards(settings, pod_id_token, pod_id=pod_id, search_term=args.search, opener=opener)
     if getattr(args, "json", False):
         info(json.dumps(boards, indent=2))
@@ -2070,12 +2352,15 @@ def cmd_boards(args, opener=None):
 
 def cmd_missions(args, opener=None):
     settings = resolve_settings(args.credentials_file, args.config, args)
-    main_token = ensure_main_token(settings, interactive=not getattr(args, "no_input", False), opener=opener)
+    interactive = not getattr(args, "no_input", False)
     pod_id = args.pod or settings["cfg"].get("pod_id")
     board_id = args.board or settings["cfg"].get("board_id")
     if not pod_id or not board_id:
         fail("pass --pod <podId> and --board <boardId>, or run `python submit_mission.py select` first")
-    pod_id_token = ensure_pod_id_token(settings, main_token, pod_id, opener=opener)
+    pod_id_token = get_cached_pod_id_token(settings, pod_id)
+    if not pod_id_token:
+        main_token = ensure_main_token(settings, interactive=interactive, opener=opener)
+        pod_id_token = ensure_pod_id_token(settings, main_token, pod_id, opener=opener)
 
     if getattr(args, "delete", None):
         graphql_request(
@@ -2107,41 +2392,58 @@ def cmd_missions(args, opener=None):
     return 0
 
 
-def _resolve_pod_token_and_profile(settings, main_token, pod_arg=None, interactive=True, opener=None):
+def _resolve_pod_token_and_profile(settings, main_token=None, pod_arg=None, interactive=True, opener=None):
     cfg = settings["cfg"]
-    pods = fetch_my_pods(settings, main_token, opener=opener)
-    if not pods:
-        fail("your ActionBoard account has no pods.")
-
-    selected_pod = None
+    if settings.get("edge_proxy") and not main_token:
+        # Every edge request needs the main-pool token, so log in (or refresh) up front.
+        main_token = ensure_main_token(settings, interactive=interactive, opener=opener)
     target_pod_id = pod_arg or cfg.get("pod_id")
-    if target_pod_id:
-        for p in pods:
-            if p.get("podId") == target_pod_id or p.get("slug") == target_pod_id or p.get("podName") == target_pod_id:
-                selected_pod = p
-                break
-        if not selected_pod and pod_arg:
-            fail("pod %r not found in your pods list" % pod_arg)
+    cached_pod_token = get_cached_pod_id_token(settings, target_pod_id)
 
-    if not selected_pod:
-        if len(pods) == 1 or not interactive or not sys.stdin.isatty():
-            selected_pod = pods[0]
-        else:
-            info("\nSelect an ActionBoard Pod:")
-            selected_pod = prompt_choice(
-                "Pod number: ",
-                pods,
-                lambda p: "%s (%s) — role: %s" % (
-                    p.get("podName") or p.get("slug") or p.get("podId"),
-                    p.get("podId"),
-                    p.get("memberRole") or "member",
-                ),
-            )
+    if cached_pod_token and target_pod_id:
+        selected_pod = {
+            "podId": target_pod_id,
+            "podName": cfg.get("pod_name") if cfg.get("pod_id") == target_pod_id else "",
+            "hostname": cfg.get("pod_hostname") if cfg.get("pod_id") == target_pod_id else "",
+            "bucketName": cfg.get("pod_bucket") if cfg.get("pod_id") == target_pod_id else "",
+        }
+        pod_id_token = cached_pod_token
+    else:
+        if not main_token:
+            main_token = ensure_main_token(settings, interactive=interactive, opener=opener)
+        pods = fetch_my_pods(settings, main_token, opener=opener)
+        if not pods:
+            fail("your ActionBoard account has no pods.")
 
-    pod_id = selected_pod["podId"]
-    pod_id_token = ensure_pod_id_token(
-        settings, main_token, pod_id, pod_hostname=selected_pod.get("hostname"), opener=opener
-    )
+        selected_pod = None
+        if target_pod_id:
+            for p in pods:
+                if p.get("podId") == target_pod_id or p.get("slug") == target_pod_id or p.get("podName") == target_pod_id:
+                    selected_pod = p
+                    break
+            if not selected_pod and pod_arg:
+                fail("pod %r not found in your pods list" % pod_arg)
+
+        if not selected_pod:
+            if len(pods) == 1 or not interactive or not sys.stdin.isatty():
+                selected_pod = pods[0]
+            else:
+                info("\nSelect an ActionBoard Pod:")
+                selected_pod = prompt_choice(
+                    "Pod number: ",
+                    pods,
+                    lambda p: "%s (%s) — role: %s" % (
+                        p.get("podName") or p.get("slug") or p.get("podId"),
+                        p.get("podId"),
+                        p.get("memberRole") or "member",
+                    ),
+                )
+
+        pod_id = selected_pod["podId"]
+        pod_id_token = ensure_pod_id_token(
+            settings, main_token, pod_id, pod_hostname=selected_pod.get("hostname"), opener=opener
+        )
+
     profile_id = (
         settings["creds"].get("profile_id")
         or decode_jwt_payload(pod_id_token).get("custom:profileId")
@@ -2153,9 +2455,8 @@ def _resolve_pod_token_and_profile(settings, main_token, pod_arg=None, interacti
 def cmd_assigned(args, opener=None):
     settings = resolve_settings(args.credentials_file, args.config, args)
     interactive = not getattr(args, "no_input", False) and sys.stdin.isatty()
-    main_token = ensure_main_token(settings, interactive=interactive, opener=opener)
     pod, pod_id_token, profile_id = _resolve_pod_token_and_profile(
-        settings, main_token, pod_arg=args.pod, interactive=interactive, opener=opener
+        settings, None, pod_arg=args.pod, interactive=interactive, opener=opener
     )
     board_filter = args.board or settings["cfg"].get("board_id")
 
@@ -2226,9 +2527,8 @@ def cmd_fetch(args, opener=None):
     """Fetch an assigned (or selected) mission's Brief and Plan from ActionBoard to local disk."""
     settings = resolve_settings(args.credentials_file, args.config, args)
     interactive = not getattr(args, "no_input", False) and sys.stdin.isatty()
-    main_token = ensure_main_token(settings, interactive=interactive, opener=opener)
     pod, pod_id_token, profile_id = _resolve_pod_token_and_profile(
-        settings, main_token, pod_arg=args.pod, interactive=interactive, opener=opener
+        settings, None, pod_arg=args.pod, interactive=interactive, opener=opener
     )
     pod_id = pod["podId"]
     cfg = settings["cfg"]
@@ -2372,15 +2672,18 @@ def cmd_fetch(args, opener=None):
             clean_name = re.sub(r"^\d{10,}-", "", fname)
             if clean_name in dict((m[0], True) for m in MISSION_FILES) and clean_name not in downloaded_files:
                 s3_obj = fitem.get("s3Object") or {}
-                if aws_creds and s3_obj.get("bucket") and s3_obj.get("key"):
+                if (aws_creds or settings.get("edge_proxy")) and s3_obj.get("bucket") and s3_obj.get("key"):
                     try:
-                        raw_bytes = download_bytes_from_s3(
-                            s3_obj["bucket"],
-                            s3_obj.get("region") or settings["s3_region"],
-                            s3_obj["key"],
-                            aws_creds,
-                            opener=opener,
-                        )
+                        if aws_creds:
+                            raw_bytes = download_bytes_from_s3(
+                                s3_obj["bucket"],
+                                s3_obj.get("region") or settings["s3_region"],
+                                s3_obj["key"],
+                                aws_creds,
+                                opener=opener,
+                            )
+                        else:
+                            raw_bytes = download_bytes_via_edge(settings, s3_obj["bucket"], s3_obj["key"], opener=opener)
                         downloaded_files[clean_name] = raw_bytes
                     except Exception as exc:
                         warn("could not download %s from S3: %s" % (clean_name, exc))
@@ -2517,10 +2820,9 @@ def cmd_submit(args, opener=None):
         info(json.dumps(summary, indent=2))
         return 0
 
-    main_token = ensure_main_token(settings, interactive=interactive, opener=opener)
     pod, board, pod_id_token = select_pod_and_board(
         settings,
-        main_token,
+        None,
         pod_arg=args.pod,
         board_arg=args.board,
         interactive=interactive,
@@ -2528,6 +2830,8 @@ def cmd_submit(args, opener=None):
     )
     pod_id = pod["podId"]
     board_id = board["boardId"]
+    pod_hostname = pod.get("hostname") or ""
+    pod_bucket = pod.get("bucketName") or ""
     profile_id = (
         args.assigned_agent
         or settings["creds"].get("profile_id")
@@ -2693,6 +2997,21 @@ def cmd_submit(args, opener=None):
             plan_id = plan_obj.get("planId")
             info("Created mission plan on board (planId: %s)." % plan_id)
 
+    def save_link():
+        missions_map[meta["slug"]] = {
+            "mission_id": mission_id,
+            "plan_id": plan_id or "",
+            "board_id": board_id,
+            "pod_id": pod_id,
+            "title": title,
+            "updated_at": datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+        }
+        cfg["missions"] = missions_map
+        save_config_json(settings["config_file"], cfg)
+
+    # Saved before the uploads so a retry after an upload failure reuses this mission and plan.
+    save_link()
+
     uploaded_files = []
     if files_to_upload and not args.skip_reports:
         aws_creds = resolve_aws_credentials(settings["creds"])
@@ -2718,24 +3037,41 @@ def cmd_submit(args, opener=None):
                     "url": "https://%s/%s" % (host, s3_key),
                 }
             else:
-                if not aws_creds:
-                    warn(
-                        "AWS S3 credentials are not configured; skipping S3 binary upload and "
-                        "registering report metadata only. Configure AWS_ACCESS_KEY_ID / "
-                        "AWS_SECRET_ACCESS_KEY or pass --aws-access-key-id to `configure` for S3 binary upload."
-                    )
-                    host = "%s.s3.%s.amazonaws.com" % (settings["s3_bucket"], settings["s3_region"])
-                    s3_meta = {
-                        "bucket": settings["s3_bucket"],
-                        "key": s3_key,
-                        "size": f["fileSize"],
-                        "region": settings["s3_region"],
-                        "s3_uri": "s3://%s/%s" % (settings["s3_bucket"], s3_key),
-                        "url": "https://%s/%s" % (host, s3_key),
-                    }
+                with open(f["path"], "rb") as fh:
+                    body_bytes = fh.read()
+                if not aws_creds and settings.get("edge_proxy"):
+                    # Presigned upload through the edge proxy into the pod's own bucket, as the mobile app does.
+                    if not pod_bucket:
+                        main_token = ensure_main_token(settings, interactive=interactive, opener=opener)
+                        for p in fetch_my_pods(settings, main_token, opener=opener):
+                            if p.get("podId") == pod_id:
+                                pod_bucket = p.get("bucketName") or ""
+                    if not pod_bucket:
+                        fail("cannot upload %s: pod %s has no storage bucket" % (f["fileName"], pod_id))
+                    try:
+                        s3_meta = upload_bytes_via_edge(
+                            settings, pod_bucket, s3_key, body_bytes, f["fileType"], opener=opener
+                        )
+                    except RuntimeError as exc:
+                        fail("failed to upload mission file: %s" % exc)
+                    info("Uploaded %s -> %s" % (f["fileName"], s3_meta["s3_uri"]))
+                elif not aws_creds:
+                    # Direct mode without AWS keys: upload through the pod web app instead.
+                    if not pod_hostname:
+                        main_token = ensure_main_token(settings, interactive=interactive, opener=opener)
+                        for p in fetch_my_pods(settings, main_token, opener=opener):
+                            if p.get("podId") == pod_id:
+                                pod_hostname = p.get("hostname") or ""
+                    if not pod_hostname:
+                        fail("cannot upload %s: pod %s has no hostname" % (f["fileName"], pod_id))
+                    try:
+                        s3_meta = upload_bytes_via_pod(
+                            pod_hostname, pod_id, board_id, f["fileName"], body_bytes, f["fileType"], opener=opener
+                        )
+                    except RuntimeError as exc:
+                        fail("failed to upload mission file: %s" % exc)
+                    info("Uploaded %s -> %s" % (f["fileName"], s3_meta["s3_uri"]))
                 else:
-                    with open(f["path"], "rb") as fh:
-                        body_bytes = fh.read()
                     s3_meta = upload_bytes_to_s3(
                         settings["s3_bucket"],
                         settings["s3_region"],
@@ -2817,16 +3153,7 @@ def cmd_submit(args, opener=None):
         except Exception as exc:
             warn("could not update mission status to %s: %s" % (target_status, exc))
 
-    missions_map[meta["slug"]] = {
-        "mission_id": mission_id,
-        "plan_id": plan_id or "",
-        "board_id": board_id,
-        "pod_id": pod_id,
-        "title": title,
-        "updated_at": datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
-    }
-    cfg["missions"] = missions_map
-    save_config_json(settings["config_file"], cfg)
+    save_link()
 
     result_summary = {
         "success": True,
@@ -2877,6 +3204,7 @@ def build_parser():
 
     sp_cfg = sub.add_parser("configure", parents=[common_sub], help="save AppSync and S3 settings to ~/.actionboard/credentials.json")
     sp_cfg.add_argument("--from-env-file", help="import settings from an env/markdown file")
+    sp_cfg.add_argument("--edge-proxy-url", help="route all calls through this edge proxy (no API key needed); pass \"\" to go back to direct mode")
     sp_cfg.add_argument("--cognito-domain", help="Cognito domain URL")
     sp_cfg.add_argument("--cognito-client-id", help="Cognito client ID")
     sp_cfg.add_argument("--aws-access-key-id", help="AWS access key ID for S3 upload")
@@ -2970,7 +3298,11 @@ def main(argv=None, opener=None):
         "select": lambda: cmd_select(args, opener=opener),
         "submit": lambda: cmd_submit(args, opener=opener),
     }
-    return dispatch[args.subcommand]()
+    try:
+        return dispatch[args.subcommand]()
+    except RuntimeError as exc:
+        # AppSync GraphQL errors: report the server's message instead of a traceback.
+        fail("%s failed: %s" % (args.subcommand, exc))
 
 
 if __name__ == "__main__":

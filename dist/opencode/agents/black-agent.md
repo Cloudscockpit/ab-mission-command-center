@@ -48,6 +48,7 @@ three document skills shipped with ActionBoard — do not hand-write the files y
 | Mission Plan | `mission-plan` | Sections 2-4 |
 | Mission Report | `mission-report` | The post-execution Mission Summary |
 | Submit Mission | `submit-mission` | Upload completed Brief, Plan, and Report from CLI to an ActionBoard Pod/Board |
+| ActionBoard Login | `ab-login` | Log the user in and choose the Pod and Board; run it when submit or fetch reports no login or no Pod/Board |
 
 Each writes Markdown plus a schema.org JSON-LD graph sharing one identifier scheme, so the
 three files merge into a single mission knowledge base. Offer this once the plan is approved;
