@@ -6,6 +6,10 @@ __pycache__/
 /actionboard-build-mission-pipeline/
 graphify-out/
 .actionboard/preferences.json
+.actionboard/credentials.json
+.actionboard/config.json
+credentials.json
+mission-plan-api.md
 
 # uvx-from-path packaging leftovers
 packages/installer-py/build/

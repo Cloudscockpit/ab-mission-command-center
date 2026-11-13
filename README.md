@@ -203,7 +203,7 @@ It runs as the `black-agent` primary agent, stops at the gate, and waits for `go
 > `opencode run --agent black-agent "<objective>"`.
 
 **Slash commands:** OpenCode does not show skills in `/`, so the package adds one command per
-skill: `/mission-brief`, `/mission-plan`, `/mission-report`, `/mission-preflight`,
+skill: `/mission-brief`, `/mission-plan`, `/mission-report`, `/ab-login`, `/fetch-mission`, `/submit-mission`, `/mission-preflight`,
 `/skills-registry`, `/actionboard-devops-mission`, `/mission-harness`, `/sandbox-up`,
 `/sandbox-status`, `/sandbox-down`, `/policy-widen`, `/terse-output`.
 
@@ -553,6 +553,30 @@ test counts and the file list from `git diff`, untracked files included). A figu
 source prints "Not recorded", never zero. The Markdown and JSON-LD reports stay authoritative; the
 dashboard is a view of them. It carries a Content-Security-Policy that blocks every network
 request, and any text from the reports is HTML-escaped.
+
+## Fetching & submitting missions to ActionBoard from the CLI
+
+When a manager or board owner assigns you a mission (or sends a mission invitation) on an ActionBoard Board, you can pull its **Mission Brief** and **Mission Plan** directly to your local workspace, start your work, and submit the completed **Mission Report** back from the CLI — without logging into the web UI.
+
+Run `/ab-login` once to log in and choose a Pod and Board (`$ab-login` on Codex CLI). Then invoke `/fetch-mission` and `/submit-mission` (`$fetch-mission` and `$submit-mission` on Codex CLI) or run `submit_mission.py` directly:
+
+```sh
+# 1. Configure AppSync and S3 settings (saved with 0600 permissions)
+python src/skills/mission-report/scripts/submit_mission.py configure --from-env-file mission-plan-api.md
+
+# 2. Authenticate once (caches access/refresh tokens in ~/.actionboard/credentials.json)
+python src/skills/mission-report/scripts/submit_mission.py login --email <your-email>
+
+# 3. Select your default Pod and Board (saved in .actionboard/config.json)
+python src/skills/mission-report/scripts/submit_mission.py select
+
+# 4. List missions & invitations assigned to you, then fetch the brief and plan to docs/missions/<YYYY-MM-DD-slug>/
+python src/skills/mission-report/scripts/submit_mission.py assigned
+python src/skills/mission-report/scripts/submit_mission.py fetch --start
+
+# 5. Submit the completed mission (updates the plan, uploads deliverables to S3, and calls assistprofile_submitReports)
+python src/skills/mission-report/scripts/submit_mission.py submit
+```
 
 ## Known gaps
 

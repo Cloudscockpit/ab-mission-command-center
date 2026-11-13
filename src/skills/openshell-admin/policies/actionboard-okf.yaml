@@ -50,6 +50,18 @@ network_policies:
         deny_rules:
           - { method: DELETE, path: "/**" }
           - { method: PUT,    path: "/PremiumBoardKB/Boards/Investor+Board/../**" }
+      - host: "actionboard-kb-agent.s3.ap-southeast-1.amazonaws.com"
+        port: 443
+        protocol: rest
+        enforcement: enforce
+        rules:
+          - allow: { method: GET,  path: "/" }
+          - allow: { method: GET,  path: "/PremiumBoardKB/Boards/Investor+Boards/**" }
+          - allow: { method: HEAD, path: "/PremiumBoardKB/Boards/Investor+Boards/**" }
+          - allow: { method: PUT,  path: "/PremiumBoardKB/Boards/Investor+Boards/**" }
+        deny_rules:
+          - { method: DELETE, path: "/**" }
+          - { method: PUT,    path: "/PremiumBoardKB/Boards/Investor+Boards/../**" }
     binaries:
       - { path: /sandbox/.uv/python/cpython-3.14.3-linux-aarch64-gnu/bin/python3.14 }
       - { path: /sandbox/.venv/bin/python3 }

@@ -20,9 +20,12 @@ three document skills shipped with ActionBoard — do not hand-write the files y
 
 | Document | Skill | Covers |
 |----------|-------|--------|
+| Fetch Assigned Mission | `fetch-mission` | Pull an assigned Mission Brief & Plan from an ActionBoard Pod/Board to local disk |
 | Mission Brief | `mission-brief` | Section 1 |
 | Mission Plan | `mission-plan` | Sections 2-4 |
 | Mission Report | `mission-report` | The post-execution Mission Summary |
+| Submit Mission | `submit-mission` | Upload completed Brief, Plan, and Report from CLI to an ActionBoard Pod/Board |
+| ActionBoard Login | `ab-login` | Log the user in and choose the Pod and Board; run it when submit or fetch reports no login or no Pod/Board |
 
 Each writes Markdown plus a schema.org JSON-LD graph sharing one identifier scheme, so the
 three files merge into a single mission knowledge base. Offer this once the plan is approved;
@@ -40,7 +43,7 @@ skip those questions and never answer them on the user's behalf. Pass `Terse out
 every assignment when preflight recorded it as enabled.
 
 ### Step 1 — Mission Brief
-Draft the brief from the objective. Be specific. If the objective is vague, ask ONE clarifying question before proceeding; otherwise infer reasonable scope and state your assumptions explicitly in the Constraints section.
+If the user says a task or mission was assigned to them on ActionBoard (or asks to fetch their assigned mission), load the `fetch-mission` skill and run `python <skill-dir>/../mission-report/scripts/submit_mission.py fetch --start` (or `assigned` first to list assigned tasks) to pull `mission-brief.md` and `mission-plan.md` into `docs/missions/<YYYY-MM-DD-slug>/`, then use the fetched brief and plan as the foundation for the mission. Otherwise, draft the brief from the objective. Be specific. If the objective is vague, ask ONE clarifying question before proceeding; otherwise infer reasonable scope and state your assumptions explicitly in the Constraints section.
 
 ### Step 2 — Recon (Green Agent)
 Dispatch the `green-agent` subagent (`spawn_agent` with the agent name, then `wait_agent` for its report). Pass the mission objective and ask for a recon report in Green Agent's standard header format. Wait for the result before proceeding.
@@ -79,6 +82,7 @@ When the user says "go":
 4. When all Agents report `done` or `blocked`, score every dispatched assignment on the five formation stages and record the runs in `.actionboard/registry.json`, following step 6 of the `mission-report` skill. Every mission counts toward the project's AI-ops maturity, whether or not it is written to disk.
 5. Render a final Mission Summary: what shipped, what didn't, what's deferred, the `## Maturity & Progress Summary` table, and one combined `Files created/changed:` list for the whole mission (including `.actionboard/registry.json`). If the mission was persisted to disk, invoke `mission-report` to record the outcome against the plan's graph nodes. Pass it the start time and git base commit from the go step, and the test suites and counts exactly as Yellow Agent reported them. The skill writes `mission-report.md`, `mission-report.jsonld`, `mission-metrics.json`, and the dashboard `mission-report.html`. Mention the dashboard in the final Mission Summary and include all of these files in the combined `Files created/changed:` list.
 6. When a Skill or audit tool is available, you may run a design audit on the generated `mission-report.html` and report its findings. This is optional and never blocks the report. If the dashboard fails to render, report that as a defect; the Markdown and JSON-LD stay on disk. If the renderer prints a stderr line containing `WARNING` (for example `render_dashboard: WARNING ...`), include it in the Mission Summary rather than ignoring it.
+7. When the mission is persisted to disk, ask the user if they want to submit the completed mission (Brief, Plan, and Report) directly to their ActionBoard Pod & Board via the `submit-mission` skill (`python <skill-dir>/../mission-report/scripts/submit_mission.py submit --mission-dir <mission-dir>`), or run it immediately if the user requested CLI submission.
 
 ## Skill creation protocol
 
