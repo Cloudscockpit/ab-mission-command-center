@@ -1,5 +1,34 @@
 # Changelog
 
+## 1.3.0 — 2026-11-13
+
+Missions now go to and from ActionBoard boards straight from the CLI, with no API key or AWS keys
+on the user's machine.
+
+### Added
+- `submit-mission` and `fetch-mission`: submit a mission's brief, plan, report, dashboard and
+  metrics to a Pod's Board, and fetch an assigned mission or invitation, from any of the four CLIs.
+  Calls go through the ActionBoard edge proxy, and files upload and download through presigned URLs.
+- `ab-login` skill and `login` command: browser sign-in through the branded page
+  (https://mission-command-center-login.vercel.app) with email and password, Google, LinkedIn or
+  GitHub. The password never passes through the CLI or an agent's chat. `logout` removes tokens.
+- Tokens are stored in the OS keychain (macOS Keychain, Windows Credential Manager, Linux Secret
+  Service), falling back to a `0600` file. Existing plaintext files migrate on first use.
+- Safe re-submit: unchanged files are skipped, a changed file replaces only the CLI's own previous
+  copy, and files people uploaded through the web or mobile app are never removed (`--keep-old`
+  keeps old copies).
+- Live mission sync (`select --sync ask|auto|off`): Black Agent checks the board for assigned work
+  before a mission, sets `IN_PROGRESS` on "go", posts each Agent's result as a comment (`progress`),
+  and submits the finished mission.
+- Fetched briefs and plans are wrapped in untrusted-content markers, and the `fetch-mission` skill
+  treats board content as data, never instructions.
+- `Live GraphQL schema contract` workflow checks every CLI query and mutation against the live
+  schema (needs the `ACTIONBOARD_SCHEMA_REFRESH_TOKEN` and `ACTIONBOARD_SCHEMA_USERNAME` secrets).
+
+### Changed
+- `submit_mission.py` is split into the `actionboard_cli` package; `submit_mission.py` remains the
+  entry point.
+
 ## 1.2.0 — 2026-10-26
 
 Every mission report now ships with a visual dashboard.

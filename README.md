@@ -146,7 +146,7 @@ This downloads the installer into a temporary folder, installs into your project
 temporary folder again, so nothing but OpenCode's own files lands in your project: there is no
 clone to ignore, commit or index. Add `--global` to install for your user instead of the current
 project. It needs Node 18+ for `npx` and Python 3.9+ on PATH, because the wrapper hands the work to
-`scripts/install.py`. Until v1.2.0 is tagged and published, `npx` and `uvx` answer "tag not
+`scripts/install.py`. Until v1.3.0 is tagged and published, `npx` and `uvx` answer "tag not
 published yet"; use the git one-liner below in the meantime.
 
 **Installation (uvx, if you have uv but not Node):**
@@ -252,7 +252,7 @@ This downloads the installer into a temporary folder, installs into your project
 temporary folder again, so nothing but Codex's own files lands in your project: there is no
 clone to ignore, commit or index. Add `--global` to install for your user instead of the current
 project. It needs Node 18+ for `npx` and Python 3.9+ on PATH, because the wrapper hands the work to
-`scripts/install.py`. Until v1.2.0 is tagged and published, `npx` and `uvx` answer "tag not
+`scripts/install.py`. Until v1.3.0 is tagged and published, `npx` and `uvx` answer "tag not
 published yet"; use the git one-liner below in the meantime.
 
 **Installation (uvx, if you have uv but not Node):**
@@ -358,7 +358,7 @@ This downloads the installer into a temporary folder, installs into your project
 temporary folder again, so nothing but Antigravity's own files lands in your project: there is no
 clone to ignore, commit or index. Add `--global` to install for your user instead of the current
 project. It needs Node 18+ for `npx` and Python 3.9+ on PATH, because the wrapper hands the work to
-`scripts/install.py`. Until v1.2.0 is tagged and published, `npx` and `uvx` answer "tag not
+`scripts/install.py`. Until v1.3.0 is tagged and published, `npx` and `uvx` answer "tag not
 published yet"; use the git one-liner below in the meantime.
 
 **Installation (uvx, if you have uv but not Node):**

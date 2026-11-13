@@ -39,6 +39,8 @@ class BrowserLoginTests(unittest.TestCase):
         self.cred_file = os.path.join(self.tmp, "credentials.json")
         self.transport = MockActionBoardTransport()
         self.settings = submit_mission.resolve_settings(self.cred_file, os.path.join(self.tmp, "config.json"))
+        # Most tests exercise the Cognito page; the branded-page tests set cli_login_url themselves.
+        self.settings["cli_login_url"] = ""
 
     def tearDown(self):
         shutil.rmtree(self.tmp, ignore_errors=True)
@@ -206,6 +208,11 @@ class BrowserLoginTests(unittest.TestCase):
             with self.assertRaises(SystemExit):
                 submit_mission.login_with_browser(self.settings, ports=(0,), opener=opener, timeout=10)
         self.assertFalse(os.path.exists(self.cred_file))
+
+
+    def test_branded_page_is_the_default(self):
+        settings = submit_mission.resolve_settings(self.cred_file, os.path.join(self.tmp, "config.json"))
+        self.assertEqual(settings["cli_login_url"], "https://mission-command-center-login.vercel.app")
 
 
 if __name__ == "__main__":

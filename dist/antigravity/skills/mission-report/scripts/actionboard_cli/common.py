@@ -31,7 +31,7 @@ DEFAULT_OAUTH_CALLBACK_URL = "https://zpcrz6q2a3o6uv6oac4b76lzvi0yumdl.lambda-ur
 
 # The branded CLI sign-in page (the actionboard-cli-login app on Vercel). Empty means the CLI opens
 # the Cognito hosted login directly. Override with ACTIONBOARD_LOGIN_URL or `configure --login-url`.
-DEFAULT_CLI_LOGIN_URL = ""
+DEFAULT_CLI_LOGIN_URL = "https://mission-command-center-login.vercel.app"
 
 
 # The callback Lambda only redirects to allow-listed origins; these two localhost ports are on it.
