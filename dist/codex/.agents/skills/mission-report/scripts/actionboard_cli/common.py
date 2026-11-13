@@ -21,6 +21,18 @@ DEFAULT_COGNITO_DOMAIN = "https://absaas-dev.auth.ap-southeast-1.amazoncognito.c
 DEFAULT_EDGE_PROXY_URL = "https://actionboard-edge-proxy.ab-mobile.workers.dev"
 
 
+# Browser login reuses the hosted login and OAuth callback Lambda the web and mobile apps use.
+# The client id is public (it ships in the apps); the Lambda URL is Cognito's registered redirect_uri.
+DEFAULT_COGNITO_CLIENT_ID = "2d5k0n1r0mu15hcjr64boair70"
+
+
+DEFAULT_OAUTH_CALLBACK_URL = "https://zpcrz6q2a3o6uv6oac4b76lzvi0yumdl.lambda-url.ap-southeast-1.on.aws/"
+
+
+# The callback Lambda only redirects to allow-listed origins; these two localhost ports are on it.
+BROWSER_LOGIN_PORTS = (3000, 3001)
+
+
 MISSION_FILES = [
     ("mission-report.md", "text/markdown", ["mission", "report"], "Mission Report (Markdown)"),
     ("mission-report.html", "text/html", ["mission", "report", "dashboard"], "Mission Analytics Dashboard (HTML)"),
@@ -117,6 +129,28 @@ def save_secure_json(path, data):
             fallback = os.path.abspath(os.path.join(".actionboard", "credentials.json"))
             return save_secure_json(fallback, data)
         fail("cannot write %s: %s" % (target_path, exc))
+
+
+def load_credentials(path):
+    """Read a credentials file and fill in secrets from the OS keychain item it points to.
+
+    A file that still holds plaintext tokens is moved to the keychain on first read when one is usable.
+    """
+    from . import keychain
+    data = load_json_file(path)
+    if data.get("keychain_account"):
+        return keychain.merge_from_keychain(data)
+    has_plain_secrets = any(data.get(k) for k in keychain.SECRET_KEYS)
+    if has_plain_secrets and keychain.backend_name() and os.access(path, os.W_OK):
+        stored = save_credentials(path, data)
+        return keychain.merge_from_keychain(load_json_file(stored))
+    return data
+
+
+def save_credentials(path, data):
+    """Write credentials, keeping tokens and keys in the OS keychain when one is usable."""
+    from . import keychain
+    return save_secure_json(path, keychain.split_for_storage(path, data))
 
 
 def save_config_json(path, data):

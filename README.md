@@ -561,11 +561,11 @@ When a manager or board owner assigns you a mission (or sends a mission invitati
 Run `/ab-login` once to log in and choose a Pod and Board (`$ab-login` on Codex CLI). Then invoke `/fetch-mission` and `/submit-mission` (`$fetch-mission` and `$submit-mission` on Codex CLI) or run `submit_mission.py` directly:
 
 ```sh
-# 1. Configure AppSync and S3 settings (saved with 0600 permissions)
-python src/skills/mission-report/scripts/submit_mission.py configure --from-env-file mission-plan-api.md
+# 1. Sign in through your browser (no API key or password in the terminal; tokens go to the OS keychain)
+python src/skills/mission-report/scripts/submit_mission.py login
 
-# 2. Authenticate once (caches access/refresh tokens in ~/.actionboard/credentials.json)
-python src/skills/mission-report/scripts/submit_mission.py login --email <your-email>
+# 2. (Optional) Check the connection, login, and where tokens are stored
+python src/skills/mission-report/scripts/submit_mission.py status
 
 # 3. Select your default Pod and Board (saved in .actionboard/config.json)
 python src/skills/mission-report/scripts/submit_mission.py select

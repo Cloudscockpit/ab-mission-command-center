@@ -256,10 +256,10 @@ def cmd_configure(args):
     from .common import default_credentials_path
     from .common import fail
     from .common import info
-    from .common import load_json_file
-    from .common import save_secure_json
+    from .common import load_credentials
+    from .common import save_credentials
     cred_file = args.credentials_file or default_credentials_path()
-    creds = load_json_file(cred_file)
+    creds = load_credentials(cred_file)
     if args.from_env_file:
         if not os.path.exists(args.from_env_file):
             fail("--from-env-file %s does not exist" % args.from_env_file)
@@ -324,7 +324,7 @@ def cmd_configure(args):
     creds.setdefault("s3_region", DEFAULT_S3_REGION)
     creds.setdefault("s3_bucket", DEFAULT_S3_BUCKET)
     creds.setdefault("s3_prefix", DEFAULT_S3_PREFIX)
-    saved_path = save_secure_json(cred_file, creds)
+    saved_path = save_credentials(cred_file, creds)
     info("Saved ActionBoard CLI configuration to %s (mode 0600)." % saved_path)
     return 0
 
@@ -332,11 +332,29 @@ def cmd_configure(args):
 def cmd_login(args, opener=None):
     from .common import fail
     from .common import info
+    from .auth import login_with_browser
     from .auth import login_with_credentials
     from .auth import resolve_settings
+    from . import keychain
     settings = resolve_settings(args.credentials_file, args.config, args)
-    email = args.email or os.environ.get("ACTIONBOARD_EMAIL") or settings["creds"].get("email")
     password = args.password or os.environ.get("ACTIONBOARD_PASSWORD")
+
+    # Browser sign-in is the default: the password never passes through the CLI or an agent's chat.
+    # A password is used only when one is supplied, or when --email is typed in a terminal.
+    if not password and (args.browser or args.provider or not args.email or not sys.stdin.isatty()):
+        creds = login_with_browser(
+            settings,
+            provider=args.provider,
+            open_browser=not args.no_browser,
+            timeout=args.timeout,
+            opener=opener,
+        )
+        info("Logged in as %s (profileId: %s). Tokens stored in the %s."
+             % (creds.get("email") or "your account", creds.get("profile_id") or "resolved on pod exchange",
+                keychain.describe(load_backend(settings["cred_file"]))))
+        return 0
+
+    email = args.email or os.environ.get("ACTIONBOARD_EMAIL") or settings["creds"].get("email")
 
     if not email:
         if not sys.stdin.isatty():
@@ -352,9 +370,37 @@ def cmd_login(args, opener=None):
 
     creds = login_with_credentials(settings, email, password, opener=opener)
     info(
-        "Logged in as %s (profileId: %s). Credentials stored in %s."
-        % (creds.get("email"), creds.get("profile_id") or "resolved on pod exchange", settings["cred_file"])
+        "Logged in as %s (profileId: %s). Tokens stored in the %s."
+        % (creds.get("email"), creds.get("profile_id") or "resolved on pod exchange",
+           keychain.describe(load_backend(settings["cred_file"])))
     )
+    return 0
+
+
+def load_backend(cred_file):
+    """Which store holds the tokens for this credentials file: a keychain backend name, or None for the file."""
+    from .common import load_json_file
+    return load_json_file(cred_file).get("keychain_backend")
+
+
+def cmd_logout(args):
+    """Remove the stored tokens (from the keychain and the credentials file); keep the other settings."""
+    from .common import info
+    from .common import load_json_file
+    from .common import save_credentials
+    from .auth import resolve_settings
+    from . import keychain
+    settings = resolve_settings(args.credentials_file, args.config, args)
+    cleared = []
+    for path in {settings["cred_file"], os.path.abspath(os.path.join(".actionboard", "credentials.json"))}:
+        data = load_json_file(path)
+        if not data:
+            continue
+        for key in keychain.SECRET_KEYS + ("expires_at",):
+            data.pop(key, None)
+        save_credentials(path, data)  # no secrets left: also deletes the keychain item it pointed to
+        cleared.append(path)
+    info("Logged out. Removed stored ActionBoard tokens%s." % ((" for " + ", ".join(sorted(cleared))) if cleared else ""))
     return 0
 
 
@@ -365,6 +411,7 @@ def cmd_status(args):
     from .auth import resolve_aws_credentials
     from .auth import resolve_settings
     from .auth import token_is_valid
+    from . import keychain
     settings = resolve_settings(args.credentials_file, args.config, args)
     creds = settings["creds"]
     cfg = settings["cfg"]
@@ -382,6 +429,7 @@ def cmd_status(args):
         "edge_proxy_url": settings["edge_proxy"],
         "appsync_endpoint": settings["endpoint"] or "",
         "logged_in": has_token,
+        "token_storage": keychain.describe(load_backend(settings["cred_file"])) if has_token else "none",
         "has_refresh_token": has_refresh,
         "email": creds.get("email") or "",
         "profile_id": creds.get("profile_id") or "",
@@ -409,6 +457,7 @@ def cmd_status(args):
         "yes" if has_token else "no",
         (" (%s, profileId=%s)" % (status_obj["email"], status_obj["profile_id"] or "n/a")) if status_obj["email"] else "",
     ))
+    info("  Token storage    : %s" % status_obj["token_storage"])
     info("  S3 target        : s3://%s/%s (%s) — AWS creds: %s" % (
         status_obj["s3_bucket"],
         status_obj["s3_prefix"],
@@ -1611,7 +1660,13 @@ def build_parser():
 
     sp_login = sub.add_parser("login", parents=[common_sub], help="authenticate with ActionBoard and cache tokens")
     sp_login.add_argument("--email", help="ActionBoard account email")
-    sp_login.add_argument("--password", help="ActionBoard account password (prompts if omitted)")
+    sp_login.add_argument("--password", help="sign in with a password instead of the browser (prefer ACTIONBOARD_PASSWORD; flags show in shell history)")
+    sp_login.add_argument("--browser", action="store_true", help="sign in through the browser (the default unless a password is given)")
+    sp_login.add_argument("--provider", choices=["Google", "LinkedIn", "GitHub"], help="go straight to this sign-in provider in the browser")
+    sp_login.add_argument("--no-browser", action="store_true", help="print the sign-in link instead of opening a browser")
+    sp_login.add_argument("--timeout", type=int, default=300, help="seconds to wait for the browser sign-in (default: 300)")
+
+    sub.add_parser("logout", parents=[common_sub], help="remove stored tokens from the keychain and credentials file")
 
     sp_status = sub.add_parser("status", parents=[common_sub], help="show current auth, S3, and Pod/Board selection status")
     sp_status.add_argument("--json", action="store_true", help="output JSON")
@@ -1703,6 +1758,7 @@ def main(argv=None, opener=None):
     dispatch = {
         "configure": lambda: cmd_configure(args),
         "login": lambda: cmd_login(args, opener=opener),
+        "logout": lambda: cmd_logout(args),
         "status": lambda: cmd_status(args),
         "pods": lambda: cmd_pods(args, opener=opener),
         "boards": lambda: cmd_boards(args, opener=opener),

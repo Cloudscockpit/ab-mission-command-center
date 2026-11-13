@@ -16,6 +16,8 @@ import unittest
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 SCRIPTS_DIR = os.path.join(ROOT, "src", "skills", "mission-report", "scripts")
 sys.path.insert(0, SCRIPTS_DIR)
+# Tests must never read or write the developer's real OS keychain.
+os.environ["ACTIONBOARD_KEYCHAIN"] = "off"
 
 import submit_mission  # noqa: E402
 
@@ -49,6 +51,7 @@ class MockActionBoardTransport:
         self.s3_puts = []
         self.fail_submit_reports_folder = fail_submit_reports_folder
         self.folder_files = []
+        self.exchanged_keys = []
         self.mission_files = []
         self.deleted_file_ids = []
         self.comments = []
@@ -89,6 +92,17 @@ class MockActionBoardTransport:
         if "nextToken: $nextToken" in query and not variables.get("nextToken"):
             # The live API resolves a declared but missing $nextToken as null and rejects it.
             resp = {"errors": [{"message": "Invalid input: expected string, received null", "path": ["nextToken"]}]}
+        elif "auth_exchangeSocialSessionKey" in query:
+            self.exchanged_keys.append(variables["key"])
+            resp = {"data": {"auth_exchangeSocialSessionKey": {
+                "success": variables["key"] == "valid-key",
+                "message": "ok" if variables["key"] == "valid-key" else "Invalid or expired key",
+                "data": {
+                    "tokens": {"accessToken": self.main_access_token, "idToken": self.main_id_token,
+                               "refreshToken": "refresh-from-browser", "expiresIn": 3600, "tokenType": "Bearer"},
+                    "user": {"profileId": "prof-agent-007", "userId": "user-main-1",
+                             "email": "browser@actionboard.ai", "name": "Browser User"},
+                } if variables["key"] == "valid-key" else None}}}
         elif "auth_login" in query:
             resp = {
                 "data": {

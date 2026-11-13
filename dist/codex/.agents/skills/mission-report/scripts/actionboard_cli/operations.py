@@ -26,6 +26,30 @@ mutation Auth_login($input: Auth_LoginInput!) {
 """
 
 
+MUTATION_EXCHANGE_SOCIAL_SESSION_KEY = """
+mutation Auth_exchangeSocialSessionKey($key: String!) {
+  auth_exchangeSocialSessionKey(key: $key) {
+    success
+    message
+    data {
+      tokens {
+        accessToken
+        idToken
+        refreshToken
+        expiresIn
+        tokenType
+      }
+      user {
+        profileId
+        userId
+        email
+        name
+      }
+    }
+  }
+}
+"""
+
 MUTATION_REFRESH = """
 mutation Auth_refreshToken($input: Auth_RefreshTokenInput!) {
   auth_refreshToken(input: $input) {

@@ -16,7 +16,7 @@ AppSync API key configured keeps calling AppSync directly.
 
 The submission CLI (`{{skills_root}}/mission-report/scripts/submit_mission.py`, Python 3.9+ standard library only) executes the full ActionBoard control-plane and data-plane flow:
 
-1. **Authenticate (`auth_login` / `auth_refreshToken`):** Signs in to the ActionBoard main user pool and caches tokens with `0600` permissions in `~/.actionboard/credentials.json` (falling back to `.actionboard/credentials.json` inside restricted sandboxes).
+1. **Authenticate (browser sign-in / `auth_refreshToken`):** Signs in through the ActionBoard hosted login page in the browser, the same one the web and mobile apps use, and stores the tokens in the OS keychain (macOS Keychain, Windows Credential Manager, or the Linux Secret Service). Without a usable keychain they stay in `~/.actionboard/credentials.json` with `0600` permissions (falling back to `.actionboard/credentials.json` inside restricted sandboxes).
 2. **Resolve Pod & SSO Exchange (`pods_getMyPods` -> `pods_createExchangeCode` -> `pods_consumeExchangeCode`):** Exchanges the main access token for a Pod-scoped `idToken` carrying `custom:podId` and `custom:profileId`.
 3. **Select Board (`boards_getMyBoards`):** Lists boards inside the chosen Pod and saves the selected `pod_id` and `board_id` in `.actionboard/config.json`.
 4. **Create or Match Mission (`assistprofile_listMissionsByBoard` / `assistprofile_createMission`):** Reuses an existing mission ID (from `.actionboard/config.json`, `--mission-id`, or title match) or creates a new mission on the board with its dedicated `missionFolderId` and `reportsSubfolderId`.
@@ -70,13 +70,13 @@ AWS keys are optional. Without them, files upload through presigned URLs from th
 
 ### Step 3 — Log in to ActionBoard (when not authenticated)
 
-If `Authenticated` is `no`, log in once. Credentials and refresh tokens are cached in `~/.actionboard/credentials.json` (`0600`):
+If `Authenticated` is `no`, follow `{{skills_root}}/ab-login/SKILL.md`. It runs the browser sign-in, which needs no password in the chat:
 
 ```sh
-python {{skills_root}}/mission-report/scripts/submit_mission.py login --email <user-email>
+python {{skills_root}}/mission-report/scripts/submit_mission.py login
 ```
 
-For non-interactive / CI environments, set `ACTIONBOARD_EMAIL` and `ACTIONBOARD_PASSWORD` (or pass `--email` and `--password`).
+Tokens are refreshed automatically after that. For CI, set `ACTIONBOARD_EMAIL` and `ACTIONBOARD_PASSWORD`. `logout` removes the stored tokens.
 
 ### Step 4 — Select Pod & Board (first submit in a project, or to switch boards)
 
@@ -146,4 +146,5 @@ tokens, or file contents in a comment.
 
 - Never commit `.actionboard/credentials.json`, `~/.actionboard/credentials.json`, or raw API keys/passwords to git.
 - Keep credential files at `0600` (`-rw-------`) permissions.
+- Never ask the user for their password in the conversation; use the browser sign-in.
 
