@@ -135,6 +135,18 @@ self-contained file that works offline, with no network access and no external a
    6. **Agent-written text appears as written.** The dashboard shows the text the Agents wrote
       without rewriting it. The Markdown and JSON-LD remain authoritative if the page and the
       written record ever differ.
+9. **Submit to ActionBoard Pod & Board (when requested or configured):** Once the report,
+   JSON-LD, and HTML dashboard are written on disk, offer to submit the mission (Brief, Plan,
+   and Report) directly from the CLI to the user's ActionBoard Pod & Board using
+   `{{skills_root}}/mission-report/scripts/submit_mission.py` (or the `submit-mission` skill):
+
+   ```sh
+   python {{skills_root}}/mission-report/scripts/submit_mission.py submit \
+     --mission-dir <mission-dir> [--pod <podId>] [--board <boardId>]
+   ```
+
+   If the user has not logged in or selected a default Pod/Board yet, run `status`, `login`,
+   or `select` first (see `{{skills_root}}/submit-mission/SKILL.md`).
 
 ## Writing rules
 
