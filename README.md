@@ -615,7 +615,16 @@ python -m unittest discover -s tests/install
 python -m unittest discover -s tests/maturity
 python -m unittest discover -s tests/report
 node --test tests/opencode/plugin.test.mjs      # Node 23.6+
+pip install graphql-core==3.2.6 && python -m unittest discover -s tests/contract
 ```
+
+The `Live GraphQL schema contract` workflow also checks every CLI query and mutation against the
+live ActionBoard schema, through the edge proxy. It needs two repository secrets for a dedicated
+test account: `ACTIONBOARD_SCHEMA_REFRESH_TOKEN` and `ACTIONBOARD_SCHEMA_USERNAME` (the account's
+user id, the `cognito:username` claim, not its email). Each run mints a fresh access token from
+the refresh token. Without the secrets, and on pull requests from forks, the live step is skipped
+with a warning. Refresh tokens expire after about 30 days, so rotate the secret when the check
+reports a failed refresh.
 
 Authoring rules for `src/`:
 
