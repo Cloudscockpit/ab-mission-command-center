@@ -1,6 +1,6 @@
 {
   "name": "@actionboard-ai/install",
-  "version": "1.2.0",
+  "version": "1.3.0",
   "description": "Zero-clone installer for ActionBoard (Codex, Antigravity, OpenCode). Run with npx.",
   "bin": {
     "actionboard-install": "bin/install.js"

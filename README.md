@@ -146,7 +146,7 @@ This downloads the installer into a temporary folder, installs into your project
 temporary folder again, so nothing but OpenCode's own files lands in your project: there is no
 clone to ignore, commit or index. Add `--global` to install for your user instead of the current
 project. It needs Node 18+ for `npx` and Python 3.9+ on PATH, because the wrapper hands the work to
-`scripts/install.py`. Until v1.2.0 is tagged and published, `npx` and `uvx` answer "tag not
+`scripts/install.py`. Until v1.3.0 is tagged and published, `npx` and `uvx` answer "tag not
 published yet"; use the git one-liner below in the meantime.
 
 **Installation (uvx, if you have uv but not Node):**
@@ -252,7 +252,7 @@ This downloads the installer into a temporary folder, installs into your project
 temporary folder again, so nothing but Codex's own files lands in your project: there is no
 clone to ignore, commit or index. Add `--global` to install for your user instead of the current
 project. It needs Node 18+ for `npx` and Python 3.9+ on PATH, because the wrapper hands the work to
-`scripts/install.py`. Until v1.2.0 is tagged and published, `npx` and `uvx` answer "tag not
+`scripts/install.py`. Until v1.3.0 is tagged and published, `npx` and `uvx` answer "tag not
 published yet"; use the git one-liner below in the meantime.
 
 **Installation (uvx, if you have uv but not Node):**
@@ -358,7 +358,7 @@ This downloads the installer into a temporary folder, installs into your project
 temporary folder again, so nothing but Antigravity's own files lands in your project: there is no
 clone to ignore, commit or index. Add `--global` to install for your user instead of the current
 project. It needs Node 18+ for `npx` and Python 3.9+ on PATH, because the wrapper hands the work to
-`scripts/install.py`. Until v1.2.0 is tagged and published, `npx` and `uvx` answer "tag not
+`scripts/install.py`. Until v1.3.0 is tagged and published, `npx` and `uvx` answer "tag not
 published yet"; use the git one-liner below in the meantime.
 
 **Installation (uvx, if you have uv but not Node):**
@@ -561,11 +561,14 @@ When a manager or board owner assigns you a mission (or sends a mission invitati
 Run `/ab-login` once to log in and choose a Pod and Board (`$ab-login` on Codex CLI). Then invoke `/fetch-mission` and `/submit-mission` (`$fetch-mission` and `$submit-mission` on Codex CLI) or run `submit_mission.py` directly:
 
 ```sh
-# 1. Configure AppSync and S3 settings (saved with 0600 permissions)
-python src/skills/mission-report/scripts/submit_mission.py configure --from-env-file mission-plan-api.md
+# 1. Sign in through your browser (no API key or password in the terminal; tokens go to the OS keychain)
+python src/skills/mission-report/scripts/submit_mission.py login
 
-# 2. Authenticate once (caches access/refresh tokens in ~/.actionboard/credentials.json)
-python src/skills/mission-report/scripts/submit_mission.py login --email <your-email>
+#    Once the branded sign-in page is deployed, point the CLI at it (otherwise the Cognito page is used):
+#    python src/skills/mission-report/scripts/submit_mission.py configure --login-url https://<your-cli-login-domain>
+
+# 2. (Optional) Check the connection, login, and where tokens are stored
+python src/skills/mission-report/scripts/submit_mission.py status
 
 # 3. Select your default Pod and Board (saved in .actionboard/config.json)
 python src/skills/mission-report/scripts/submit_mission.py select
@@ -615,7 +618,16 @@ python -m unittest discover -s tests/install
 python -m unittest discover -s tests/maturity
 python -m unittest discover -s tests/report
 node --test tests/opencode/plugin.test.mjs      # Node 23.6+
+pip install graphql-core==3.2.6 && python -m unittest discover -s tests/contract
 ```
+
+The `Live GraphQL schema contract` workflow also checks every CLI query and mutation against the
+live ActionBoard schema, through the edge proxy. It needs two repository secrets for a dedicated
+test account: `ACTIONBOARD_SCHEMA_REFRESH_TOKEN` and `ACTIONBOARD_SCHEMA_USERNAME` (the account's
+user id, the `cognito:username` claim, not its email). Each run mints a fresh access token from
+the refresh token. Without the secrets, and on pull requests from forks, the live step is skipped
+with a warning. Refresh tokens expire after about 30 days, so rotate the secret when the check
+reports a failed refresh.
 
 Authoring rules for `src/`:
 

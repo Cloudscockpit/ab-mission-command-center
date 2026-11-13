@@ -1,0 +1,31 @@
+name: Live GraphQL schema contract
+on:
+  push:
+    branches: [main]
+  pull_request:
+  schedule:
+    - cron: '0 3 * * *'  # daily, so backend drift shows up even without new commits
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  schema-contract:
+    runs-on: ubuntu-latest
+    env:
+      # Secrets cannot be tested in a step `if`, so expose them as env. Fork PRs receive no secrets.
+      ACTIONBOARD_SCHEMA_REFRESH_TOKEN: ${{ secrets.ACTIONBOARD_SCHEMA_REFRESH_TOKEN }}
+      ACTIONBOARD_SCHEMA_USERNAME: ${{ secrets.ACTIONBOARD_SCHEMA_USERNAME }}
+      ACTIONBOARD_SCHEMA_PROXY_URL: ${{ vars.ACTIONBOARD_SCHEMA_PROXY_URL || 'https://actionboard-edge-proxy.ab-mobile.workers.dev' }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install graphql-core==3.2.6
+      - run: python -m unittest discover -s tests/contract -v
+      - name: Validate CLI operations against the live schema
+        if: env.ACTIONBOARD_SCHEMA_REFRESH_TOKEN != '' && env.ACTIONBOARD_SCHEMA_USERNAME != ''
+        run: python tests/contract/check_live_schema.py
+      - name: Live check skipped
+        if: env.ACTIONBOARD_SCHEMA_REFRESH_TOKEN == '' || env.ACTIONBOARD_SCHEMA_USERNAME == ''
+        run: echo "::warning::Live schema check skipped. Set the ACTIONBOARD_SCHEMA_REFRESH_TOKEN and ACTIONBOARD_SCHEMA_USERNAME repository secrets to enable it."

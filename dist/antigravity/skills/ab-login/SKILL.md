@@ -28,20 +28,27 @@ python <skill-dir>/../mission-report/scripts/submit_mission.py status --json
 - `logged_in` is `true`: skip to Step 3.
 - `logged_in` is `false`: continue with Step 2.
 
-## Step 2 — Log in
+## Step 2 — Log in through the browser
 
-Ask the user for their ActionBoard email and password. Tell them the alternative first: they can
-run `python <skill-dir>/../mission-report/scripts/submit_mission.py login` in their own terminal,
-which prompts there and keeps the password out of this conversation.
-
-If they give you the password, pass it through the environment, never as a flag:
+Run the login yourself. It opens the ActionBoard sign-in page in the user's browser and waits up
+to five minutes:
 
 ```sh
-ACTIONBOARD_PASSWORD='<password>' python <skill-dir>/../mission-report/scripts/submit_mission.py login --email <email>
+python <skill-dir>/../mission-report/scripts/submit_mission.py login
 ```
 
-Never repeat the password back, write it to a file, or include it in a report. If login fails,
-show the script's error and ask again; do not guess.
+Tell the user: "Sign in to ActionBoard in the browser tab that just opened (email and password,
+Google, LinkedIn, or GitHub). If no tab opened, open the link printed above." The command finishes
+by itself once they sign in. Add `--provider Google` (or `LinkedIn`, `GitHub`) when the user says
+which one they use.
+
+**Never ask for the password in this conversation.** The browser sign-in keeps it out of the CLI
+and out of the chat. If browser sign-in cannot work (for example on a remote machine over SSH,
+where the browser cannot reach this machine's localhost), ask the user to run
+`python <skill-dir>/../mission-report/scripts/submit_mission.py login --email <email>` in their
+own terminal, which prompts for the password there.
+
+If login fails, show the script's error and offer to run it again; do not guess.
 
 ## Step 3 — Choose the Pod
 
@@ -70,7 +77,21 @@ python <skill-dir>/../mission-report/scripts/submit_mission.py select --pod <pod
 This writes `pod_id` and `board_id` to `.actionboard/config.json`. Confirm to the user which
 account, Pod and Board are now active.
 
+## Step 6 — Mission sync (optional)
+
+Ask the user how missions should reach this board, and save the answer:
+
+- `ask` (default): Black Agent asks once per mission.
+- `auto`: every mission syncs its status, Agent progress, and final report without asking.
+- `off`: never sync; the user submits by hand.
+
+```sh
+python <skill-dir>/../mission-report/scripts/submit_mission.py select --sync <ask|auto|off>
+```
+
 ## Security rules
 
 - Never commit `.actionboard/credentials.json` or `~/.actionboard/credentials.json`.
+- Tokens are kept in the OS keychain (macOS Keychain, Windows Credential Manager, or the Linux
+  Secret Service); `status` shows where. Run `logout` to remove them.
 - Never print tokens or the password.

@@ -16,7 +16,7 @@ AppSync API key configured keeps calling AppSync directly.
 
 The submission CLI (`${CLAUDE_PLUGIN_ROOT}/skills/mission-report/scripts/submit_mission.py`, Python 3.9+ standard library only) executes the full ActionBoard control-plane and data-plane flow:
 
-1. **Authenticate (`auth_login` / `auth_refreshToken`):** Signs in to the ActionBoard main user pool and caches tokens with `0600` permissions in `~/.actionboard/credentials.json` (falling back to `.actionboard/credentials.json` inside restricted sandboxes).
+1. **Authenticate (browser sign-in / `auth_refreshToken`):** Signs in through the ActionBoard hosted login page in the browser, the same one the web and mobile apps use, and stores the tokens in the OS keychain (macOS Keychain, Windows Credential Manager, or the Linux Secret Service). Without a usable keychain they stay in `~/.actionboard/credentials.json` with `0600` permissions (falling back to `.actionboard/credentials.json` inside restricted sandboxes).
 2. **Resolve Pod & SSO Exchange (`pods_getMyPods` -> `pods_createExchangeCode` -> `pods_consumeExchangeCode`):** Exchanges the main access token for a Pod-scoped `idToken` carrying `custom:podId` and `custom:profileId`.
 3. **Select Board (`boards_getMyBoards`):** Lists boards inside the chosen Pod and saves the selected `pod_id` and `board_id` in `.actionboard/config.json`.
 4. **Create or Match Mission (`assistprofile_listMissionsByBoard` / `assistprofile_createMission`):** Reuses an existing mission ID (from `.actionboard/config.json`, `--mission-id`, or title match) or creates a new mission on the board with its dedicated `missionFolderId` and `reportsSubfolderId`.
@@ -70,13 +70,13 @@ AWS keys are optional. Without them, files upload through presigned URLs from th
 
 ### Step 3 — Log in to ActionBoard (when not authenticated)
 
-If `Authenticated` is `no`, log in once. Credentials and refresh tokens are cached in `~/.actionboard/credentials.json` (`0600`):
+If `Authenticated` is `no`, follow `${CLAUDE_PLUGIN_ROOT}/skills/ab-login/SKILL.md`. It runs the browser sign-in, which needs no password in the chat:
 
 ```sh
-python ${CLAUDE_PLUGIN_ROOT}/skills/mission-report/scripts/submit_mission.py login --email <user-email>
+python ${CLAUDE_PLUGIN_ROOT}/skills/mission-report/scripts/submit_mission.py login
 ```
 
-For non-interactive / CI environments, set `ACTIONBOARD_EMAIL` and `ACTIONBOARD_PASSWORD` (or pass `--email` and `--password`).
+Tokens are refreshed automatically after that. For CI, set `ACTIONBOARD_EMAIL` and `ACTIONBOARD_PASSWORD`. `logout` removes the stored tokens.
 
 ### Step 4 — Select Pod & Board (first submit in a project, or to switch boards)
 
@@ -108,6 +108,11 @@ python ${CLAUDE_PLUGIN_ROOT}/skills/mission-report/scripts/submit_mission.py sub
   --board <boardId-or-name>
 ```
 
+Re-submitting is safe. Each file the CLI registers carries an `actionboard-cli` tag and a content
+hash. On the next submit, unchanged files are skipped, and a changed file is uploaded and then its
+previous CLI version is removed from the mission. Files people uploaded through the web or mobile
+app are never removed. Pass `--keep-old` to keep the previous versions.
+
 Useful flags for `submit`:
 - `--dry-run`: Validate local mission files and print the JSON payload summary without calling AppSync or S3.
 - `--mission-id <id>`: Attach the plan and reports to a specific existing mission on the board.
@@ -116,10 +121,30 @@ Useful flags for `submit`:
 - `--update-mission`: Update the title and short description of an existing mission.
 - `--status <INITIATED|IN_PROGRESS|COMPLETED|FAILED|ARCHIVED>`: Override the mission status written after upload.
 - `--skip-s3`: Register report metadata in AppSync without performing the S3 `PUT` request.
+- `--keep-old`: Keep previous versions of changed files instead of replacing them.
 - `--json`: Print machine-readable JSON output.
+
+### Step 6 — Live progress (optional)
+
+Once a mission is on the board (after `submit` or `fetch`), post a status change or a one-line
+progress comment:
+
+```sh
+python ${CLAUDE_PLUGIN_ROOT}/skills/mission-report/scripts/submit_mission.py progress \
+  --mission-dir docs/missions/<YYYY-MM-DD-slug> --status IN_PROGRESS --comment "Red Agent: done — API client shipped"
+```
+
+`--status` takes `INITIATED`, `IN_PROGRESS`, `COMPLETED`, `FAILED` or `ARCHIVED`. Never put secrets,
+tokens, or file contents in a comment.
+
+### Mission sync setting
+
+`select --sync <ask|auto|off>` stores whether Black Agent syncs missions to the board: `ask`
+(default) asks once per mission, `auto` syncs without asking, `off` never syncs.
 
 ## Security rules
 
 - Never commit `.actionboard/credentials.json`, `~/.actionboard/credentials.json`, or raw API keys/passwords to git.
 - Keep credential files at `0600` (`-rw-------`) permissions.
+- Never ask the user for their password in the conversation; use the browser sign-in.
 
