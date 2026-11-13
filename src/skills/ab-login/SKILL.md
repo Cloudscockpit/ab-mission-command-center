@@ -68,6 +68,18 @@ python {{skills_root}}/mission-report/scripts/submit_mission.py select --pod <po
 This writes `pod_id` and `board_id` to `.actionboard/config.json`. Confirm to the user which
 account, Pod and Board are now active.
 
+## Step 6 — Mission sync (optional)
+
+Ask the user how missions should reach this board, and save the answer:
+
+- `ask` (default): Black Agent asks once per mission.
+- `auto`: every mission syncs its status, Agent progress, and final report without asking.
+- `off`: never sync; the user submits by hand.
+
+```sh
+python {{skills_root}}/mission-report/scripts/submit_mission.py select --sync <ask|auto|off>
+```
+
 ## Security rules
 
 - Never commit `.actionboard/credentials.json` or `~/.actionboard/credentials.json`.

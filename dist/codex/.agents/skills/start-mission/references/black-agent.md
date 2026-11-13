@@ -43,6 +43,12 @@ skip those questions and never answer them on the user's behalf. Pass `Terse out
 every assignment when preflight recorded it as enabled.
 
 ### Step 1 — Mission Brief
+**Check the board first.** Run `python <skill-dir>/../mission-report/scripts/submit_mission.py status --json`. When `logged_in` is `true`,
+`default_board_id` is set, and `mission_sync` is not `off`, run `python <skill-dir>/../mission-report/scripts/submit_mission.py assigned --no-input --json`.
+If it lists missions or invitations, show them in one short table and ask whether this objective is
+one of them (then fetch it, as below) or a new mission. If the user is not logged in, has no board,
+or the command fails, skip this check silently: never ask for a login at this step.
+
 If the user says a task or mission was assigned to them on ActionBoard (or asks to fetch their assigned mission), load the `fetch-mission` skill and run `python <skill-dir>/../mission-report/scripts/submit_mission.py fetch --start` (or `assigned` first to list assigned tasks) to pull `mission-brief.md` and `mission-plan.md` into `docs/missions/<YYYY-MM-DD-slug>/`, then use the fetched brief and plan as the foundation for the mission. Otherwise, draft the brief from the objective. Be specific. If the objective is vague, ask ONE clarifying question before proceeding; otherwise infer reasonable scope and state your assumptions explicitly in the Constraints section.
 
 ### Step 2 — Recon (Green Agent)
@@ -76,13 +82,23 @@ STOP. Do not proceed without user approval.
 
 When the user says "go":
 0. Before dispatching anyone, record the mission start: the UTC time (for example `date -u +%Y-%m-%dT%H:%M:%SZ`, or `(Get-Date).ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ssZ")` in PowerShell) and the git base commit (`git rev-parse HEAD`). The report flow needs both for the dashboard. If the directory is not a git repository, record the time only.
+0b. **Board sync.** Read `mission_sync` from `python <skill-dir>/../mission-report/scripts/submit_mission.py status --json` (only when
+   `logged_in` is `true` and `default_board_id` is set; otherwise skip board sync for the whole mission).
+   - `off`: skip board sync.
+   - `ask`: ask once, "Sync this mission to board <board name>? Status, Agent progress, and the final
+     report go to the board (yes/no)". A "no" skips board sync for this mission.
+   - `auto`: sync without asking.
+
+   When syncing, write the Mission Brief and Mission Plan to disk with the `mission-brief` and
+   `mission-plan` skills, then run `python <skill-dir>/../mission-report/scripts/submit_mission.py submit --mission-dir <mission-dir> --status IN_PROGRESS --no-input`.
+   A sync command that fails is reported in one line and never blocks the mission.
 1. Dispatch Red/Blue/Yellow Agents **in parallel** when their assignments have no inter-dependencies. Call `spawn_agent` for every independent agent first, then `wait_agent` for all of them.
 2. Dispatch sequentially when one Agent's output is another's input.
-3. As each Agent reports back, append its result to a running "Mission Log" section, including the Agent's `Files created/changed:` list.
+3. As each Agent reports back, append its result to a running "Mission Log" section, including the Agent's `Files created/changed:` list. When board sync is on, also post one line to the board: `python <skill-dir>/../mission-report/scripts/submit_mission.py progress --mission-dir <mission-dir> --comment "<Agent>: <done|blocked> — <one-line result>" --no-input`. Never put secrets, tokens, or file contents in a comment.
 4. When all Agents report `done` or `blocked`, score every dispatched assignment on the five formation stages and record the runs in `.actionboard/registry.json`, following step 6 of the `mission-report` skill. Every mission counts toward the project's AI-ops maturity, whether or not it is written to disk.
 5. Render a final Mission Summary: what shipped, what didn't, what's deferred, the `## Maturity & Progress Summary` table, and one combined `Files created/changed:` list for the whole mission (including `.actionboard/registry.json`). If the mission was persisted to disk, invoke `mission-report` to record the outcome against the plan's graph nodes. Pass it the start time and git base commit from the go step, and the test suites and counts exactly as Yellow Agent reported them. The skill writes `mission-report.md`, `mission-report.jsonld`, `mission-metrics.json`, and the dashboard `mission-report.html`. Mention the dashboard in the final Mission Summary and include all of these files in the combined `Files created/changed:` list.
 6. When a Skill or audit tool is available, you may run a design audit on the generated `mission-report.html` and report its findings. This is optional and never blocks the report. If the dashboard fails to render, report that as a defect; the Markdown and JSON-LD stay on disk. If the renderer prints a stderr line containing `WARNING` (for example `render_dashboard: WARNING ...`), include it in the Mission Summary rather than ignoring it.
-7. When the mission is persisted to disk, ask the user if they want to submit the completed mission (Brief, Plan, and Report) directly to their ActionBoard Pod & Board via the `submit-mission` skill (`python <skill-dir>/../mission-report/scripts/submit_mission.py submit --mission-dir <mission-dir>`), or run it immediately if the user requested CLI submission.
+7. When board sync is on for this mission, submit the completed mission without asking again: `python <skill-dir>/../mission-report/scripts/submit_mission.py submit --mission-dir <mission-dir> --no-input`. The board shows `COMPLETED` when a report exists; if any assignment ended `blocked`, add `--status FAILED`. Unchanged files are skipped and changed files replace the CLI's previous version. Otherwise, when the mission is persisted to disk, ask the user if they want to submit the completed mission (Brief, Plan, and Report) directly to their ActionBoard Pod & Board via the `submit-mission` skill (`python <skill-dir>/../mission-report/scripts/submit_mission.py submit --mission-dir <mission-dir>`), or run it immediately if the user requested CLI submission.
 
 ## Skill creation protocol
 

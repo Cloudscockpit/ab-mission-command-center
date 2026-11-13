@@ -921,6 +921,44 @@ mutation Assistprofile_updateMissionStatus($input: Assistprofile_UpdateMissionSt
 }
 """
 
+CLI_FILE_TAG = "actionboard-cli"  # marks files this CLI registered, so re-submits only ever replace its own files
+SYNC_MODES = ("ask", "auto", "off")
+
+# Two variants: the API rejects a declared $nextToken that is absent (it resolves to null).
+_MISSION_FILES_SELECTION = """{
+    success
+    message
+    nextToken
+    items { id fileName fileSize note tags createdAt }
+  }"""
+QUERY_LIST_MISSION_FILES = """
+query Assistprofile_listMissionFiles($missionId: ID!, $boardId: ID!, $limit: Int) {
+  assistprofile_listMissionFiles(missionId: $missionId, boardId: $boardId, limit: $limit) %s
+}
+""" % _MISSION_FILES_SELECTION
+QUERY_LIST_MISSION_FILES_PAGE = """
+query Assistprofile_listMissionFiles($missionId: ID!, $boardId: ID!, $limit: Int, $nextToken: String) {
+  assistprofile_listMissionFiles(missionId: $missionId, boardId: $boardId, limit: $limit, nextToken: $nextToken) %s
+}
+""" % _MISSION_FILES_SELECTION
+
+MUTATION_DELETE_MISSION_FILE = """
+mutation Assistprofile_deleteMissionFile($missionId: ID!, $boardId: ID!, $fileId: ID!) {
+  assistprofile_deleteMissionFile(missionId: $missionId, boardId: $boardId, fileId: $fileId)
+}
+"""
+
+MUTATION_CREATE_MISSION_COMMENT = """
+mutation Assistprofile_createMissionComment($input: Assistprofile_CreateMissionCommentInput!) {
+  assistprofile_createMissionComment(input: $input) {
+    commentId
+    missionId
+    boardId
+    text
+  }
+}
+"""
+
 MUTATION_DELETE_MISSION = """
 mutation Assistprofile_deleteMission($boardId: ID!, $missionId: ID!) {
   assistprofile_deleteMission(boardId: $boardId, missionId: $missionId)
@@ -2264,6 +2302,7 @@ def cmd_status(args):
         "default_pod_name": cfg.get("pod_name") or "",
         "default_board_id": cfg.get("board_id") or "",
         "default_board_name": cfg.get("board_name") or "",
+        "mission_sync": cfg.get("mission_sync") if cfg.get("mission_sync") in SYNC_MODES else "ask",
     }
     if getattr(args, "json", False):
         info(json.dumps(status_obj, indent=2))
@@ -2290,6 +2329,7 @@ def cmd_status(args):
         ("%s (%s)" % (status_obj["default_pod_name"], status_obj["default_pod_id"]))
         if status_obj["default_pod_id"] else "none"
     ))
+    info("  Mission sync     : %s" % status_obj["mission_sync"])
     info("  Selected Board   : %s" % (
         ("%s (%s)" % (status_obj["default_board_name"], status_obj["default_board_id"]))
         if status_obj["default_board_id"] else "none"
@@ -2760,6 +2800,12 @@ def cmd_fetch(args, opener=None):
 
 def cmd_select(args, opener=None):
     settings = resolve_settings(args.credentials_file, args.config, args)
+    cfg = settings["cfg"]
+    if args.sync and not args.pod and not args.board and cfg.get("board_id"):
+        cfg["mission_sync"] = args.sync
+        save_config_json(settings["config_file"], cfg)
+        info("Mission sync set to %s." % args.sync)
+        return 0
     main_token = ensure_main_token(settings, interactive=True, opener=opener)
     pod, board, _ = select_pod_and_board(
         settings,
@@ -2779,7 +2825,73 @@ def cmd_select(args, opener=None):
             board["boardId"],
         )
     )
+    if args.sync:
+        settings["cfg"]["mission_sync"] = args.sync
+        save_config_json(settings["config_file"], settings["cfg"])
+        info("Mission sync set to %s." % args.sync)
     return 0
+
+
+def find_linked_mission(missions_map, mission_dir, slug):
+    """Find the board link for a local mission folder: by its saved folder path first, then by slug."""
+    target = os.path.abspath(mission_dir) if mission_dir else None
+    for key, entry in missions_map.items():
+        if isinstance(entry, dict) and target and entry.get("mission_dir") and os.path.abspath(entry["mission_dir"]) == target:
+            return key, entry
+    entry = missions_map.get(slug)
+    return slug, (entry if isinstance(entry, dict) else {})
+
+
+def list_mission_files(settings, pod_id_token, board_id, mission_id, opener=None):
+    files, next_token = [], None
+    for _ in range(20):  # shortcut: stops after 20 pages (1,000 files); missions hold a handful
+        variables = {"missionId": mission_id, "boardId": board_id, "limit": 50}
+        if next_token:
+            variables["nextToken"] = next_token
+        data = graphql_request(
+            settings["endpoint"], settings["api_key"],
+            QUERY_LIST_MISSION_FILES_PAGE if next_token else QUERY_LIST_MISSION_FILES, variables,
+            bearer_token=pod_id_token, opener=opener,
+        )
+        res = data.get("assistprofile_listMissionFiles") or {}
+        if not res.get("success"):
+            raise RuntimeError(res.get("message") or "listMissionFiles returned success=false")
+        files.extend(res.get("items") or [])
+        next_token = res.get("nextToken")
+        if not next_token:
+            break
+    return files
+
+
+def is_cli_file(existing, local_file, mission_id):
+    """True only for a file this CLI registered for the same local file name.
+
+    Files people uploaded through the web or mobile app never carry the CLI tag or the CLI's exact
+    note and tag list, so they are never replaced. The second check covers uploads made before the tag existed.
+    """
+    if existing.get("fileName") != local_file["fileName"]:
+        return False
+    tags = existing.get("tags") or []
+    if CLI_FILE_TAG in tags:
+        return True
+    return tags == local_file["tags"] + [mission_id] and existing.get("note") == local_file["note"]
+
+
+def plan_file_sync(files_to_upload, existing_files, mission_id, hashes, replace=True):
+    """Split local files into (to_upload, unchanged, file ids to delete after the upload succeeds)."""
+    to_upload, unchanged, to_delete = [], [], []
+    for f in files_to_upload:
+        owned = [e for e in existing_files if is_cli_file(e, f, mission_id)]
+        same = [e for e in owned if "sha256:%s" % hashes[f["fileName"]] in (e.get("tags") or [])]
+        if same:
+            unchanged.append(f)
+            stale = [e for e in owned if e is not same[0]]
+        else:
+            to_upload.append(f)
+            stale = owned
+        if replace:
+            to_delete.extend(e["id"] for e in stale if e.get("id"))
+    return to_upload, unchanged, to_delete
 
 
 def cmd_submit(args, opener=None):
@@ -2841,7 +2953,7 @@ def cmd_submit(args, opener=None):
 
     cfg = settings["cfg"]
     missions_map = cfg.get("missions") if isinstance(cfg.get("missions"), dict) else {}
-    saved_entry = missions_map.get(meta["slug"]) if isinstance(missions_map.get(meta["slug"]), dict) else {}
+    link_key, saved_entry = find_linked_mission(missions_map, mission_dir, meta["slug"])
 
     mission_id = args.mission_id
     if not mission_id and saved_entry.get("board_id") == board_id:
@@ -2998,14 +3110,17 @@ def cmd_submit(args, opener=None):
             info("Created mission plan on board (planId: %s)." % plan_id)
 
     def save_link():
-        missions_map[meta["slug"]] = {
+        entry = dict(saved_entry) if saved_entry.get("mission_id") == mission_id else {}
+        entry.update({
             "mission_id": mission_id,
             "plan_id": plan_id or "",
             "board_id": board_id,
             "pod_id": pod_id,
             "title": title,
+            "mission_dir": os.path.abspath(mission_dir),
             "updated_at": datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
-        }
+        })
+        missions_map[link_key] = entry
         cfg["missions"] = missions_map
         save_config_json(settings["config_file"], cfg)
 
@@ -3013,12 +3128,30 @@ def cmd_submit(args, opener=None):
     save_link()
 
     uploaded_files = []
+    unchanged_files = []
+    replaced_ids = []
     if files_to_upload and not args.skip_reports:
         aws_creds = resolve_aws_credentials(settings["creds"])
         timestamp_ms = int(time.time() * 1000)
         reports_input = []
 
-        for item_idx, f in enumerate(files_to_upload):
+        hashes = {}
+        for f in files_to_upload:
+            with open(f["path"], "rb") as fh:
+                hashes[f["fileName"]] = hashlib.sha256(fh.read()).hexdigest()
+        existing_files = []
+        if not created_new_mission:
+            try:
+                existing_files = list_mission_files(settings, pod_id_token, board_id, mission_id, opener=opener)
+            except RuntimeError as exc:
+                warn("could not list the mission's current files, uploading all: %s" % exc)
+        to_upload, unchanged_files, to_delete = plan_file_sync(
+            files_to_upload, existing_files, mission_id, hashes, replace=not args.keep_old
+        )
+        for f in unchanged_files:
+            info("Unchanged, skipped: %s" % f["fileName"])
+
+        for item_idx, f in enumerate(to_upload):
             s3_key = "%s/%s/missions/%s/%d-%s" % (
                 settings["s3_prefix"],
                 board_id,
@@ -3097,7 +3230,7 @@ def cmd_submit(args, opener=None):
                     "s3_uri": s3_meta["s3_uri"],
                 },
                 "note": f["note"],
-                "tags": f["tags"] + [mission_id],
+                "tags": f["tags"] + [mission_id, CLI_FILE_TAG, "sha256:%s" % hashes[f["fileName"]]],
             })
 
         submit_input = {
@@ -3108,33 +3241,55 @@ def cmd_submit(args, opener=None):
         if plan_id:
             submit_input["planId"] = plan_id
 
-        try:
-            rep_data = graphql_request(
-                settings["endpoint"],
-                settings["api_key"],
-                MUTATION_SUBMIT_REPORTS,
-                {"input": submit_input},
-                bearer_token=pod_id_token,
-                opener=opener,
-            )
-            rep_res = rep_data.get("assistprofile_submitReports") or {}
-            if rep_res.get("success"):
-                uploaded_files = rep_res.get("files") or []
-                info(
-                    "Registered %d mission report/brief/plan file(s) via assistprofile_submitReports (totalFiles: %s)."
-                    % (len(uploaded_files), rep_res.get("totalFiles"))
+        # Nothing changed means no upload and no registration, but stale copies are still cleaned up.
+        registered_on_mission = not reports_input
+        if reports_input:
+            try:
+                rep_data = graphql_request(
+                    settings["endpoint"],
+                    settings["api_key"],
+                    MUTATION_SUBMIT_REPORTS,
+                    {"input": submit_input},
+                    bearer_token=pod_id_token,
+                    opener=opener,
                 )
-            else:
-                raise RuntimeError(rep_res.get("message") or "submitReports returned success=false")
-        except RuntimeError as exc:
-            if "Mission folder not found" in str(exc) or "missionFolderId" in str(exc):
-                warn("mission has no missionFolderId; falling back to filemanager_createFolder + filemanager_createFile")
-                uploaded_files = fallback_upload_via_filemanager(
-                    settings, pod_id_token, board_id, mission_id, title, reports_input, opener=opener
-                )
-                info("Registered %d file(s) in Board File Manager." % len(uploaded_files))
-            else:
-                fail("failed to submit mission reports: %s" % exc)
+                rep_res = rep_data.get("assistprofile_submitReports") or {}
+                if rep_res.get("success"):
+                    uploaded_files = rep_res.get("files") or []
+                    registered_on_mission = True
+                    info(
+                        "Registered %d mission report/brief/plan file(s) via assistprofile_submitReports (totalFiles: %s)."
+                        % (len(uploaded_files), rep_res.get("totalFiles"))
+                    )
+                else:
+                    raise RuntimeError(rep_res.get("message") or "submitReports returned success=false")
+            except RuntimeError as exc:
+                if "Mission folder not found" in str(exc) or "missionFolderId" in str(exc):
+                    warn("mission has no missionFolderId; falling back to filemanager_createFolder + filemanager_createFile")
+                    uploaded_files = fallback_upload_via_filemanager(
+                        settings, pod_id_token, board_id, mission_id, title, reports_input, opener=opener
+                    )
+                    info("Registered %d file(s) in Board File Manager." % len(uploaded_files))
+                else:
+                    fail("failed to submit mission reports: %s" % exc)
+
+        # Old versions are removed only after the new ones are registered, so a failure never loses a file.
+        if registered_on_mission:
+            for file_id in to_delete:
+                try:
+                    data = graphql_request(
+                        settings["endpoint"], settings["api_key"], MUTATION_DELETE_MISSION_FILE,
+                        {"missionId": mission_id, "boardId": board_id, "fileId": file_id},
+                        bearer_token=pod_id_token, opener=opener,
+                    )
+                    if data.get("assistprofile_deleteMissionFile"):
+                        replaced_ids.append(file_id)
+                    else:
+                        warn("could not remove the previous version (file %s)" % file_id)
+                except RuntimeError as exc:
+                    warn("could not remove the previous version (file %s): %s" % (file_id, exc))
+            if replaced_ids:
+                info("Removed %d previous version(s) uploaded by this CLI." % len(replaced_ids))
 
     target_status = args.status
     if not target_status and os.path.exists(os.path.join(mission_dir, "mission-report.md")):
@@ -3164,7 +3319,9 @@ def cmd_submit(args, opener=None):
         "mission_id": mission_id,
         "created_new_mission": created_new_mission,
         "plan_id": plan_id or "",
-        "files_submitted": [f.get("fileName") for f in uploaded_files] or [f["fileName"] for f in files_to_upload],
+        "files_submitted": [f.get("fileName") for f in uploaded_files],
+        "files_unchanged": [f["fileName"] for f in unchanged_files],
+        "previous_versions_removed": len(replaced_ids),
     }
     if getattr(args, "json", False):
         info(json.dumps(result_summary, indent=2))
@@ -3175,6 +3332,57 @@ def cmd_submit(args, opener=None):
         info("  Mission ID   : %s (%s)" % (mission_id, title))
         info("  Plan ID      : %s" % (plan_id or "none"))
         info("  Files        : %s" % (", ".join(result_summary["files_submitted"]) or "none"))
+        if unchanged_files:
+            info("  Unchanged    : %s" % ", ".join(result_summary["files_unchanged"]))
+    return 0
+
+
+def cmd_progress(args, opener=None):
+    """Post a live status change and/or a progress comment to a mission already linked to a board."""
+    if not args.status and not args.comment:
+        fail("pass --status, --comment, or both")
+    settings = resolve_settings(args.credentials_file, args.config, args)
+    interactive = not getattr(args, "no_input", False) and sys.stdin.isatty()
+    cfg = settings["cfg"]
+    missions_map = cfg.get("missions") if isinstance(cfg.get("missions"), dict) else {}
+
+    entry = {}
+    if args.mission_dir:
+        if not os.path.isdir(args.mission_dir):
+            fail("--mission-dir %s does not exist or is not a directory" % args.mission_dir)
+        _key, entry = find_linked_mission(missions_map, args.mission_dir, parse_mission_metadata(args.mission_dir)["slug"])
+    mission_id = args.mission_id or entry.get("mission_id")
+    board_id = args.board or entry.get("board_id") or cfg.get("board_id")
+    if not mission_id:
+        fail("this mission is not on a board yet. Run `submit --mission-dir <dir>` first, or pass --mission-id.")
+    if not board_id:
+        fail("no board selected. Pass --board <boardId> or run `select`.")
+
+    _pod, pod_id_token, _profile = _resolve_pod_token_and_profile(
+        settings, pod_arg=args.pod or entry.get("pod_id"), interactive=interactive, opener=opener
+    )
+    result = {"mission_id": mission_id, "board_id": board_id, "status": "", "comment_id": ""}
+    if args.status:
+        graphql_request(
+            settings["endpoint"], settings["api_key"], MUTATION_UPDATE_MISSION_STATUS,
+            {"input": {"boardId": board_id, "missionId": mission_id, "status": args.status}},
+            bearer_token=pod_id_token, opener=opener,
+        )
+        result["status"] = args.status
+    if args.comment:
+        data = graphql_request(
+            settings["endpoint"], settings["api_key"], MUTATION_CREATE_MISSION_COMMENT,
+            {"input": {"missionId": mission_id, "boardId": board_id, "text": args.comment}},
+            bearer_token=pod_id_token, opener=opener,
+        )
+        result["comment_id"] = (data.get("assistprofile_createMissionComment") or {}).get("commentId") or ""
+    if getattr(args, "json", False):
+        info(json.dumps(result, indent=2))
+    else:
+        if result["status"]:
+            info("Mission %s status: %s" % (mission_id, result["status"]))
+        if args.comment:
+            info("Posted progress comment on mission %s." % mission_id)
     return 0
 
 
@@ -3258,6 +3466,19 @@ def build_parser():
     sp_select = sub.add_parser("select", parents=[common_sub], help="interactively select default Pod and Board for this project")
     sp_select.add_argument("--pod", help="pod ID, slug, or name")
     sp_select.add_argument("--board", help="board ID or name")
+    sp_select.add_argument("--sync", choices=SYNC_MODES,
+                           help="mission board sync: ask (default) asks once per mission, auto syncs without asking, off never syncs")
+
+    sp_progress = sub.add_parser("progress", parents=[common_sub], help="post a status change or progress comment to a linked mission")
+    sp_progress.add_argument("--mission-dir", help="local mission folder that was submitted or fetched before")
+    sp_progress.add_argument("--mission-id", help="missionId (instead of --mission-dir)")
+    sp_progress.add_argument("--pod", help="pod ID")
+    sp_progress.add_argument("--board", help="board ID")
+    sp_progress.add_argument("--status", choices=["INITIATED", "IN_PROGRESS", "COMPLETED", "FAILED", "ARCHIVED"],
+                             help="new mission status")
+    sp_progress.add_argument("--comment", help="progress comment text to post on the mission")
+    sp_progress.add_argument("--no-input", action="store_true", help="do not prompt interactively")
+    sp_progress.add_argument("--json", action="store_true", help="output JSON")
 
     sp_submit = sub.add_parser("submit", parents=[common_sub], help="submit mission brief, plan, and report to a board")
     sp_submit.add_argument("--mission-dir", help="path to mission folder (auto-detected if omitted)")
@@ -3276,6 +3497,8 @@ def build_parser():
     sp_submit.add_argument("--skip-plan", action="store_true", help="skip submitting mission plan markdown")
     sp_submit.add_argument("--skip-reports", action="store_true", help="skip uploading mission report files")
     sp_submit.add_argument("--skip-s3", action="store_true", help="register report metadata in AppSync without S3 PUT")
+    sp_submit.add_argument("--keep-old", action="store_true",
+                           help="keep previous versions of changed files instead of replacing them")
     sp_submit.add_argument("--dry-run", action="store_true", help="validate local files and print what would be submitted")
     sp_submit.add_argument("--no-input", action="store_true", help="fail instead of prompting interactively")
     sp_submit.add_argument("--json", action="store_true", help="output JSON summary")
@@ -3297,6 +3520,7 @@ def main(argv=None, opener=None):
         "fetch": lambda: cmd_fetch(args, opener=opener),
         "select": lambda: cmd_select(args, opener=opener),
         "submit": lambda: cmd_submit(args, opener=opener),
+        "progress": lambda: cmd_progress(args, opener=opener),
     }
     try:
         return dispatch[args.subcommand]()

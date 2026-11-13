@@ -49,6 +49,10 @@ class MockActionBoardTransport:
         self.s3_puts = []
         self.fail_submit_reports_folder = fail_submit_reports_folder
         self.folder_files = []
+        self.mission_files = []
+        self.deleted_file_ids = []
+        self.comments = []
+        self._file_seq = 0
         exp = int(time.time()) + 3600
         self.main_access_token = make_jwt({"sub": "user-main-1", "exp": exp})
         self.main_id_token = make_jwt({"sub": "user-main-1", "custom:profileId": "prof-agent-007", "exp": exp})
@@ -82,7 +86,10 @@ class MockActionBoardTransport:
             "variables": variables,
         })
 
-        if "auth_login" in query:
+        if "nextToken: $nextToken" in query and not variables.get("nextToken"):
+            # The live API resolves a declared but missing $nextToken as null and rejects it.
+            resp = {"errors": [{"message": "Invalid input: expected string, received null", "path": ["nextToken"]}]}
+        elif "auth_login" in query:
             resp = {
                 "data": {
                     "auth_login": {
@@ -424,9 +431,10 @@ class MockActionBoardTransport:
             else:
                 inp = variables["input"]
                 files_out = []
-                for idx, r in enumerate(inp["reports"], 1):
+                for r in inp["reports"]:
+                    self._file_seq += 1
                     files_out.append({
-                        "id": "file-%d" % idx,
+                        "id": "file-%d" % self._file_seq,
                         "boardId": inp["boardId"],
                         "folderId": "folder-rep-1",
                         "fileName": r["fileName"],
@@ -438,12 +446,13 @@ class MockActionBoardTransport:
                         "createdAt": "2026-11-13T10:03:00Z",
                         "updatedAt": "2026-11-13T10:03:00Z",
                     })
+                self.mission_files.extend(files_out)
                 resp = {
                     "data": {
                         "assistprofile_submitReports": {
                             "success": True,
                             "message": "Successfully uploaded %d report file(s)" % len(files_out),
-                            "totalFiles": len(files_out),
+                            "totalFiles": len(self.mission_files),
                             "files": files_out,
                         }
                     }
@@ -484,6 +493,19 @@ class MockActionBoardTransport:
                     }
                 }
             }
+        elif "assistprofile_listMissionFiles" in query:
+            resp = {"data": {"assistprofile_listMissionFiles": {
+                "success": True, "message": "ok", "nextToken": None, "items": list(self.mission_files)}}}
+        elif "assistprofile_deleteMissionFile" in query:
+            self.deleted_file_ids.append(variables["fileId"])
+            self.mission_files = [f for f in self.mission_files if f["id"] != variables["fileId"]]
+            resp = {"data": {"assistprofile_deleteMissionFile": True}}
+        elif "assistprofile_createMissionComment" in query:
+            inp = variables["input"]
+            self.comments.append(inp)
+            resp = {"data": {"assistprofile_createMissionComment": {
+                "commentId": "comment-%d" % len(self.comments), "missionId": inp["missionId"],
+                "boardId": inp["boardId"], "text": inp["text"]}}}
         elif "assistprofile_updateMissionStatus" in query:
             inp = variables["input"]
             resp = {
@@ -504,6 +526,8 @@ class MockActionBoardTransport:
 
 class TestSubmitMissionCLI(unittest.TestCase):
     def setUp(self):
+        # A developer's own ActionBoard settings must not change which mode the tests run in.
+        self._saved_edge_env = os.environ.pop("ACTIONBOARD_EDGE_PROXY_URL", None)
         self.tmp = tempfile.mkdtemp(prefix="ab-submit-test-")
         self.cred_file = os.path.join(self.tmp, "credentials.json")
         self.cfg_file = os.path.join(self.tmp, "config.json")
@@ -535,6 +559,8 @@ class TestSubmitMissionCLI(unittest.TestCase):
 
     def tearDown(self):
         shutil.rmtree(self.tmp, ignore_errors=True)
+        if self._saved_edge_env is not None:
+            os.environ["ACTIONBOARD_EDGE_PROXY_URL"] = self._saved_edge_env
 
     def test_configure_from_env_file_sets_0600_permissions(self):
         env_md = os.path.join(self.tmp, "mission-plan-api.md")
@@ -838,7 +864,7 @@ class TestSubmitMissionCLI(unittest.TestCase):
             with open(skill_path, encoding="utf-8") as fh:
                 skill_text = fh.read()
 
-            for sub in ("status", "configure", "login", "pods", "boards", "assigned", "fetch", "select", "submit"):
+            for sub in ("status", "configure", "login", "pods", "boards", "assigned", "fetch", "select", "submit", "progress"):
                 proc = subprocess.run(
                     [sys.executable, script_path, sub, "--help"],
                     stdout=subprocess.PIPE,
@@ -1046,6 +1072,122 @@ class TestSubmitMissionCLI(unittest.TestCase):
         finally:
             os.environ.clear()
             os.environ.update(saved_env)
+
+    def _direct_session(self, transport):
+        base = ["--credentials-file", self.cred_file, "--config", self.cfg_file]
+        submit_mission.main(base + [
+            "configure", "--endpoint", "https://example.appsync-api.ap-southeast-1.amazonaws.com/graphql",
+            "--api-key", "da2-testapikey123",
+        ])
+        submit_mission.main(base + ["login", "--email", "dev@actionboard.ai", "--password", "pw"], opener=transport)
+        submit_mission.main(base + ["select", "--pod", "alpha-pod", "--board", "board-eng-42"], opener=transport)
+        return base
+
+    def test_resubmit_skips_unchanged_and_replaces_changed_files(self):
+        transport = MockActionBoardTransport()
+        base = self._direct_session(transport)
+        submit = base + ["submit", "--mission-dir", self.mission_dir, "--skip-s3", "--no-input", "--json"]
+
+        self.assertEqual(submit_mission.main(submit, opener=transport), 0)
+        self.assertEqual(len(transport.mission_files), 5)
+        tags = transport.mission_files[0]["tags"]
+        self.assertIn(submit_mission.CLI_FILE_TAG, tags)
+        self.assertTrue(any(t.startswith("sha256:") for t in tags))
+
+        # Unchanged: nothing registered again, nothing deleted.
+        calls_before = len(transport.graphql_calls)
+        self.assertEqual(submit_mission.main(submit, opener=transport), 0)
+        new_calls = [c["query"] for c in transport.graphql_calls[calls_before:]]
+        self.assertFalse(any("assistprofile_submitReports(" in q for q in new_calls))
+        self.assertEqual(transport.deleted_file_ids, [])
+        self.assertEqual(len(transport.mission_files), 5)
+
+        # One file changed: only it is uploaded, and its old version is removed afterwards.
+        old_ids = {f["fileName"]: f["id"] for f in transport.mission_files}
+        with open(os.path.join(self.mission_dir, "mission-plan.md"), "a", encoding="utf-8") as fh:
+            fh.write("\n## Wave 2\nMore work.\n")
+        self.assertEqual(submit_mission.main(submit, opener=transport), 0)
+        reports_call = [c for c in transport.graphql_calls if "assistprofile_submitReports(" in c["query"]][-1]
+        self.assertEqual([r["fileName"] for r in reports_call["variables"]["input"]["reports"]], ["mission-plan.md"])
+        self.assertEqual(transport.deleted_file_ids, [old_ids["mission-plan.md"]])
+        self.assertEqual(sorted(f["fileName"] for f in transport.mission_files),
+                         sorted(old_ids))
+
+    def test_replace_never_touches_files_people_uploaded(self):
+        transport = MockActionBoardTransport()
+        base = self._direct_session(transport)
+        transport.mission_files.extend([
+            # Uploaded by a person in the web or mobile app: same name, different note and tags.
+            {"id": "web-1", "fileName": "mission-plan.md", "note": "My notes", "tags": ["plan"]},
+            # Uploaded by an older CLI version, before the CLI tag existed.
+            {"id": "legacy-1", "fileName": "mission-plan.md", "note": "Mission Plan (Markdown)",
+             "tags": ["mission", "plan", "mission-uuid-1001"]},
+        ])
+        cfg = submit_mission.load_json_file(self.cfg_file)
+        cfg["missions"] = {"cli-mission-upload": {"mission_id": "mission-uuid-1001", "board_id": "board-eng-42"}}
+        submit_mission.save_config_json(self.cfg_file, cfg)
+
+        rc = submit_mission.main(base + ["submit", "--mission-dir", self.mission_dir, "--skip-s3", "--no-input"], opener=transport)
+        self.assertEqual(rc, 0)
+        self.assertEqual(transport.deleted_file_ids, ["legacy-1"])
+        self.assertIn("web-1", [f["id"] for f in transport.mission_files])
+
+    def test_keep_old_keeps_previous_versions(self):
+        transport = MockActionBoardTransport()
+        base = self._direct_session(transport)
+        submit = base + ["submit", "--mission-dir", self.mission_dir, "--skip-s3", "--no-input"]
+        submit_mission.main(submit, opener=transport)
+        with open(os.path.join(self.mission_dir, "mission-plan.md"), "a", encoding="utf-8") as fh:
+            fh.write("changed\n")
+        submit_mission.main(submit + ["--keep-old"], opener=transport)
+        self.assertEqual(transport.deleted_file_ids, [])
+        self.assertEqual(len([f for f in transport.mission_files if f["fileName"] == "mission-plan.md"]), 2)
+
+    def test_progress_posts_status_and_comment_to_linked_mission(self):
+        transport = MockActionBoardTransport()
+        base = self._direct_session(transport)
+        submit_mission.main(base + ["submit", "--mission-dir", self.mission_dir, "--skip-s3", "--skip-reports",
+                                    "--status", "IN_PROGRESS", "--no-input"], opener=transport)
+        rc = submit_mission.main(base + ["progress", "--mission-dir", self.mission_dir, "--status", "FAILED",
+                                         "--comment", "Red Agent: blocked on API schema", "--no-input"], opener=transport)
+        self.assertEqual(rc, 0)
+        status_calls = [c["variables"]["input"] for c in transport.graphql_calls if "assistprofile_updateMissionStatus" in c["query"]]
+        self.assertEqual([c["status"] for c in status_calls], ["IN_PROGRESS", "FAILED"])
+        self.assertEqual(transport.comments, [{"missionId": "mission-uuid-1001", "boardId": "board-eng-42",
+                                              "text": "Red Agent: blocked on API schema"}])
+
+    def test_progress_requires_a_linked_mission(self):
+        transport = MockActionBoardTransport()
+        base = self._direct_session(transport)
+        with self.assertRaises(SystemExit):
+            submit_mission.main(base + ["progress", "--mission-dir", self.mission_dir, "--comment", "x", "--no-input"], opener=transport)
+
+    def test_submit_reuses_link_saved_by_fetch_for_same_folder(self):
+        transport = MockActionBoardTransport()
+        base = self._direct_session(transport)
+        cfg = submit_mission.load_json_file(self.cfg_file)
+        cfg["missions"] = {"title-slug-from-fetch": {"mission_id": "mission-assigned-9", "board_id": "board-eng-42",
+                                                     "pod_id": "pod-alpha-1", "mission_dir": self.mission_dir}}
+        submit_mission.save_config_json(self.cfg_file, cfg)
+        submit_mission.main(base + ["submit", "--mission-dir", self.mission_dir, "--skip-s3", "--no-input"], opener=transport)
+        queries = [c["query"] for c in transport.graphql_calls]
+        self.assertFalse(any("assistprofile_createMission(" in q for q in queries))
+        saved = submit_mission.load_json_file(self.cfg_file)["missions"]
+        self.assertEqual(list(saved), ["title-slug-from-fetch"])
+        self.assertEqual(saved["title-slug-from-fetch"]["mission_id"], "mission-assigned-9")
+
+    def test_select_sync_mode_is_saved_and_shown(self):
+        transport = MockActionBoardTransport()
+        base = self._direct_session(transport)
+        self.assertEqual(submit_mission.main(base + ["select", "--sync", "auto"]), 0)
+        self.assertEqual(submit_mission.load_json_file(self.cfg_file)["mission_sync"], "auto")
+        out = io.StringIO()
+        saved_stdout, sys.stdout = sys.stdout, out
+        try:
+            submit_mission.main(base + ["status", "--json"])
+        finally:
+            sys.stdout = saved_stdout
+        self.assertEqual(json.loads(out.getvalue())["mission_sync"], "auto")
 
 
 if __name__ == "__main__":

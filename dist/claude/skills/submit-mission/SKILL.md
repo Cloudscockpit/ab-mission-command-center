@@ -108,6 +108,11 @@ python ${CLAUDE_PLUGIN_ROOT}/skills/mission-report/scripts/submit_mission.py sub
   --board <boardId-or-name>
 ```
 
+Re-submitting is safe. Each file the CLI registers carries an `actionboard-cli` tag and a content
+hash. On the next submit, unchanged files are skipped, and a changed file is uploaded and then its
+previous CLI version is removed from the mission. Files people uploaded through the web or mobile
+app are never removed. Pass `--keep-old` to keep the previous versions.
+
 Useful flags for `submit`:
 - `--dry-run`: Validate local mission files and print the JSON payload summary without calling AppSync or S3.
 - `--mission-id <id>`: Attach the plan and reports to a specific existing mission on the board.
@@ -116,7 +121,26 @@ Useful flags for `submit`:
 - `--update-mission`: Update the title and short description of an existing mission.
 - `--status <INITIATED|IN_PROGRESS|COMPLETED|FAILED|ARCHIVED>`: Override the mission status written after upload.
 - `--skip-s3`: Register report metadata in AppSync without performing the S3 `PUT` request.
+- `--keep-old`: Keep previous versions of changed files instead of replacing them.
 - `--json`: Print machine-readable JSON output.
+
+### Step 6 — Live progress (optional)
+
+Once a mission is on the board (after `submit` or `fetch`), post a status change or a one-line
+progress comment:
+
+```sh
+python ${CLAUDE_PLUGIN_ROOT}/skills/mission-report/scripts/submit_mission.py progress \
+  --mission-dir docs/missions/<YYYY-MM-DD-slug> --status IN_PROGRESS --comment "Red Agent: done — API client shipped"
+```
+
+`--status` takes `INITIATED`, `IN_PROGRESS`, `COMPLETED`, `FAILED` or `ARCHIVED`. Never put secrets,
+tokens, or file contents in a comment.
+
+### Mission sync setting
+
+`select --sync <ask|auto|off>` stores whether Black Agent syncs missions to the board: `ask`
+(default) asks once per mission, `auto` syncs without asking, `off` never syncs.
 
 ## Security rules
 
