@@ -558,8 +558,10 @@ class TestSubmitMissionCLI(unittest.TestCase):
             "--aws-secret-access-key", "SECRETTESTKEY",
         ])
         self.assertEqual(rc, 0)
-        mode = stat.S_IMODE(os.stat(self.cred_file).st_mode)
-        self.assertEqual(mode, 0o600)
+        if os.name != "nt":
+            # Windows has no POSIX modes (stat always reports 0o666); the user profile ACL protects the file there.
+            mode = stat.S_IMODE(os.stat(self.cred_file).st_mode)
+            self.assertEqual(mode, 0o600)
         saved = submit_mission.load_json_file(self.cred_file)
         self.assertEqual(saved["appsync_endpoint"], "https://example.appsync-api.ap-southeast-1.amazonaws.com/graphql")
         self.assertEqual(saved["appsync_api_key"], "da2-testapikey123")
