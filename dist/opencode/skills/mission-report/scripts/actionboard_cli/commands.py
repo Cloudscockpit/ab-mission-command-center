@@ -1668,7 +1668,7 @@ def build_parser():
     sp_login.add_argument("--email", help="ActionBoard account email")
     sp_login.add_argument("--password", help="sign in with a password instead of the browser (prefer ACTIONBOARD_PASSWORD; flags show in shell history)")
     sp_login.add_argument("--browser", action="store_true", help="sign in through the browser (the default unless a password is given)")
-    sp_login.add_argument("--provider", choices=["Google", "LinkedIn", "GitHub"], help="go straight to this sign-in provider in the browser")
+    sp_login.add_argument("--provider", choices=["Google", "LinkedIn"], help="go straight to this sign-in provider in the browser")
     sp_login.add_argument("--no-browser", action="store_true", help="print the sign-in link instead of opening a browser")
     sp_login.add_argument("--timeout", type=int, default=300, help="seconds to wait for the browser sign-in (default: 300)")
 

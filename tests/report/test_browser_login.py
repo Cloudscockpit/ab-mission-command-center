@@ -90,8 +90,8 @@ class BrowserLoginTests(unittest.TestCase):
             visit(decode_state(query["state"]) + "&authorization-code=valid-key")
             return True
 
-        self.login(browser, provider="GitHub")
-        self.assertEqual(seen["identity_provider"], "GitHub")
+        self.login(browser, provider="LinkedIn")
+        self.assertEqual(seen["identity_provider"], "LinkedIn")
 
     def test_error_from_login_page_fails(self):
         def browser(auth_url):
