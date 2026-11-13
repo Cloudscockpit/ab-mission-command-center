@@ -36,6 +36,7 @@ def resolve_settings(cred_path=None, config_path=".actionboard/config.json", arg
     from .common import DEFAULT_COGNITO_CLIENT_ID
     from .common import DEFAULT_COGNITO_DOMAIN
     from .common import DEFAULT_EDGE_PROXY_URL
+    from .common import DEFAULT_CLI_LOGIN_URL
     from .common import DEFAULT_OAUTH_CALLBACK_URL
     from .common import DEFAULT_S3_BUCKET
     from .common import DEFAULT_S3_PREFIX
@@ -125,6 +126,11 @@ def resolve_settings(cred_path=None, config_path=".actionboard/config.json", arg
             or creds.get("cognito_redirect_uri")
             or DEFAULT_OAUTH_CALLBACK_URL
         ),
+        "cli_login_url": (
+            os.environ.get("ACTIONBOARD_LOGIN_URL")
+            or creds.get("cli_login_url")
+            or DEFAULT_CLI_LOGIN_URL
+        ).strip().rstrip("/"),
     }
     _EDGE_CONTEXT["settings"] = settings
     return settings
@@ -213,10 +219,13 @@ def _login_listeners(ports):
 def login_with_browser(settings, provider=None, open_browser=True, timeout=300, ports=None, opener=None):
     """Sign in through the ActionBoard hosted login page and return the stored credentials.
 
-    Uses the same hosted login and OAuth callback Lambda as the web and mobile apps: the Lambda redirects
-    the browser back to this CLI on localhost with a one-time key, which auth_exchangeSocialSessionKey
-    turns into tokens. The password never passes through the CLI.
+    With a branded sign-in page configured (`cli_login_url`), that page is opened: it returns a sealed
+    `cli-code` bound to this login's PKCE challenge, redeemed at the page's /api/cli/exchange with the
+    verifier. Its social buttons, `--provider`, and the no-page fallback use the hosted login and OAuth
+    callback Lambda the web and mobile apps use, which return an `authorization-code` that
+    auth_exchangeSocialSessionKey turns into tokens. Either way the password never passes through the CLI.
     """
+    import hashlib
     import base64
     import html
     import http.server
@@ -253,9 +262,10 @@ def login_with_browser(settings, provider=None, open_browser=True, timeout=300, 
                 return
             if not done.is_set():
                 result["key"] = query.get("authorization-code", [""])[0]
+                result["cli_code"] = query.get("cli-code", [""])[0]
                 result["error"] = query.get("error", [""])[0]
                 done.set()
-            if result.get("key"):
+            if result.get("key") or result.get("cli_code"):
                 self._reply(200, "Signed in to ActionBoard. You can close this tab and return to the terminal.")
             else:
                 self._reply(400, "ActionBoard sign-in failed (%s). Return to the terminal." % (result.get("error") or "no code"))
@@ -286,6 +296,13 @@ def login_with_browser(settings, provider=None, open_browser=True, timeout=300, 
         params["identity_provider"] = provider
     auth_url = settings["cognito_domain"].rstrip("/") + "/oauth2/authorize?" + urllib.parse.urlencode(params)
 
+    # PKCE: the branded page binds its one-time code to this challenge; only this process knows the verifier.
+    verifier = secrets.token_urlsafe(32)
+    challenge = base64.urlsafe_b64encode(hashlib.sha256(verifier.encode("ascii")).digest()).decode("ascii").rstrip("=")
+    login_url = settings.get("cli_login_url") or ""
+    if login_url and not provider:
+        auth_url = login_url + "/cli?" + urllib.parse.urlencode({"port": port, "nonce": nonce, "challenge": challenge})
+
     threads = []
     for server in servers:
         server.RequestHandlerClass = Handler
@@ -307,6 +324,13 @@ def login_with_browser(settings, provider=None, open_browser=True, timeout=300, 
             server.shutdown()
             server.server_close()
 
+    if result.get("cli_code"):
+        if not login_url:
+            fail("browser login failed: received a sign-in page code but no sign-in page is configured")
+        res = _redeem_cli_code(login_url, result["cli_code"], verifier, opener=opener)
+        if not res.get("success"):
+            fail("browser login failed: %s" % (res.get("message") or "the sign-in code was rejected or expired"))
+        return store_auth_result(settings, res, opener=opener)
     if not result.get("key"):
         fail("browser login failed: %s" % (result.get("error") or "no authorization code returned"))
     data = graphql_request(
@@ -320,6 +344,34 @@ def login_with_browser(settings, provider=None, open_browser=True, timeout=300, 
     if not res.get("success"):
         fail("browser login failed: %s" % (res.get("message") or "the sign-in key was rejected or expired"))
     return store_auth_result(settings, res, opener=opener)
+
+
+def _redeem_cli_code(login_url, code, verifier, opener=None):
+    """POST the one-time code and PKCE verifier to the sign-in page; returns an auth_login-shaped dict."""
+    import urllib.error
+    import urllib.request
+    req = urllib.request.Request(
+        login_url + "/api/cli/exchange",
+        data=json.dumps({"code": code, "verifier": verifier}).encode("utf-8"),
+        headers={"Content-Type": "application/json", "Accept": "application/json", "User-Agent": "ActionBoard-CLI/1.2"},
+        method="POST",
+    )
+    open_fn = opener or urllib.request.urlopen
+    try:
+        with open_fn(req, timeout=30) as resp:
+            raw = resp.read().decode("utf-8")
+    except urllib.error.HTTPError as exc:
+        try:
+            raw = exc.read().decode("utf-8", errors="replace")
+        except Exception:
+            raw = ""
+    except (urllib.error.URLError, OSError) as exc:
+        return {"success": False, "message": "sign-in page unreachable: %s" % getattr(exc, "reason", exc)}
+    try:
+        res = json.loads(raw)
+    except ValueError:
+        return {"success": False, "message": "sign-in page returned an unexpected response"}
+    return res if isinstance(res, dict) else {"success": False, "message": "unexpected response"}
 
 
 def store_auth_result(settings, res, email_hint=None, opener=None):

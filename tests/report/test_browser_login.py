@@ -1,5 +1,6 @@
 """Browser login: the CLI listens on localhost, the hosted login redirects back with a one-time key."""
 import base64
+import hashlib
 import json
 import os
 import shutil
@@ -17,7 +18,7 @@ os.environ["ACTIONBOARD_KEYCHAIN"] = "off"
 
 import submit_mission  # noqa: E402
 from actionboard_cli.auth import _login_listeners  # noqa: E402
-from test_submit_mission import MockActionBoardTransport  # noqa: E402
+from test_submit_mission import FakeHTTPResponse as FakeResponse, MockActionBoardTransport  # noqa: E402
 
 
 def decode_state(state):
@@ -123,6 +124,88 @@ class BrowserLoginTests(unittest.TestCase):
         finally:
             for server in servers:
                 server.server_close()
+
+
+    def test_branded_page_returns_a_code_redeemed_with_the_pkce_verifier(self):
+        self.settings["cli_login_url"] = "https://cli-login.example"
+        seen, redeemed = {}, []
+        real_transport = self.transport
+
+        def opener(req, timeout=30):
+            if req.full_url == "https://cli-login.example/api/cli/exchange":
+                body = json.loads(req.data.decode("utf-8"))
+                redeemed.append(body)
+                challenge = base64.urlsafe_b64encode(hashlib.sha256(body["verifier"].encode()).digest()).decode().rstrip("=")
+                ok = body["code"] == "sealed-code" and challenge == seen["challenge"]
+                payload = {"success": ok, "message": "ok" if ok else "bad",
+                           "data": {"tokens": {"accessToken": real_transport.main_access_token, "idToken": real_transport.main_id_token,
+                                               "refreshToken": "refresh-from-page", "expiresIn": 3600},
+                                    "user": {"profileId": "prof-agent-007", "userId": "u1", "email": "page@actionboard.ai"}} if ok else None}
+                return FakeResponse(json.dumps(payload).encode())
+            return real_transport(req, timeout=timeout)
+
+        def browser(url):
+            parts = urllib.parse.urlparse(url)
+            query = dict(urllib.parse.parse_qsl(parts.query))
+            seen.update(query, origin=parts.scheme + "://" + parts.netloc, path=parts.path)
+            callback = "http://localhost:%s/actionboard-cli/callback?nonce=%s&cli-code=sealed-code" % (query["port"], query["nonce"])
+            seen["status"] = visit(callback)
+            return True
+
+        with patch("webbrowser.open", browser):
+            creds = submit_mission.login_with_browser(self.settings, ports=(0,), opener=opener, timeout=10)
+        self.assertEqual(seen["origin"] + seen["path"], "https://cli-login.example/cli")
+        self.assertEqual(len(seen["challenge"]), 43)
+        self.assertEqual(seen["status"], 200)
+        self.assertEqual(len(redeemed), 1)
+        self.assertNotEqual(redeemed[0]["verifier"], seen["challenge"])
+        self.assertEqual(creds["refresh_token"], "refresh-from-page")
+        self.assertEqual(self.transport.exchanged_keys, [])
+
+    def test_branded_page_social_buttons_still_use_the_cognito_key(self):
+        self.settings["cli_login_url"] = "https://cli-login.example"
+
+        def browser(url):
+            query = dict(urllib.parse.parse_qsl(urllib.parse.urlparse(url).query))
+            visit("http://localhost:%s/actionboard-cli/callback?nonce=%s&authorization-code=valid-key" % (query["port"], query["nonce"]))
+            return True
+
+        creds = self.login(browser)
+        self.assertEqual(self.transport.exchanged_keys, ["valid-key"])
+        self.assertEqual(creds["email"], "browser@actionboard.ai")
+
+    def test_provider_skips_the_branded_page(self):
+        self.settings["cli_login_url"] = "https://cli-login.example"
+        seen = {}
+
+        def browser(url):
+            parts = urllib.parse.urlparse(url)
+            query = dict(urllib.parse.parse_qsl(parts.query))
+            seen.update(host=parts.netloc, provider=query.get("identity_provider"))
+            visit(decode_state(query["state"]) + "&authorization-code=valid-key")
+            return True
+
+        self.login(browser, provider="Google")
+        self.assertEqual(seen["host"], "absaas-dev.auth.ap-southeast-1.amazoncognito.com")
+        self.assertEqual(seen["provider"], "Google")
+
+    def test_rejected_page_code_fails(self):
+        self.settings["cli_login_url"] = "https://cli-login.example"
+
+        def opener(req, timeout=30):
+            if req.full_url.endswith("/api/cli/exchange"):
+                return FakeResponse(json.dumps({"success": False, "message": "Sign-in code is invalid or expired."}).encode())
+            return self.transport(req, timeout=timeout)
+
+        def browser(url):
+            query = dict(urllib.parse.parse_qsl(urllib.parse.urlparse(url).query))
+            visit("http://localhost:%s/actionboard-cli/callback?nonce=%s&cli-code=stale" % (query["port"], query["nonce"]))
+            return True
+
+        with patch("webbrowser.open", browser):
+            with self.assertRaises(SystemExit):
+                submit_mission.login_with_browser(self.settings, ports=(0,), opener=opener, timeout=10)
+        self.assertFalse(os.path.exists(self.cred_file))
 
 
 if __name__ == "__main__":

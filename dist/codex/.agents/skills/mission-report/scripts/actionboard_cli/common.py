@@ -29,6 +29,11 @@ DEFAULT_COGNITO_CLIENT_ID = "2d5k0n1r0mu15hcjr64boair70"
 DEFAULT_OAUTH_CALLBACK_URL = "https://zpcrz6q2a3o6uv6oac4b76lzvi0yumdl.lambda-url.ap-southeast-1.on.aws/"
 
 
+# The branded CLI sign-in page (the actionboard-cli-login app on Vercel). Empty means the CLI opens
+# the Cognito hosted login directly. Override with ACTIONBOARD_LOGIN_URL or `configure --login-url`.
+DEFAULT_CLI_LOGIN_URL = ""
+
+
 # The callback Lambda only redirects to allow-listed origins; these two localhost ports are on it.
 BROWSER_LOGIN_PORTS = (3000, 3001)
 

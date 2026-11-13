@@ -295,6 +295,11 @@ def cmd_configure(args):
                 elif k == "AWS_SESSION_TOKEN":
                     creds["aws_session_token"] = v
 
+    if args.login_url is not None:
+        if args.login_url.strip():
+            creds["cli_login_url"] = args.login_url.strip().rstrip("/")
+        else:
+            creds.pop("cli_login_url", None)
     if args.edge_proxy_url is not None:
         if args.edge_proxy_url.strip():
             creds["edge_proxy_url"] = args.edge_proxy_url.strip()
@@ -1652,6 +1657,7 @@ def build_parser():
     sp_cfg = sub.add_parser("configure", parents=[common_sub], help="save AppSync and S3 settings to ~/.actionboard/credentials.json")
     sp_cfg.add_argument("--from-env-file", help="import settings from an env/markdown file")
     sp_cfg.add_argument("--edge-proxy-url", help="route all calls through this edge proxy (no API key needed); pass \"\" to go back to direct mode")
+    sp_cfg.add_argument("--login-url", help="branded CLI sign-in page, e.g. https://cli.actionboard.com.bd; pass \"\" to use the Cognito page")
     sp_cfg.add_argument("--cognito-domain", help="Cognito domain URL")
     sp_cfg.add_argument("--cognito-client-id", help="Cognito client ID")
     sp_cfg.add_argument("--aws-access-key-id", help="AWS access key ID for S3 upload")

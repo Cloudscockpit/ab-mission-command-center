@@ -564,6 +564,9 @@ Run `/ab-login` once to log in and choose a Pod and Board (`$ab-login` on Codex 
 # 1. Sign in through your browser (no API key or password in the terminal; tokens go to the OS keychain)
 python src/skills/mission-report/scripts/submit_mission.py login
 
+#    Once the branded sign-in page is deployed, point the CLI at it (otherwise the Cognito page is used):
+#    python src/skills/mission-report/scripts/submit_mission.py configure --login-url https://<your-cli-login-domain>
+
 # 2. (Optional) Check the connection, login, and where tokens are stored
 python src/skills/mission-report/scripts/submit_mission.py status
 
