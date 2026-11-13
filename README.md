@@ -24,6 +24,29 @@ Every CLI ran two full missions live (October 2026): preflight, Green recon, fou
 the go/no-go gate, build, tests re-run independently, maturity scoring. Results:
 [`tests/smoke/results-2026-10.md`](tests/smoke/results-2026-10.md).
 
+## What's new in 1.3.0
+
+Missions now travel between your CLI and an ActionBoard Board, with no API key, AWS keys or
+password in the terminal.
+
+| New command | What it does |
+|---|---|
+| `/ab-login` | Sign in through the ActionBoard sign-in page in your browser (email and password, Google or LinkedIn), then pick your Pod and Board |
+| `/fetch-mission` | Pull a mission assigned to you (brief and plan) from your Board into `docs/missions/` |
+| `/submit-mission` | Send the finished mission (brief, plan, report, dashboard) to your Board |
+
+On Codex CLI these are `$ab-login`, `$fetch-mission` and `$submit-mission`.
+
+- **Re-submitting is safe:** unchanged files are skipped and changed files replace only the
+  plugin's previous copy. Files people uploaded on the web or mobile app are never removed.
+- **Live mission sync:** with sync on, `/start-mission` checks your Board for assigned work, marks
+  the mission `IN_PROGRESS` on "go", posts each Agent's result as a comment, and submits at the end.
+- **Your tokens live in the OS keychain** (macOS Keychain, Windows Credential Manager or the Linux
+  Secret Service), not in a plain file.
+
+Details: [Fetching & submitting missions](#fetching--submitting-missions-to-actionboard) and the
+[CHANGELOG](CHANGELOG.md).
+
 ## Installation & Usage Guide
 
 Pick your CLI and follow only that guide; each one is complete on its own. Every mission works
@@ -112,7 +135,8 @@ Brief, Agent Assignments, Skills Gap and Risk Register, then stops. Reply `go`, 
 **Slash commands:** every skill is in the `/` menu: `/mission-brief`, `/mission-plan`,
 `/mission-report`, `/mission-preflight`, `/skills-registry`, `/actionboard-devops-mission`,
 `/mission-harness`, `/sandbox-up`, `/sandbox-status`, `/sandbox-down`, `/policy-widen`,
-`/terse-output`, `/browser-actions` (Claude in Chrome; Claude Code only).
+`/terse-output`, `/browser-actions` (Claude in Chrome; Claude Code only), and new in 1.3.0
+`/ab-login`, `/fetch-mission`, `/submit-mission` (see [Fetching & submitting missions](#fetching--submitting-missions-to-actionboard)).
 
 **Cost options:** the first mission's preflight asks whether to install Graphify and whether to
 turn on terse output, and saves your answers in `.actionboard/preferences.json`.
@@ -146,8 +170,7 @@ This downloads the installer into a temporary folder, installs into your project
 temporary folder again, so nothing but OpenCode's own files lands in your project: there is no
 clone to ignore, commit or index. Add `--global` to install for your user instead of the current
 project. It needs Node 18+ for `npx` and Python 3.9+ on PATH, because the wrapper hands the work to
-`scripts/install.py`. Until v1.3.0 is tagged and published, `npx` and `uvx` answer "tag not
-published yet"; use the git one-liner below in the meantime.
+`scripts/install.py`.
 
 **Installation (uvx, if you have uv but not Node):**
 
@@ -252,8 +275,7 @@ This downloads the installer into a temporary folder, installs into your project
 temporary folder again, so nothing but Codex's own files lands in your project: there is no
 clone to ignore, commit or index. Add `--global` to install for your user instead of the current
 project. It needs Node 18+ for `npx` and Python 3.9+ on PATH, because the wrapper hands the work to
-`scripts/install.py`. Until v1.3.0 is tagged and published, `npx` and `uvx` answer "tag not
-published yet"; use the git one-liner below in the meantime.
+`scripts/install.py`.
 
 **Installation (uvx, if you have uv but not Node):**
 
@@ -310,7 +332,8 @@ the gate and waits for `go`.
 
 **Skills:** invoke as `$mission-brief`, `$mission-plan`, `$mission-report`,
 `$mission-preflight`, `$skills-registry`, `$actionboard-devops-mission`, `$mission-harness`,
-`$sandbox-up`, `$sandbox-status`, `$sandbox-down`, `$policy-widen`, `$terse-output`, or pick
+`$sandbox-up`, `$sandbox-status`, `$sandbox-down`, `$policy-widen`, `$terse-output`, and new in 1.3.0
+`$ab-login`, `$fetch-mission`, `$submit-mission`, or pick
 them from `/skills`.
 
 **Models:** agents inherit the session model. To pin them, copy
@@ -358,8 +381,7 @@ This downloads the installer into a temporary folder, installs into your project
 temporary folder again, so nothing but Antigravity's own files lands in your project: there is no
 clone to ignore, commit or index. Add `--global` to install for your user instead of the current
 project. It needs Node 18+ for `npx` and Python 3.9+ on PATH, because the wrapper hands the work to
-`scripts/install.py`. Until v1.3.0 is tagged and published, `npx` and `uvx` answer "tag not
-published yet"; use the git one-liner below in the meantime.
+`scripts/install.py`.
 
 **Installation (uvx, if you have uv but not Node):**
 
@@ -413,7 +435,8 @@ gate and waits for `go`.
 **Slash commands:** every skill is a `/command`: `/mission-brief`, `/mission-plan`,
 `/mission-report`, `/mission-preflight`, `/skills-registry`, `/actionboard-devops-mission`,
 `/mission-harness`, `/sandbox-up`, `/sandbox-status`, `/sandbox-down`, `/policy-widen`,
-`/terse-output` (internal skills such as `/openshell-admin` show too).
+`/terse-output`, and new in 1.3.0 `/ab-login`, `/fetch-mission`, `/submit-mission` (internal
+skills such as `/openshell-admin` show too).
 
 **Models:** Black Agent uses `pro`, the specialists use `flash`. To change them, copy
 `agentformation.config.example.json` to `agentformation.config.json`, edit the `antigravity`
@@ -554,32 +577,81 @@ source prints "Not recorded", never zero. The Markdown and JSON-LD reports stay 
 dashboard is a view of them. It carries a Content-Security-Policy that blocks every network
 request, and any text from the reports is HTML-escaped.
 
-## Fetching & submitting missions to ActionBoard from the CLI
+## Fetching & submitting missions to ActionBoard
 
-When a manager or board owner assigns you a mission (or sends a mission invitation) on an ActionBoard Board, you can pull its **Mission Brief** and **Mission Plan** directly to your local workspace, start your work, and submit the completed **Mission Report** back from the CLI — without logging into the web UI.
+When a manager or board owner assigns you a mission (or sends a mission invitation) on an
+ActionBoard Board, you can pull its **Mission Brief** and **Mission Plan** into your project, do the
+work, and send the finished **Mission Report** back, all from your CLI. You only need Python 3.9+,
+a browser and an ActionBoard account: no API key, no AWS keys, no configuration.
 
-Run `/ab-login` once to log in and choose a Pod and Board (`$ab-login` on Codex CLI). Then invoke `/fetch-mission` and `/submit-mission` (`$fetch-mission` and `$submit-mission` on Codex CLI) or run `submit_mission.py` directly:
+### Commands in your CLI
+
+| Claude Code, OpenCode, Antigravity | Codex CLI | What it does |
+|---|---|---|
+| `/ab-login` | `$ab-login` | Opens the ActionBoard sign-in page in your browser, then asks which Pod and Board to use and how missions should sync |
+| `/fetch-mission` | `$fetch-mission` | Lists missions and invitations assigned to you and pulls the brief and plan into `docs/missions/<date>-<slug>/` |
+| `/submit-mission` | `$submit-mission` | Sends the mission's brief, plan, report, dashboard and metrics to your Board |
+| `/start-mission <objective>` | `$start-mission <objective>` | As before; with sync on it also checks the Board first, reports progress, and submits at the end |
+
+You never type your password into the CLI or the chat. The agent opens the sign-in page; you sign
+in there.
+
+### Commands in your terminal
+
+The agent runs these for you, but you can run them yourself. The script is installed at:
+
+| CLI | Path (from your project folder) |
+|---|---|
+| Claude Code | inside the plugin; ask the agent to run it, or use the slash commands above |
+| OpenCode | `.opencode/skills/mission-report/scripts/submit_mission.py` |
+| Codex CLI | `.agents/skills/mission-report/scripts/submit_mission.py` |
+| Antigravity | `.agents/plugins/actionboard-v5-agentformation/skills/mission-report/scripts/submit_mission.py` |
+
+| Command | What it does |
+|---|---|
+| `login` | Sign in through the browser. `--provider Google` or `--provider LinkedIn` goes straight to that provider; `--no-browser` prints the link instead |
+| `logout` | Remove your stored tokens from the keychain |
+| `status` | Show the connection, who is signed in, where tokens are stored, and the selected Pod and Board |
+| `select` | Choose your default Pod and Board; `select --sync ask\|auto\|off` sets mission sync |
+| `pods`, `boards`, `missions` | List your Pods, the Boards in a Pod, or the missions on a Board |
+| `assigned` | List missions and invitations assigned to you |
+| `fetch` | Pull an assigned mission's brief and plan (`--accept` accepts an invitation, `--start` marks it in progress) |
+| `submit` | Send the mission to the Board. Unchanged files are skipped; `--keep-old` keeps previous copies |
+| `progress` | Set a mission's status or post a comment, e.g. `progress --mission-dir <dir> --comment "Red Agent: done"` |
+
+Example (OpenCode path shown):
 
 ```sh
-# 1. Sign in through your browser (no API key or password in the terminal; tokens go to the OS keychain)
-python src/skills/mission-report/scripts/submit_mission.py login
-
-#    Once the branded sign-in page is deployed, point the CLI at it (otherwise the Cognito page is used):
-#    python src/skills/mission-report/scripts/submit_mission.py configure --login-url https://<your-cli-login-domain>
-
-# 2. (Optional) Check the connection, login, and where tokens are stored
-python src/skills/mission-report/scripts/submit_mission.py status
-
-# 3. Select your default Pod and Board (saved in .actionboard/config.json)
-python src/skills/mission-report/scripts/submit_mission.py select
-
-# 4. List missions & invitations assigned to you, then fetch the brief and plan to docs/missions/<YYYY-MM-DD-slug>/
-python src/skills/mission-report/scripts/submit_mission.py assigned
-python src/skills/mission-report/scripts/submit_mission.py fetch --start
-
-# 5. Submit the completed mission (updates the plan, uploads deliverables to S3, and calls assistprofile_submitReports)
-python src/skills/mission-report/scripts/submit_mission.py submit
+python .opencode/skills/mission-report/scripts/submit_mission.py login
+python .opencode/skills/mission-report/scripts/submit_mission.py select
+python .opencode/skills/mission-report/scripts/submit_mission.py assigned
+python .opencode/skills/mission-report/scripts/submit_mission.py fetch --start
+python .opencode/skills/mission-report/scripts/submit_mission.py submit --mission-dir docs/missions/<date>-<slug>
 ```
+
+On Windows use `py` instead of `python`.
+
+### Mission sync
+
+`select --sync` (or the last step of `/ab-login`) decides how missions reach your Board:
+
+| Setting | Behaviour |
+|---|---|
+| `ask` (default) | Black Agent asks once per mission whether to sync it |
+| `auto` | Every mission syncs its status, Agent progress and final report without asking |
+| `off` | Nothing is sent; use `/submit-mission` yourself |
+
+### Good to know
+
+- **Sign-in needs port 3000 or 3001 free** on your machine for a moment. If a dev server holds both,
+  stop it while you sign in. On a remote machine over SSH the browser cannot reach your terminal,
+  so run `login --email <you@company.com>` there instead; it asks for the password in the terminal.
+- **Tokens are refreshed automatically.** You sign in again only after about 30 days, or after
+  `logout`.
+- **Fetched briefs and plans are treated as untrusted:** they are wrapped in markers and the agent
+  treats them as information, never as instructions.
+- **Re-submitting is safe:** unchanged files are skipped and only the plugin's own earlier copies
+  are replaced.
 
 ## Known gaps
 
