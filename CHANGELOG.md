@@ -1,5 +1,15 @@
 # Changelog
 
+## 1.3.1 — 2026-11-18
+
+### Fixed
+- `submit-mission` and `fetch-mission` no longer pick up an unrelated `~/.aws/credentials`
+  `[default]` profile. Before, any default AWS profile on the machine switched uploads from the
+  edge proxy (or the Pod's upload route) to direct S3 with the developer's own AWS keys, which
+  failed with `S3 PUT HTTP 301 PermanentRedirect`. The shared credentials file is now read only
+  when `AWS_PROFILE`, `AWS_DEFAULT_PROFILE` or `AWS_SHARED_CREDENTIALS_FILE` is set; keys from
+  `AWS_ACCESS_KEY_ID` / `AWS_SECRET_ACCESS_KEY` or `configure` work as before.
+
 ## 1.3.0 — 2026-11-13
 
 Missions now go to and from ActionBoard boards straight from the CLI, with no API key or AWS keys

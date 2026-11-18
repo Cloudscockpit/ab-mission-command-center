@@ -66,7 +66,7 @@ python {{skills_root}}/mission-report/scripts/submit_mission.py configure \
   --s3-prefix "PremiumBoardKB/Boards/Investor+Boards"
 ```
 
-AWS keys are optional. Without them, files upload through presigned URLs from the edge proxy (or, in direct mode, through the Pod's own upload route). To upload straight to S3 instead, set `AWS_ACCESS_KEY_ID` / `AWS_SECRET_ACCESS_KEY`, use `~/.aws/credentials`, or pass `--aws-access-key-id` and `--aws-secret-access-key` to `configure`.
+AWS keys are optional. Without them, files upload through presigned URLs from the edge proxy (or, in direct mode, through the Pod's own upload route). To upload straight to S3 instead, set `AWS_ACCESS_KEY_ID` / `AWS_SECRET_ACCESS_KEY`, select a shared credentials profile with `AWS_PROFILE` (or a file with `AWS_SHARED_CREDENTIALS_FILE`), or pass `--aws-access-key-id` and `--aws-secret-access-key` to `configure`. A `~/.aws/credentials` `[default]` profile on its own is not used, so an unrelated AWS account never takes over the upload.
 
 ### Step 3 — Log in to ActionBoard (when not authenticated)
 
