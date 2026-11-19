@@ -1425,6 +1425,101 @@ class TestSubmitMissionCLI(unittest.TestCase):
         self.assertIn("Missions/CLI Mission Upload/Phase 1/mission-report.md", file_paths)
         self.assertIn("Missions/CLI Mission Upload/Phase 1/case-files/notes.txt", file_paths)
 
+    def test_edge_upload_ignores_implicit_default_aws_profile(self):
+        # A developer's unrelated ~/.aws [default] profile must not switch the upload to direct S3.
+        transport = MockActionBoardTransport()
+        signs = []
+
+        def opener(req, timeout=30):
+            if req.full_url.endswith("/s3/sign"):
+                body = json.loads(req.data.decode("utf-8"))
+                signs.append(body)
+                signed = "https://%s.s3.ap-southeast-1.amazonaws.com/%s?X-Amz-Signature=x" % (body["bucket"], body["key"])
+                return FakeHTTPResponse(json.dumps({"url": signed, "region": "ap-southeast-1"}).encode("utf-8"))
+            return transport(req, timeout=timeout)
+
+        base = ["--credentials-file", self.cred_file, "--config", self.cfg_file]
+        home = os.path.join(self.tmp, "home")
+        write_aws_credentials(os.path.join(home, ".aws", "credentials"), "default")
+        with isolated_aws_env(home):
+            for key in ("APPSYNC_API_KEY", "APPSYNC_GRAPHQL_ENDPOINT", "APPSYNC_URL"):
+                os.environ.pop(key, None)
+            submit_mission.main(base + ["login", "--email", "dev@actionboard.ai", "--password", "pw"], opener=opener)
+            submit_mission.main(base + ["select", "--pod", "alpha-pod", "--board", "board-eng-42"], opener=opener)
+            rc = submit_mission.main(base + ["submit", "--mission-dir", self.mission_dir, "--no-input"], opener=opener)
+
+        self.assertEqual(rc, 0)
+        self.assertEqual(len([s for s in signs if s["method"] == "PUT"]), 5)
+        for put in transport.s3_puts:
+            self.assertIn("X-Amz-Signature=x", put["url"])
+
+
+def write_aws_credentials(path, profile):
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    with open(path, "w", encoding="utf-8") as fh:
+        fh.write("[%s]\naws_access_key_id = AKIATESTSHARED\naws_secret_access_key = shared-secret\n" % profile)
+
+
+class isolated_aws_env:
+    """Clear every AWS variable and point the home directory at `home` for the duration."""
+
+    KEYS = ("AWS_ACCESS_KEY_ID", "AWS_SECRET_ACCESS_KEY", "AWS_SESSION_TOKEN", "AWS_PROFILE",
+            "AWS_DEFAULT_PROFILE", "AWS_SHARED_CREDENTIALS_FILE")
+
+    def __init__(self, home):
+        self.home = home
+
+    def __enter__(self):
+        self.saved = dict(os.environ)
+        for key in self.KEYS:
+            os.environ.pop(key, None)
+        os.environ["HOME"] = self.home
+        os.environ["USERPROFILE"] = self.home
+        return self
+
+    def __exit__(self, *exc):
+        os.environ.clear()
+        os.environ.update(self.saved)
+        return False
+
+
+class TestAwsCredentialResolution(unittest.TestCase):
+    def setUp(self):
+        self.tmp = tempfile.mkdtemp(prefix="ab-aws-creds-test-")
+        self.home = os.path.join(self.tmp, "home")
+        write_aws_credentials(os.path.join(self.home, ".aws", "credentials"), "default")
+
+    def tearDown(self):
+        shutil.rmtree(self.tmp, ignore_errors=True)
+
+    def test_implicit_default_profile_is_ignored(self):
+        with isolated_aws_env(self.home):
+            self.assertIsNone(submit_mission.resolve_aws_credentials({}))
+
+    def test_aws_profile_env_selects_shared_credentials(self):
+        with isolated_aws_env(self.home):
+            os.environ["AWS_PROFILE"] = "default"
+            creds = submit_mission.resolve_aws_credentials({})
+        self.assertEqual(creds["access_key"], "AKIATESTSHARED")
+
+    def test_explicit_shared_credentials_file_is_used(self):
+        path = os.path.join(self.tmp, "ci-credentials")
+        write_aws_credentials(path, "default")
+        with isolated_aws_env(self.home):
+            os.environ["AWS_SHARED_CREDENTIALS_FILE"] = path
+            creds = submit_mission.resolve_aws_credentials({})
+        self.assertEqual(creds["access_key"], "AKIATESTSHARED")
+
+    def test_env_and_configured_keys_are_used(self):
+        with isolated_aws_env(self.home):
+            os.environ["AWS_ACCESS_KEY_ID"] = "AKIATESTENV"
+            os.environ["AWS_SECRET_ACCESS_KEY"] = "env-secret"
+            self.assertEqual(submit_mission.resolve_aws_credentials({})["access_key"], "AKIATESTENV")
+        with isolated_aws_env(self.home):
+            creds = submit_mission.resolve_aws_credentials(
+                {"aws_access_key_id": "AKIATESTCFG", "aws_secret_access_key": "cfg-secret"})
+        self.assertEqual(creds["access_key"], "AKIATESTCFG")
+
 
 if __name__ == "__main__":
     unittest.main()

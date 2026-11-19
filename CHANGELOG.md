@@ -1,5 +1,27 @@
 # Changelog
 
+## 1.3.1 — 2026-11-18
+
+### Added
+- `submit-mission` organizes uploaded files in the Board File Manager under a root `Missions`
+  folder, with one short, readable subfolder per mission (`Missions/<mission-name>/`). The root
+  folder is reused across missions, nested folders such as `case-files/` or phase/milestone
+  subfolders are preserved, and the new `--phase <name>` / `--milestone <name>` flags group files
+  under `Missions/<mission-name>/<name>/`. (#12)
+
+### Fixed
+- The S3 bucket and region now default to the user's selected Pod. `select` saves the Pod's
+  `pod_region` and `pod_bucket` to `.actionboard/config.json`, and they are used for SigV4
+  uploads, edge-proxy presigning and Pod-route uploads, so Pods outside `ap-southeast-1` no longer
+  upload to the wrong region. `--s3-region` / `--s3-bucket` and `S3_REGION` / `S3_BUCKET_NAME`
+  still override them. (#13)
+- `submit-mission` and `fetch-mission` no longer pick up an unrelated `~/.aws/credentials`
+  `[default]` profile. Before, any default AWS profile on the machine switched uploads from the
+  edge proxy (or the Pod's upload route) to direct S3 with the developer's own AWS keys, which
+  failed with `S3 PUT HTTP 301 PermanentRedirect`. The shared credentials file is now read only
+  when `AWS_PROFILE`, `AWS_DEFAULT_PROFILE` or `AWS_SHARED_CREDENTIALS_FILE` is set; keys from
+  `AWS_ACCESS_KEY_ID` / `AWS_SECRET_ACCESS_KEY` or `configure` work as before.
+
 ## 1.3.0 — 2026-11-13
 
 Missions now go to and from ActionBoard boards straight from the CLI, with no API key or AWS keys

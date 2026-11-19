@@ -149,10 +149,14 @@ def resolve_aws_credentials(creds):
             "session_token": session_token.strip() if session_token else None,
         }
 
-    aws_cred_path = os.path.expanduser(
-        os.environ.get("AWS_SHARED_CREDENTIALS_FILE", "~/.aws/credentials")
-    )
-    profile = os.environ.get("AWS_PROFILE") or os.environ.get("AWS_DEFAULT_PROFILE") or "default"
+    # Read the shared credentials file only when the user points at it: an unrelated
+    # ~/.aws [default] profile must not move uploads off the edge proxy or the Pod route.
+    shared_file = os.environ.get("AWS_SHARED_CREDENTIALS_FILE")
+    profile = os.environ.get("AWS_PROFILE") or os.environ.get("AWS_DEFAULT_PROFILE")
+    if not (shared_file or profile):
+        return None
+    aws_cred_path = os.path.expanduser(shared_file or "~/.aws/credentials")
+    profile = profile or "default"
     if os.path.exists(aws_cred_path):
         cp = configparser.ConfigParser()
         try:
