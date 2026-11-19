@@ -53,6 +53,8 @@ class MockActionBoardTransport:
         self.pod_region = pod_region
         self.pod_bucket = pod_bucket
         self.folder_files = []
+        self.folders = []
+        self._folder_seq = 0
         self.exchanged_keys = []
         self.mission_files = []
         self.deleted_file_ids = []
@@ -347,12 +349,15 @@ class MockActionBoardTransport:
                 }
             }
         elif "filemanager_filesByBoardAndFolder" in query:
+            fid = variables.get("folderId")
+            matched = [f for f in self.mission_files if f.get("folderId") == fid]
+            items = matched if matched else self.folder_files
             resp = {
                 "data": {
                     "filemanager_filesByBoardAndFolder": {
                         "success": True,
                         "message": "ok",
-                        "data": {"nextToken": None, "items": self.folder_files},
+                        "data": {"nextToken": None, "items": items},
                     }
                 }
             }
@@ -475,38 +480,47 @@ class MockActionBoardTransport:
                     }
                 }
         elif "filemanager_foldersByBoardIdIndex" in query:
-            resp = {"data": {"filemanager_foldersByBoardIdIndex": {"success": True, "data": {"items": []}}}}
+            board_folders = [f for f in self.folders if f.get("boardId") == variables.get("boardId")]
+            resp = {"data": {"filemanager_foldersByBoardIdIndex": {"success": True, "data": {"items": board_folders}}}}
         elif "filemanager_createFolder" in query:
-            fname = variables["input"]["folderName"]
-            fid = "folder-legacy-reports" if fname == "Reports" else "folder-legacy-root"
+            inp = variables["input"]
+            self._folder_seq += 1
+            folder_obj = {
+                "id": "folder-%d" % self._folder_seq,
+                "boardId": inp["boardId"],
+                "folderName": inp["folderName"],
+                "parentFolderId": inp.get("parentFolderId"),
+            }
+            self.folders.append(folder_obj)
             resp = {
                 "data": {
                     "filemanager_createFolder": {
                         "success": True,
-                        "data": {
-                            "id": fid,
-                            "boardId": variables["input"]["boardId"],
-                            "folderName": fname,
-                            "parentFolderId": variables["input"].get("parentFolderId"),
-                        },
+                        "data": folder_obj,
                     }
                 }
             }
         elif "filemanager_createFile" in query:
             inp = variables["input"]
+            self._file_seq += 1
+            file_obj = {
+                "id": "file-%d" % self._file_seq,
+                "boardId": inp["boardId"],
+                "folderId": inp["folderId"],
+                "fileName": inp["fileName"],
+                "fileType": inp["fileType"],
+                "fileSize": inp["fileSize"],
+                "url": inp["url"],
+                "s3Object": inp.get("s3Object"),
+                "note": inp.get("note"),
+                "tags": inp.get("tags"),
+            }
+            self.mission_files.append(file_obj)
             resp = {
                 "data": {
                     "filemanager_createFile": {
                         "success": True,
-                        "data": {
-                            "id": "legacy-file-" + inp["fileName"],
-                            "boardId": inp["boardId"],
-                            "folderId": inp["folderId"],
-                            "fileName": inp["fileName"],
-                            "fileType": inp["fileType"],
-                            "fileSize": inp["fileSize"],
-                            "url": inp["url"],
-                        },
+                        "data": file_obj,
                     }
                 }
             }
@@ -724,12 +738,18 @@ class TestSubmitMissionCLI(unittest.TestCase):
         self.assertIn("x-amz-content-sha256", first_put["headers"])
         self.assertEqual(first_put["headers"]["x-amz-meta-missionid"], "mission-uuid-1001")
 
-        # Verify AppSync mutations called in order: createMission, createMissionPlan, submitReports, updateMissionStatus
+        # Verify AppSync mutations called in order: createMission, createMissionPlan, filemanager folder/file, updateMissionStatus
         queries = [c["query"] for c in transport.graphql_calls]
         self.assertTrue(any("assistprofile_createMission(" in q for q in queries))
         self.assertTrue(any("assistprofile_createMissionPlan(" in q for q in queries))
-        self.assertTrue(any("assistprofile_submitReports(" in q for q in queries))
+        self.assertTrue(any("filemanager_createFolder(" in q for q in queries))
+        self.assertTrue(any("filemanager_createFile(" in q for q in queries))
+        self.assertFalse(any("assistprofile_submitReports(" in q for q in queries))
         self.assertTrue(any("assistprofile_updateMissionStatus(" in q for q in queries))
+        # Verify Missions/<mission-name> hierarchy was created
+        folder_names = [(f["folderName"], f.get("parentFolderId")) for f in transport.folders]
+        self.assertEqual(folder_names[0], ("Missions", None))
+        self.assertEqual(folder_names[1], ("CLI Mission Upload", transport.folders[0]["id"]))
 
         # Verify mission_id and plan_id were persisted in .actionboard/config.json for idempotent re-runs
         cfg_after = submit_mission.load_json_file(self.cfg_file)
@@ -982,8 +1002,8 @@ class TestSubmitMissionCLI(unittest.TestCase):
         self.assertEqual(first.get_header("Cookie"), "podId=pod-alpha-1")
         self.assertIn(b'name="boardId"\r\n\r\nboard-eng-42', first.data)
         self.assertIn(b"All assignments completed.", first.data)
-        reports_call = [c for c in transport.graphql_calls if "assistprofile_submitReports(" in c["query"]][0]
-        s3_object = reports_call["variables"]["input"]["reports"][0]["s3Object"]
+        create_file_call = [c for c in transport.graphql_calls if "filemanager_createFile(" in c["query"]][0]
+        s3_object = create_file_call["variables"]["input"]["s3Object"]
         self.assertEqual(s3_object["bucket"], "pod-bucket")
         self.assertEqual(s3_object["key"], "board-eng-42/missions/1-file")
 
@@ -1115,7 +1135,7 @@ class TestSubmitMissionCLI(unittest.TestCase):
         calls_before = len(transport.graphql_calls)
         self.assertEqual(submit_mission.main(submit, opener=transport), 0)
         new_calls = [c["query"] for c in transport.graphql_calls[calls_before:]]
-        self.assertFalse(any("assistprofile_submitReports(" in q for q in new_calls))
+        self.assertFalse(any("filemanager_createFile(" in q for q in new_calls))
         self.assertEqual(transport.deleted_file_ids, [])
         self.assertEqual(len(transport.mission_files), 5)
 
@@ -1123,9 +1143,13 @@ class TestSubmitMissionCLI(unittest.TestCase):
         old_ids = {f["fileName"]: f["id"] for f in transport.mission_files}
         with open(os.path.join(self.mission_dir, "mission-plan.md"), "a", encoding="utf-8") as fh:
             fh.write("\n## Wave 2\nMore work.\n")
+        calls_before_change = len(transport.graphql_calls)
         self.assertEqual(submit_mission.main(submit, opener=transport), 0)
-        reports_call = [c for c in transport.graphql_calls if "assistprofile_submitReports(" in c["query"]][-1]
-        self.assertEqual([r["fileName"] for r in reports_call["variables"]["input"]["reports"]], ["mission-plan.md"])
+        new_file_calls = [
+            c for c in transport.graphql_calls[calls_before_change:]
+            if "filemanager_createFile(" in c["query"]
+        ]
+        self.assertEqual([c["variables"]["input"]["fileName"] for c in new_file_calls], ["mission-plan.md"])
         self.assertEqual(transport.deleted_file_ids, [old_ids["mission-plan.md"]])
         self.assertEqual(sorted(f["fileName"] for f in transport.mission_files),
                          sorted(old_ids))
@@ -1294,6 +1318,112 @@ class TestSubmitMissionCLI(unittest.TestCase):
         )
         self.assertEqual(rc, 0)
         self.assertIn("https://actionboard-kb-eu-west.s3.ap-south-1.amazonaws.com/", transport.s3_puts[0]["url"])
+
+    def test_short_mission_folder_name_is_concise(self):
+        self.assertEqual(submit_mission.short_mission_folder_name("CLI Mission Upload"), "CLI Mission Upload")
+        self.assertEqual(submit_mission.short_mission_folder_name("Mission: Payments/v2: Rollout"), "Mission Payments v2 Rollout" if False else "Payments v2 Rollout")
+        long_title = "Connect ActionBoard CLI Mission Upload and Assigned Mission Fetch directly from the CLI to Pod Boards"
+        short = submit_mission.short_mission_folder_name(long_title)
+        self.assertLessEqual(len(short), 48)
+        self.assertFalse(short.endswith(" "))
+        self.assertEqual(submit_mission.short_mission_folder_name("", fallback_id="abcdef123456"), "mission-abcdef12")
+
+    def test_missions_folder_created_and_reused_across_missions(self):
+        transport = MockActionBoardTransport()
+        base = self._direct_session(transport)
+
+        # First mission creates root "Missions" folder and its own mission subfolder.
+        rc1 = submit_mission.main(
+            base + ["submit", "--mission-dir", self.mission_dir, "--title", "Mission Alpha", "--skip-s3", "--no-input"],
+            opener=transport,
+        )
+        self.assertEqual(rc1, 0)
+        missions_roots = [f for f in transport.folders if f["folderName"] == "Missions" and not f.get("parentFolderId")]
+        self.assertEqual(len(missions_roots), 1)
+        root_id = missions_roots[0]["id"]
+
+        # Second mission reuses the existing "Missions" folder instead of creating a duplicate.
+        mission2_dir = os.path.join(self.tmp, "docs", "missions", "2026-11-19-mission-beta")
+        os.makedirs(mission2_dir, exist_ok=True)
+        with open(os.path.join(mission2_dir, "mission-brief.md"), "w", encoding="utf-8") as fh:
+            fh.write("# Mission Brief — Mission Beta\n\n## Objective\nSecond mission.\n")
+        rc2 = submit_mission.main(
+            base + ["submit", "--mission-dir", mission2_dir, "--create-mission", "--skip-s3", "--no-input"],
+            opener=transport,
+        )
+        self.assertEqual(rc2, 0)
+        missions_roots_after = [f for f in transport.folders if f["folderName"] == "Missions" and not f.get("parentFolderId")]
+        self.assertEqual(len(missions_roots_after), 1)
+        children = [f["folderName"] for f in transport.folders if f.get("parentFolderId") == root_id]
+        self.assertEqual(children, ["Mission Alpha", "Mission Beta"])
+
+    def test_nested_case_files_and_phase_milestone_subfolders(self):
+        transport = MockActionBoardTransport()
+        base = self._direct_session(transport)
+
+        case_dir = os.path.join(self.mission_dir, "case-files")
+        phase1_cases = os.path.join(self.mission_dir, "phase-1", "case-files")
+        milestone2 = os.path.join(self.mission_dir, "milestone-2")
+        os.makedirs(case_dir, exist_ok=True)
+        os.makedirs(phase1_cases, exist_ok=True)
+        os.makedirs(milestone2, exist_ok=True)
+        with open(os.path.join(case_dir, "evidence.txt"), "w", encoding="utf-8") as fh:
+            fh.write("case evidence\n")
+        with open(os.path.join(phase1_cases, "audit.csv"), "w", encoding="utf-8") as fh:
+            fh.write("col1,col2\n1,2\n")
+        with open(os.path.join(milestone2, "summary.md"), "w", encoding="utf-8") as fh:
+            fh.write("# Milestone 2 Summary\n")
+
+        rc = submit_mission.main(
+            base + ["submit", "--mission-dir", self.mission_dir, "--skip-s3", "--no-input"],
+            opener=transport,
+        )
+        self.assertEqual(rc, 0)
+
+        folders_by_id = {f["id"]: f for f in transport.folders}
+        def folder_path(fid):
+            parts = []
+            cur = fid
+            while cur:
+                fobj = folders_by_id[cur]
+                parts.append(fobj["folderName"])
+                cur = fobj.get("parentFolderId")
+            return "/".join(reversed(parts))
+
+        file_paths = sorted("%s/%s" % (folder_path(f["folderId"]), f["fileName"]) for f in transport.mission_files)
+        self.assertIn("Missions/CLI Mission Upload/mission-report.md", file_paths)
+        self.assertIn("Missions/CLI Mission Upload/case-files/evidence.txt", file_paths)
+        self.assertIn("Missions/CLI Mission Upload/phase-1/case-files/audit.csv", file_paths)
+        self.assertIn("Missions/CLI Mission Upload/milestone-2/summary.md", file_paths)
+
+    def test_phase_flag_groups_files_under_phase_folder(self):
+        transport = MockActionBoardTransport()
+        base = self._direct_session(transport)
+
+        case_dir = os.path.join(self.mission_dir, "case-files")
+        os.makedirs(case_dir, exist_ok=True)
+        with open(os.path.join(case_dir, "notes.txt"), "w", encoding="utf-8") as fh:
+            fh.write("phase notes\n")
+
+        rc = submit_mission.main(
+            base + ["submit", "--mission-dir", self.mission_dir, "--phase", "Phase 1", "--skip-s3", "--no-input"],
+            opener=transport,
+        )
+        self.assertEqual(rc, 0)
+
+        folders_by_id = {f["id"]: f for f in transport.folders}
+        def folder_path(fid):
+            parts = []
+            cur = fid
+            while cur:
+                fobj = folders_by_id[cur]
+                parts.append(fobj["folderName"])
+                cur = fobj.get("parentFolderId")
+            return "/".join(reversed(parts))
+
+        file_paths = sorted("%s/%s" % (folder_path(f["folderId"]), f["fileName"]) for f in transport.mission_files)
+        self.assertIn("Missions/CLI Mission Upload/Phase 1/mission-report.md", file_paths)
+        self.assertIn("Missions/CLI Mission Upload/Phase 1/case-files/notes.txt", file_paths)
 
 
 if __name__ == "__main__":
