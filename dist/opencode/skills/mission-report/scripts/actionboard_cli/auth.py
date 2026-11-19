@@ -81,6 +81,7 @@ def resolve_settings(cred_path=None, config_path=".actionboard/config.json", arg
     s3_region = (
         getattr(args, "s3_region", None)
         or os.environ.get("S3_REGION")
+        or cfg.get("pod_region")
         or cfg.get("s3_region")
         or creds.get("s3_region")
         or DEFAULT_S3_REGION
@@ -88,6 +89,7 @@ def resolve_settings(cred_path=None, config_path=".actionboard/config.json", arg
     s3_bucket = (
         getattr(args, "s3_bucket", None)
         or os.environ.get("S3_BUCKET_NAME")
+        or cfg.get("pod_bucket")
         or cfg.get("s3_bucket")
         or creds.get("s3_bucket")
         or DEFAULT_S3_BUCKET
@@ -147,10 +149,14 @@ def resolve_aws_credentials(creds):
             "session_token": session_token.strip() if session_token else None,
         }
 
-    aws_cred_path = os.path.expanduser(
-        os.environ.get("AWS_SHARED_CREDENTIALS_FILE", "~/.aws/credentials")
-    )
-    profile = os.environ.get("AWS_PROFILE") or os.environ.get("AWS_DEFAULT_PROFILE") or "default"
+    # Read the shared credentials file only when the user points at it: an unrelated
+    # ~/.aws [default] profile must not move uploads off the edge proxy or the Pod route.
+    shared_file = os.environ.get("AWS_SHARED_CREDENTIALS_FILE")
+    profile = os.environ.get("AWS_PROFILE") or os.environ.get("AWS_DEFAULT_PROFILE")
+    if not (shared_file or profile):
+        return None
+    aws_cred_path = os.path.expanduser(shared_file or "~/.aws/credentials")
+    profile = profile or "default"
     if os.path.exists(aws_cred_path):
         cp = configparser.ConfigParser()
         try:

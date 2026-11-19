@@ -46,11 +46,15 @@ class FakeHTTPResponse:
 class MockActionBoardTransport:
     """Intercepts AppSync GraphQL POSTs and S3 SigV4 PUTs without network calls."""
 
-    def __init__(self, fail_submit_reports_folder=False):
+    def __init__(self, fail_submit_reports_folder=False, pod_region="ap-southeast-1", pod_bucket="actionboard-kb-agent"):
         self.graphql_calls = []
         self.s3_puts = []
         self.fail_submit_reports_folder = fail_submit_reports_folder
+        self.pod_region = pod_region
+        self.pod_bucket = pod_bucket
         self.folder_files = []
+        self.folders = []
+        self._folder_seq = 0
         self.exchanged_keys = []
         self.mission_files = []
         self.deleted_file_ids = []
@@ -157,7 +161,8 @@ class MockActionBoardTransport:
                                 "podName": "Alpha Engineering Pod",
                                 "slug": "alpha-pod",
                                 "hostname": "alpha.actionboard.ai",
-                                "bucketName": "actionboard-kb-agent",
+                                "bucketName": self.pod_bucket,
+                                "region": self.pod_region,
                                 "status": "ACTIVE",
                                 "memberRole": "ADMIN",
                                 "memberStatus": "ACTIVE",
@@ -344,12 +349,15 @@ class MockActionBoardTransport:
                 }
             }
         elif "filemanager_filesByBoardAndFolder" in query:
+            fid = variables.get("folderId")
+            matched = [f for f in self.mission_files if f.get("folderId") == fid]
+            items = matched if matched else self.folder_files
             resp = {
                 "data": {
                     "filemanager_filesByBoardAndFolder": {
                         "success": True,
                         "message": "ok",
-                        "data": {"nextToken": None, "items": self.folder_files},
+                        "data": {"nextToken": None, "items": items},
                     }
                 }
             }
@@ -472,38 +480,47 @@ class MockActionBoardTransport:
                     }
                 }
         elif "filemanager_foldersByBoardIdIndex" in query:
-            resp = {"data": {"filemanager_foldersByBoardIdIndex": {"success": True, "data": {"items": []}}}}
+            board_folders = [f for f in self.folders if f.get("boardId") == variables.get("boardId")]
+            resp = {"data": {"filemanager_foldersByBoardIdIndex": {"success": True, "data": {"items": board_folders}}}}
         elif "filemanager_createFolder" in query:
-            fname = variables["input"]["folderName"]
-            fid = "folder-legacy-reports" if fname == "Reports" else "folder-legacy-root"
+            inp = variables["input"]
+            self._folder_seq += 1
+            folder_obj = {
+                "id": "folder-%d" % self._folder_seq,
+                "boardId": inp["boardId"],
+                "folderName": inp["folderName"],
+                "parentFolderId": inp.get("parentFolderId"),
+            }
+            self.folders.append(folder_obj)
             resp = {
                 "data": {
                     "filemanager_createFolder": {
                         "success": True,
-                        "data": {
-                            "id": fid,
-                            "boardId": variables["input"]["boardId"],
-                            "folderName": fname,
-                            "parentFolderId": variables["input"].get("parentFolderId"),
-                        },
+                        "data": folder_obj,
                     }
                 }
             }
         elif "filemanager_createFile" in query:
             inp = variables["input"]
+            self._file_seq += 1
+            file_obj = {
+                "id": "file-%d" % self._file_seq,
+                "boardId": inp["boardId"],
+                "folderId": inp["folderId"],
+                "fileName": inp["fileName"],
+                "fileType": inp["fileType"],
+                "fileSize": inp["fileSize"],
+                "url": inp["url"],
+                "s3Object": inp.get("s3Object"),
+                "note": inp.get("note"),
+                "tags": inp.get("tags"),
+            }
+            self.mission_files.append(file_obj)
             resp = {
                 "data": {
                     "filemanager_createFile": {
                         "success": True,
-                        "data": {
-                            "id": "legacy-file-" + inp["fileName"],
-                            "boardId": inp["boardId"],
-                            "folderId": inp["folderId"],
-                            "fileName": inp["fileName"],
-                            "fileType": inp["fileType"],
-                            "fileSize": inp["fileSize"],
-                            "url": inp["url"],
-                        },
+                        "data": file_obj,
                     }
                 }
             }
@@ -721,12 +738,18 @@ class TestSubmitMissionCLI(unittest.TestCase):
         self.assertIn("x-amz-content-sha256", first_put["headers"])
         self.assertEqual(first_put["headers"]["x-amz-meta-missionid"], "mission-uuid-1001")
 
-        # Verify AppSync mutations called in order: createMission, createMissionPlan, submitReports, updateMissionStatus
+        # Verify AppSync mutations called in order: createMission, createMissionPlan, filemanager folder/file, updateMissionStatus
         queries = [c["query"] for c in transport.graphql_calls]
         self.assertTrue(any("assistprofile_createMission(" in q for q in queries))
         self.assertTrue(any("assistprofile_createMissionPlan(" in q for q in queries))
-        self.assertTrue(any("assistprofile_submitReports(" in q for q in queries))
+        self.assertTrue(any("filemanager_createFolder(" in q for q in queries))
+        self.assertTrue(any("filemanager_createFile(" in q for q in queries))
+        self.assertFalse(any("assistprofile_submitReports(" in q for q in queries))
         self.assertTrue(any("assistprofile_updateMissionStatus(" in q for q in queries))
+        # Verify Missions/<mission-name> hierarchy was created
+        folder_names = [(f["folderName"], f.get("parentFolderId")) for f in transport.folders]
+        self.assertEqual(folder_names[0], ("Missions", None))
+        self.assertEqual(folder_names[1], ("CLI Mission Upload", transport.folders[0]["id"]))
 
         # Verify mission_id and plan_id were persisted in .actionboard/config.json for idempotent re-runs
         cfg_after = submit_mission.load_json_file(self.cfg_file)
@@ -979,8 +1002,8 @@ class TestSubmitMissionCLI(unittest.TestCase):
         self.assertEqual(first.get_header("Cookie"), "podId=pod-alpha-1")
         self.assertIn(b'name="boardId"\r\n\r\nboard-eng-42', first.data)
         self.assertIn(b"All assignments completed.", first.data)
-        reports_call = [c for c in transport.graphql_calls if "assistprofile_submitReports(" in c["query"]][0]
-        s3_object = reports_call["variables"]["input"]["reports"][0]["s3Object"]
+        create_file_call = [c for c in transport.graphql_calls if "filemanager_createFile(" in c["query"]][0]
+        s3_object = create_file_call["variables"]["input"]["s3Object"]
         self.assertEqual(s3_object["bucket"], "pod-bucket")
         self.assertEqual(s3_object["key"], "board-eng-42/missions/1-file")
 
@@ -1112,7 +1135,7 @@ class TestSubmitMissionCLI(unittest.TestCase):
         calls_before = len(transport.graphql_calls)
         self.assertEqual(submit_mission.main(submit, opener=transport), 0)
         new_calls = [c["query"] for c in transport.graphql_calls[calls_before:]]
-        self.assertFalse(any("assistprofile_submitReports(" in q for q in new_calls))
+        self.assertFalse(any("filemanager_createFile(" in q for q in new_calls))
         self.assertEqual(transport.deleted_file_ids, [])
         self.assertEqual(len(transport.mission_files), 5)
 
@@ -1120,9 +1143,13 @@ class TestSubmitMissionCLI(unittest.TestCase):
         old_ids = {f["fileName"]: f["id"] for f in transport.mission_files}
         with open(os.path.join(self.mission_dir, "mission-plan.md"), "a", encoding="utf-8") as fh:
             fh.write("\n## Wave 2\nMore work.\n")
+        calls_before_change = len(transport.graphql_calls)
         self.assertEqual(submit_mission.main(submit, opener=transport), 0)
-        reports_call = [c for c in transport.graphql_calls if "assistprofile_submitReports(" in c["query"]][-1]
-        self.assertEqual([r["fileName"] for r in reports_call["variables"]["input"]["reports"]], ["mission-plan.md"])
+        new_file_calls = [
+            c for c in transport.graphql_calls[calls_before_change:]
+            if "filemanager_createFile(" in c["query"]
+        ]
+        self.assertEqual([c["variables"]["input"]["fileName"] for c in new_file_calls], ["mission-plan.md"])
         self.assertEqual(transport.deleted_file_ids, [old_ids["mission-plan.md"]])
         self.assertEqual(sorted(f["fileName"] for f in transport.mission_files),
                          sorted(old_ids))
@@ -1202,6 +1229,296 @@ class TestSubmitMissionCLI(unittest.TestCase):
         finally:
             sys.stdout = saved_stdout
         self.assertEqual(json.loads(out.getvalue())["mission_sync"], "auto")
+
+    def test_pod_region_and_bucket_saved_on_select_and_used_for_s3_sigv4(self):
+        transport = MockActionBoardTransport(pod_region="eu-west-1", pod_bucket="actionboard-kb-eu-west")
+        base = ["--credentials-file", self.cred_file, "--config", self.cfg_file]
+        submit_mission.main(base + [
+            "configure",
+            "--endpoint", "https://example.appsync-api.ap-southeast-1.amazonaws.com/graphql",
+            "--api-key", "da2-testapikey123",
+            "--aws-access-key-id", "AKIATESTKEY",
+            "--aws-secret-access-key", "SECRETTESTKEY",
+        ])
+        submit_mission.main(base + ["login", "--email", "dev@actionboard.ai", "--password", "pw"], opener=transport)
+        submit_mission.main(base + ["select", "--pod", "alpha-pod", "--board", "board-eng-42"], opener=transport)
+
+        cfg = submit_mission.load_json_file(self.cfg_file)
+        self.assertEqual(cfg["pod_region"], "eu-west-1")
+        self.assertEqual(cfg["pod_bucket"], "actionboard-kb-eu-west")
+
+        out = io.StringIO()
+        saved_stdout, sys.stdout = sys.stdout, out
+        try:
+            submit_mission.main(base + ["status", "--json"])
+        finally:
+            sys.stdout = saved_stdout
+        status_json = json.loads(out.getvalue())
+        self.assertEqual(status_json["s3_region"], "eu-west-1")
+        self.assertEqual(status_json["s3_bucket"], "actionboard-kb-eu-west")
+
+        rc = submit_mission.main(base + ["submit", "--mission-dir", self.mission_dir, "--no-input"], opener=transport)
+        self.assertEqual(rc, 0)
+        self.assertEqual(len(transport.s3_puts), 5)
+        first_put = transport.s3_puts[0]
+        self.assertIn("https://actionboard-kb-eu-west.s3.eu-west-1.amazonaws.com/", first_put["url"])
+        self.assertIn("/eu-west-1/s3/aws4_request", first_put["headers"]["authorization"])
+
+    def test_edge_proxy_sign_receives_selected_pod_region_and_bucket(self):
+        transport = MockActionBoardTransport(pod_region="us-west-2", pod_bucket="actionboard-kb-us-west")
+        sign_calls = []
+
+        def opener(req, timeout=30):
+            if req.full_url.endswith("/s3/sign"):
+                body = json.loads(req.data.decode("utf-8"))
+                sign_calls.append(body)
+                reg = body.get("region") or "ap-southeast-1"
+                signed = "https://%s.s3.%s.amazonaws.com/%s?X-Amz-Signature=x" % (body["bucket"], reg, body["key"])
+                return FakeHTTPResponse(json.dumps({"url": signed, "region": reg}).encode("utf-8"))
+            if req.get_method() == "PUT" and ".s3." in req.full_url:
+                transport.s3_puts.append({"url": req.full_url, "headers": dict(req.header_items()), "body": req.data or b""})
+                return FakeHTTPResponse(b"")
+            return transport(req, timeout=timeout)
+
+        base = ["--credentials-file", self.cred_file, "--config", self.cfg_file]
+        saved_env = dict(os.environ)
+        for key in ("AWS_ACCESS_KEY_ID", "AWS_SECRET_ACCESS_KEY", "AWS_SESSION_TOKEN", "S3_REGION", "S3_BUCKET_NAME"):
+            os.environ.pop(key, None)
+        os.environ["AWS_SHARED_CREDENTIALS_FILE"] = os.path.join(self.tmp, "no-aws-credentials")
+        try:
+            submit_mission.main(base + ["login", "--email", "dev@actionboard.ai", "--password", "pw"], opener=opener)
+            submit_mission.main(base + ["select", "--pod", "alpha-pod", "--board", "board-eng-42"], opener=opener)
+            rc = submit_mission.main(base + ["submit", "--mission-dir", self.mission_dir, "--no-input"], opener=opener)
+        finally:
+            os.environ.clear()
+            os.environ.update(saved_env)
+
+        self.assertEqual(rc, 0)
+        self.assertEqual(len(sign_calls), 5)
+        self.assertEqual(sign_calls[0]["bucket"], "actionboard-kb-us-west")
+        self.assertEqual(sign_calls[0]["region"], "us-west-2")
+        self.assertIn("https://actionboard-kb-us-west.s3.us-west-2.amazonaws.com/", transport.s3_puts[0]["url"])
+
+    def test_explicit_s3_region_flag_overrides_pod_region(self):
+        transport = MockActionBoardTransport(pod_region="eu-west-1", pod_bucket="actionboard-kb-eu-west")
+        base = ["--credentials-file", self.cred_file, "--config", self.cfg_file]
+        submit_mission.main(base + [
+            "configure",
+            "--endpoint", "https://example.appsync-api.ap-southeast-1.amazonaws.com/graphql",
+            "--api-key", "da2-testapikey123",
+            "--aws-access-key-id", "AKIATESTKEY",
+            "--aws-secret-access-key", "SECRETTESTKEY",
+        ])
+        submit_mission.main(base + ["login", "--email", "dev@actionboard.ai", "--password", "pw"], opener=transport)
+        submit_mission.main(base + ["select", "--pod", "alpha-pod", "--board", "board-eng-42"], opener=transport)
+
+        rc = submit_mission.main(
+            base + ["submit", "--mission-dir", self.mission_dir, "--s3-region", "ap-south-1", "--no-input"],
+            opener=transport,
+        )
+        self.assertEqual(rc, 0)
+        self.assertIn("https://actionboard-kb-eu-west.s3.ap-south-1.amazonaws.com/", transport.s3_puts[0]["url"])
+
+    def test_short_mission_folder_name_is_concise(self):
+        self.assertEqual(submit_mission.short_mission_folder_name("CLI Mission Upload"), "CLI Mission Upload")
+        self.assertEqual(submit_mission.short_mission_folder_name("Mission: Payments/v2: Rollout"), "Mission Payments v2 Rollout" if False else "Payments v2 Rollout")
+        long_title = "Connect ActionBoard CLI Mission Upload and Assigned Mission Fetch directly from the CLI to Pod Boards"
+        short = submit_mission.short_mission_folder_name(long_title)
+        self.assertLessEqual(len(short), 48)
+        self.assertFalse(short.endswith(" "))
+        self.assertEqual(submit_mission.short_mission_folder_name("", fallback_id="abcdef123456"), "mission-abcdef12")
+
+    def test_missions_folder_created_and_reused_across_missions(self):
+        transport = MockActionBoardTransport()
+        base = self._direct_session(transport)
+
+        # First mission creates root "Missions" folder and its own mission subfolder.
+        rc1 = submit_mission.main(
+            base + ["submit", "--mission-dir", self.mission_dir, "--title", "Mission Alpha", "--skip-s3", "--no-input"],
+            opener=transport,
+        )
+        self.assertEqual(rc1, 0)
+        missions_roots = [f for f in transport.folders if f["folderName"] == "Missions" and not f.get("parentFolderId")]
+        self.assertEqual(len(missions_roots), 1)
+        root_id = missions_roots[0]["id"]
+
+        # Second mission reuses the existing "Missions" folder instead of creating a duplicate.
+        mission2_dir = os.path.join(self.tmp, "docs", "missions", "2026-11-19-mission-beta")
+        os.makedirs(mission2_dir, exist_ok=True)
+        with open(os.path.join(mission2_dir, "mission-brief.md"), "w", encoding="utf-8") as fh:
+            fh.write("# Mission Brief — Mission Beta\n\n## Objective\nSecond mission.\n")
+        rc2 = submit_mission.main(
+            base + ["submit", "--mission-dir", mission2_dir, "--create-mission", "--skip-s3", "--no-input"],
+            opener=transport,
+        )
+        self.assertEqual(rc2, 0)
+        missions_roots_after = [f for f in transport.folders if f["folderName"] == "Missions" and not f.get("parentFolderId")]
+        self.assertEqual(len(missions_roots_after), 1)
+        children = [f["folderName"] for f in transport.folders if f.get("parentFolderId") == root_id]
+        self.assertEqual(children, ["Mission Alpha", "Mission Beta"])
+
+    def test_nested_case_files_and_phase_milestone_subfolders(self):
+        transport = MockActionBoardTransport()
+        base = self._direct_session(transport)
+
+        case_dir = os.path.join(self.mission_dir, "case-files")
+        phase1_cases = os.path.join(self.mission_dir, "phase-1", "case-files")
+        milestone2 = os.path.join(self.mission_dir, "milestone-2")
+        os.makedirs(case_dir, exist_ok=True)
+        os.makedirs(phase1_cases, exist_ok=True)
+        os.makedirs(milestone2, exist_ok=True)
+        with open(os.path.join(case_dir, "evidence.txt"), "w", encoding="utf-8") as fh:
+            fh.write("case evidence\n")
+        with open(os.path.join(phase1_cases, "audit.csv"), "w", encoding="utf-8") as fh:
+            fh.write("col1,col2\n1,2\n")
+        with open(os.path.join(milestone2, "summary.md"), "w", encoding="utf-8") as fh:
+            fh.write("# Milestone 2 Summary\n")
+
+        rc = submit_mission.main(
+            base + ["submit", "--mission-dir", self.mission_dir, "--skip-s3", "--no-input"],
+            opener=transport,
+        )
+        self.assertEqual(rc, 0)
+
+        folders_by_id = {f["id"]: f for f in transport.folders}
+        def folder_path(fid):
+            parts = []
+            cur = fid
+            while cur:
+                fobj = folders_by_id[cur]
+                parts.append(fobj["folderName"])
+                cur = fobj.get("parentFolderId")
+            return "/".join(reversed(parts))
+
+        file_paths = sorted("%s/%s" % (folder_path(f["folderId"]), f["fileName"]) for f in transport.mission_files)
+        self.assertIn("Missions/CLI Mission Upload/mission-report.md", file_paths)
+        self.assertIn("Missions/CLI Mission Upload/case-files/evidence.txt", file_paths)
+        self.assertIn("Missions/CLI Mission Upload/phase-1/case-files/audit.csv", file_paths)
+        self.assertIn("Missions/CLI Mission Upload/milestone-2/summary.md", file_paths)
+
+    def test_phase_flag_groups_files_under_phase_folder(self):
+        transport = MockActionBoardTransport()
+        base = self._direct_session(transport)
+
+        case_dir = os.path.join(self.mission_dir, "case-files")
+        os.makedirs(case_dir, exist_ok=True)
+        with open(os.path.join(case_dir, "notes.txt"), "w", encoding="utf-8") as fh:
+            fh.write("phase notes\n")
+
+        rc = submit_mission.main(
+            base + ["submit", "--mission-dir", self.mission_dir, "--phase", "Phase 1", "--skip-s3", "--no-input"],
+            opener=transport,
+        )
+        self.assertEqual(rc, 0)
+
+        folders_by_id = {f["id"]: f for f in transport.folders}
+        def folder_path(fid):
+            parts = []
+            cur = fid
+            while cur:
+                fobj = folders_by_id[cur]
+                parts.append(fobj["folderName"])
+                cur = fobj.get("parentFolderId")
+            return "/".join(reversed(parts))
+
+        file_paths = sorted("%s/%s" % (folder_path(f["folderId"]), f["fileName"]) for f in transport.mission_files)
+        self.assertIn("Missions/CLI Mission Upload/Phase 1/mission-report.md", file_paths)
+        self.assertIn("Missions/CLI Mission Upload/Phase 1/case-files/notes.txt", file_paths)
+
+    def test_edge_upload_ignores_implicit_default_aws_profile(self):
+        # A developer's unrelated ~/.aws [default] profile must not switch the upload to direct S3.
+        transport = MockActionBoardTransport()
+        signs = []
+
+        def opener(req, timeout=30):
+            if req.full_url.endswith("/s3/sign"):
+                body = json.loads(req.data.decode("utf-8"))
+                signs.append(body)
+                signed = "https://%s.s3.ap-southeast-1.amazonaws.com/%s?X-Amz-Signature=x" % (body["bucket"], body["key"])
+                return FakeHTTPResponse(json.dumps({"url": signed, "region": "ap-southeast-1"}).encode("utf-8"))
+            return transport(req, timeout=timeout)
+
+        base = ["--credentials-file", self.cred_file, "--config", self.cfg_file]
+        home = os.path.join(self.tmp, "home")
+        write_aws_credentials(os.path.join(home, ".aws", "credentials"), "default")
+        with isolated_aws_env(home):
+            for key in ("APPSYNC_API_KEY", "APPSYNC_GRAPHQL_ENDPOINT", "APPSYNC_URL"):
+                os.environ.pop(key, None)
+            submit_mission.main(base + ["login", "--email", "dev@actionboard.ai", "--password", "pw"], opener=opener)
+            submit_mission.main(base + ["select", "--pod", "alpha-pod", "--board", "board-eng-42"], opener=opener)
+            rc = submit_mission.main(base + ["submit", "--mission-dir", self.mission_dir, "--no-input"], opener=opener)
+
+        self.assertEqual(rc, 0)
+        self.assertEqual(len([s for s in signs if s["method"] == "PUT"]), 5)
+        for put in transport.s3_puts:
+            self.assertIn("X-Amz-Signature=x", put["url"])
+
+
+def write_aws_credentials(path, profile):
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    with open(path, "w", encoding="utf-8") as fh:
+        fh.write("[%s]\naws_access_key_id = AKIATESTSHARED\naws_secret_access_key = shared-secret\n" % profile)
+
+
+class isolated_aws_env:
+    """Clear every AWS variable and point the home directory at `home` for the duration."""
+
+    KEYS = ("AWS_ACCESS_KEY_ID", "AWS_SECRET_ACCESS_KEY", "AWS_SESSION_TOKEN", "AWS_PROFILE",
+            "AWS_DEFAULT_PROFILE", "AWS_SHARED_CREDENTIALS_FILE")
+
+    def __init__(self, home):
+        self.home = home
+
+    def __enter__(self):
+        self.saved = dict(os.environ)
+        for key in self.KEYS:
+            os.environ.pop(key, None)
+        os.environ["HOME"] = self.home
+        os.environ["USERPROFILE"] = self.home
+        return self
+
+    def __exit__(self, *exc):
+        os.environ.clear()
+        os.environ.update(self.saved)
+        return False
+
+
+class TestAwsCredentialResolution(unittest.TestCase):
+    def setUp(self):
+        self.tmp = tempfile.mkdtemp(prefix="ab-aws-creds-test-")
+        self.home = os.path.join(self.tmp, "home")
+        write_aws_credentials(os.path.join(self.home, ".aws", "credentials"), "default")
+
+    def tearDown(self):
+        shutil.rmtree(self.tmp, ignore_errors=True)
+
+    def test_implicit_default_profile_is_ignored(self):
+        with isolated_aws_env(self.home):
+            self.assertIsNone(submit_mission.resolve_aws_credentials({}))
+
+    def test_aws_profile_env_selects_shared_credentials(self):
+        with isolated_aws_env(self.home):
+            os.environ["AWS_PROFILE"] = "default"
+            creds = submit_mission.resolve_aws_credentials({})
+        self.assertEqual(creds["access_key"], "AKIATESTSHARED")
+
+    def test_explicit_shared_credentials_file_is_used(self):
+        path = os.path.join(self.tmp, "ci-credentials")
+        write_aws_credentials(path, "default")
+        with isolated_aws_env(self.home):
+            os.environ["AWS_SHARED_CREDENTIALS_FILE"] = path
+            creds = submit_mission.resolve_aws_credentials({})
+        self.assertEqual(creds["access_key"], "AKIATESTSHARED")
+
+    def test_env_and_configured_keys_are_used(self):
+        with isolated_aws_env(self.home):
+            os.environ["AWS_ACCESS_KEY_ID"] = "AKIATESTENV"
+            os.environ["AWS_SECRET_ACCESS_KEY"] = "env-secret"
+            self.assertEqual(submit_mission.resolve_aws_credentials({})["access_key"], "AKIATESTENV")
+        with isolated_aws_env(self.home):
+            creds = submit_mission.resolve_aws_credentials(
+                {"aws_access_key_id": "AKIATESTCFG", "aws_secret_access_key": "cfg-secret"})
+        self.assertEqual(creds["access_key"], "AKIATESTCFG")
 
 
 if __name__ == "__main__":

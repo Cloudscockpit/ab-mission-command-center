@@ -37,9 +37,9 @@ python <skill-dir>/../mission-report/scripts/submit_mission.py submit \
   --board <boardId-or-name>
 ```
 
-Re-submitting is idempotent: unchanged files are skipped and changed CLI files replace their previous version without touching human-uploaded files (pass `--keep-old` to retain old versions).
+Files land in the board's File Manager under `Missions/<mission-name>/` (the root `Missions` folder is reused; nested folders such as `case-files/` are preserved). Re-submitting is idempotent: unchanged files are skipped and changed CLI files replace their previous version without touching human-uploaded files (pass `--keep-old` to retain old versions).
 
-Key flags: `--dry-run`, `--mission-id <id>`, `--invitation-id <id>`, `--create-mission`, `--update-mission`, `--status <INITIATED|IN_PROGRESS|COMPLETED|FAILED|ARCHIVED>`, `--skip-s3`, `--keep-old`, `--json`.
+Key flags: `--dry-run`, `--mission-id <id>`, `--invitation-id <id>`, `--create-mission`, `--update-mission`, `--phase <name>` / `--milestone <name>` (group files under `Missions/<mission-name>/<name>/`), `--status <INITIATED|IN_PROGRESS|COMPLETED|FAILED|ARCHIVED>`, `--skip-s3`, `--keep-old`, `--json`.
 
 ### 3. Live progress & sync mode (optional)
 

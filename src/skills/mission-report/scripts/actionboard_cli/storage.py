@@ -116,7 +116,7 @@ def upload_bytes_to_s3(bucket, region, key, body_bytes, content_type, aws_creds,
     }
 
 
-def upload_bytes_via_pod(pod_hostname, pod_id, board_id, file_name, body_bytes, content_type, folder_name="missions", opener=None):
+def upload_bytes_via_pod(pod_hostname, pod_id, board_id, file_name, body_bytes, content_type, folder_name="missions", opener=None, region=None):
     """Upload through the pod web app's own upload route (what the web UI uses), so no AWS keys are needed."""
     from .common import DEFAULT_S3_REGION
     boundary = "----actionboardcli%s" % base64.b16encode(os.urandom(12)).decode("ascii")
@@ -165,14 +165,14 @@ def upload_bytes_via_pod(pod_hostname, pod_id, board_id, file_name, body_bytes, 
         res = {}
     if not isinstance(res, dict) or not res.get("bucket") or not res.get("key"):
         raise RuntimeError("pod upload for %s returned no S3 location: %s" % (file_name, raw[:300]))
-    region = res.get("region") or DEFAULT_S3_REGION
+    effective_region = res.get("region") or region or DEFAULT_S3_REGION
     return {
         "bucket": res["bucket"],
         "key": res["key"],
         "size": len(body_bytes),
-        "region": region,
+        "region": effective_region,
         "s3_uri": res.get("fileUri") or "s3://%s/%s" % (res["bucket"], res["key"]),
-        "url": res.get("fileUrl") or "https://%s.s3.%s.amazonaws.com/%s" % (res["bucket"], region, res["key"]),
+        "url": res.get("fileUrl") or "https://%s.s3.%s.amazonaws.com/%s" % (res["bucket"], effective_region, res["key"]),
     }
 
 

@@ -10,7 +10,7 @@ mode or troubleshooting authentication/storage paths.
 3. **Select Board:** `boards_getMyBoards` saves `pod_id` and `board_id` in `.actionboard/config.json`.
 4. **Create or Match Mission:** Reuses an existing mission ID (`.actionboard/config.json`, `--mission-id`, or title match) or creates a new mission (`assistprofile_createMission`).
 5. **Submit Mission Plan:** Publishes combined Brief + Plan Markdown (`assistprofile_createMissionPlan` / `assistprofile_updateMissionPlan` / `assistprofile_submitMissionPlan`).
-6. **Upload Deliverables & Register:** Uploads mission files via edge proxy presigned URLs (or Pod route / AWS SigV4 when AWS keys are set) and registers them on the board.
+6. **Upload Deliverables & Organize in Board File Manager:** Finds or creates the root `Missions` folder, creates a short subfolder `Missions/<mission-name>/` (plus `<phase-or-milestone>/` with `--phase` / `--milestone`), preserves nested folders such as `case-files/`, uploads files via edge proxy presigned URLs (or Pod route / AWS SigV4 when AWS keys are set) to the selected Pod's S3 bucket and region, and registers them with `filemanager_createFolder` + `filemanager_createFile`.
 7. **Mark Completed:** Updates mission status to `COMPLETED` when `mission-report.md` is present.
 
 ## Direct mode configuration (optional)
@@ -32,5 +32,7 @@ python <skill-dir>/../mission-report/scripts/submit_mission.py configure \
   --s3-bucket actionboard-kb-agent \
   --s3-prefix "PremiumBoardKB/Boards/Investor+Boards"
 ```
+
+AWS keys are optional. Without them, files upload through presigned URLs from the edge proxy (or, in direct mode, through the Pod's own upload route). To upload straight to S3 instead, set `AWS_ACCESS_KEY_ID` / `AWS_SECRET_ACCESS_KEY`, select a shared credentials profile with `AWS_PROFILE` (or a file with `AWS_SHARED_CREDENTIALS_FILE`), or pass `--aws-access-key-id` and `--aws-secret-access-key` to `configure`. A `~/.aws/credentials` `[default]` profile on its own is not used, so an unrelated AWS account never takes over the upload.
 
 For CI login without a browser, set `ACTIONBOARD_EMAIL` and `ACTIONBOARD_PASSWORD`. Run `logout` to clear stored tokens.
