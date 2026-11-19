@@ -138,15 +138,19 @@ def select_pod_and_board(settings, main_token=None, pod_arg=None, board_arg=None
     return selected_pod, selected_board, pod_id_token
 
 
-def fallback_upload_via_filemanager(settings, pod_id_token, board_id, mission_id, mission_title, uploaded_reports, opener=None):
-    """If assistprofile_submitReports fails because a legacy mission has no missionFolderId,
-    create/find the Mission folder in FileManager and register each file via filemanager_createFile.
+def ensure_board_folder_hierarchy(settings, pod_id_token, board_id, mission_id, mission_title, subfolder_paths=None, opener=None):
+    """Ensure Missions/<short-mission-name>/<subfolders...> exists in Board File Manager.
+
+    Returns a dict with missions_folder_id, mission_folder_id, mission_folder_name, and
+    folder_map mapping each subfolder tuple (e.g. (), ('case-files',), ('phase-1', 'case-files'))
+    to its FileManager folder ID.
     """
-    from .operations import MUTATION_CREATE_FILE
     from .operations import MUTATION_CREATE_FOLDER
     from .operations import QUERY_FOLDERS_BY_BOARD
+    from .documents import short_mission_folder_name
     from .common import fail
     from .api import graphql_request
+
     folder_data = graphql_request(
         settings["endpoint"],
         settings["api_key"],
@@ -158,70 +162,112 @@ def fallback_upload_via_filemanager(settings, pod_id_token, board_id, mission_id
     folder_conn = ((folder_data.get("filemanager_foldersByBoardIdIndex") or {}).get("data") or {})
     folders = folder_conn.get("items") or []
 
-    short_id = mission_id[:8]
-    expected_root_prefix = "Mission: %s" % mission_title
-    root_folder_id = None
-    reports_folder_id = None
-
+    folder_index = {}
     for f in folders:
-        fname = f.get("folderName") or ""
-        if fname.startswith(expected_root_prefix) or (short_id in fname and fname.startswith("Mission:")):
-            root_folder_id = f.get("id")
-            break
+        fid = f.get("id")
+        fname = (f.get("folderName") or "").strip()
+        if not fid or not fname:
+            continue
+        parent_id = f.get("parentFolderId") or None
+        folder_index.setdefault((parent_id, fname.lower()), fid)
 
-    if root_folder_id:
-        for f in folders:
-            if f.get("parentFolderId") == root_folder_id and f.get("folderName") == "Reports":
-                reports_folder_id = f.get("id")
-                break
-
-    if not root_folder_id:
-        res_root = graphql_request(
+    def get_or_create_folder(parent_id, folder_name, tags, meta):
+        key = (parent_id or None, folder_name.strip().lower())
+        existing_id = folder_index.get(key)
+        if existing_id:
+            return existing_id
+        folder_input = {
+            "boardId": board_id,
+            "folderName": folder_name,
+            "tags": tags,
+            "meta": json.dumps(meta),
+            "createdBy": "system",
+        }
+        if parent_id:
+            folder_input["parentFolderId"] = parent_id
+        res = graphql_request(
             settings["endpoint"],
             settings["api_key"],
             MUTATION_CREATE_FOLDER,
-            {
-                "input": {
-                    "boardId": board_id,
-                    "folderName": "Mission: %s (%s)" % (mission_title, short_id),
-                    "tags": ["mission", mission_id],
-                    "meta": json.dumps({"missionId": mission_id, "type": "mission_root"}),
-                    "createdBy": "system",
-                }
-            },
+            {"input": folder_input},
             bearer_token=pod_id_token,
             opener=opener,
         )
-        root_folder = ((res_root.get("filemanager_createFolder") or {}).get("data") or {})
-        root_folder_id = root_folder.get("id")
+        created = ((res.get("filemanager_createFolder") or {}).get("data") or {})
+        new_id = created.get("id")
+        if not new_id:
+            fail("could not create folder %r on board %s" % (folder_name, board_id))
+        folder_index[key] = new_id
+        return new_id
 
-    if root_folder_id and not reports_folder_id:
-        res_rep = graphql_request(
-            settings["endpoint"],
-            settings["api_key"],
-            MUTATION_CREATE_FOLDER,
-            {
-                "input": {
-                    "boardId": board_id,
-                    "folderName": "Reports",
-                    "parentFolderId": root_folder_id,
-                    "tags": ["mission", "reports", mission_id],
-                    "meta": json.dumps({"missionId": mission_id, "type": "mission_reports"}),
-                    "createdBy": "system",
-                }
-            },
-            bearer_token=pod_id_token,
+    missions_root_id = get_or_create_folder(
+        None,
+        "Missions",
+        ["missions"],
+        {"type": "missions_root"},
+    )
+
+    mission_folder_name = short_mission_folder_name(mission_title, fallback_id=mission_id)
+    mission_folder_id = get_or_create_folder(
+        missions_root_id,
+        mission_folder_name,
+        ["mission", mission_id],
+        {"missionId": mission_id, "type": "mission_root"},
+    )
+
+    folder_map = {(): mission_folder_id}
+    for raw_path in (subfolder_paths or []):
+        parts = tuple(p for p in raw_path if p)
+        if not parts or parts in folder_map:
+            continue
+        current_parent = mission_folder_id
+        built = []
+        for seg in parts:
+            built.append(seg)
+            built_key = tuple(built)
+            if built_key in folder_map:
+                current_parent = folder_map[built_key]
+                continue
+            current_parent = get_or_create_folder(
+                current_parent,
+                seg,
+                ["mission", mission_id, seg.lower()],
+                {"missionId": mission_id, "type": "mission_subfolder", "path": "/".join(built)},
+            )
+            folder_map[built_key] = current_parent
+
+    return {
+        "missions_folder_id": missions_root_id,
+        "mission_folder_id": mission_folder_id,
+        "mission_folder_name": mission_folder_name,
+        "folder_map": folder_map,
+    }
+
+
+def register_mission_files_in_filemanager(
+    settings, pod_id_token, board_id, mission_id, mission_title, uploaded_reports, folder_info=None, opener=None
+):
+    """Register mission files under Missions/<short-mission-name>/<subfolders...> via FileManager."""
+    from .operations import MUTATION_CREATE_FILE
+    from .api import graphql_request
+
+    if folder_info is None:
+        subfolder_paths = [tuple(rep.get("subfolders") or ()) for rep in uploaded_reports]
+        folder_info = ensure_board_folder_hierarchy(
+            settings,
+            pod_id_token,
+            board_id,
+            mission_id,
+            mission_title,
+            subfolder_paths=subfolder_paths,
             opener=opener,
         )
-        rep_folder = ((res_rep.get("filemanager_createFolder") or {}).get("data") or {})
-        reports_folder_id = rep_folder.get("id")
 
-    target_folder_id = reports_folder_id or root_folder_id
-    if not target_folder_id:
-        fail("could not create or locate mission folder on board %s" % board_id)
-
+    folder_map = folder_info["folder_map"]
     created = []
     for rep in uploaded_reports:
+        sub_key = tuple(rep.get("subfolders") or ())
+        target_folder_id = folder_map.get(sub_key) or folder_info["mission_folder_id"]
         f_res = graphql_request(
             settings["endpoint"],
             settings["api_key"],
@@ -237,7 +283,10 @@ def fallback_upload_via_filemanager(settings, pod_id_token, board_id, mission_id
                     "s3Object": rep["s3Object"],
                     "tags": rep.get("tags"),
                     "note": rep.get("note"),
-                    "fileMetaData": json.dumps({"missionId": mission_id}),
+                    "fileMetaData": json.dumps({
+                        "missionId": mission_id,
+                        "relPath": rep.get("relPath") or rep["fileName"],
+                    }),
                 }
             },
             bearer_token=pod_id_token,
@@ -246,6 +295,14 @@ def fallback_upload_via_filemanager(settings, pod_id_token, board_id, mission_id
         f_env = f_res.get("filemanager_createFile") or {}
         if f_env.get("success") and f_env.get("data"):
             created.append(f_env["data"])
+    return created, folder_info
+
+
+def fallback_upload_via_filemanager(settings, pod_id_token, board_id, mission_id, mission_title, uploaded_reports, opener=None):
+    """Register mission files in Board File Manager under Missions/<short-mission-name>/..."""
+    created, _folder_info = register_mission_files_in_filemanager(
+        settings, pod_id_token, board_id, mission_id, mission_title, uploaded_reports, opener=opener
+    )
     return created
 
 
@@ -1070,8 +1127,8 @@ def list_mission_files(settings, pod_id_token, board_id, mission_id, opener=None
     return files
 
 
-def is_cli_file(existing, local_file, mission_id):
-    """True only for a file this CLI registered for the same local file name.
+def is_cli_file(existing, local_file, mission_id, target_folder_id=None):
+    """True only for a file this CLI registered for the same local file name (and folder, if known).
 
     Files people uploaded through the web or mobile app never carry the CLI tag or the CLI's exact
     note and tag list, so they are never replaced. The second check covers uploads made before the tag existed.
@@ -1079,18 +1136,24 @@ def is_cli_file(existing, local_file, mission_id):
     from .operations import CLI_FILE_TAG
     if existing.get("fileName") != local_file["fileName"]:
         return False
+    if target_folder_id and existing.get("folderId") and existing.get("folderId") != target_folder_id:
+        return False
     tags = existing.get("tags") or []
     if CLI_FILE_TAG in tags:
         return True
     return tags == local_file["tags"] + [mission_id] and existing.get("note") == local_file["note"]
 
 
-def plan_file_sync(files_to_upload, existing_files, mission_id, hashes, replace=True):
+def plan_file_sync(files_to_upload, existing_files, mission_id, hashes, replace=True, folder_map=None):
     """Split local files into (to_upload, unchanged, file ids to delete after the upload succeeds)."""
     to_upload, unchanged, to_delete = [], [], []
     for f in files_to_upload:
-        owned = [e for e in existing_files if is_cli_file(e, f, mission_id)]
-        same = [e for e in owned if "sha256:%s" % hashes[f["fileName"]] in (e.get("tags") or [])]
+        target_folder_id = None
+        if folder_map:
+            target_folder_id = folder_map.get(tuple(f.get("subfolders") or ()))
+        owned = [e for e in existing_files if is_cli_file(e, f, mission_id, target_folder_id=target_folder_id)]
+        file_hash = hashes.get(f.get("relPath") or f["fileName"]) or hashes.get(f["fileName"])
+        same = [e for e in owned if file_hash and "sha256:%s" % file_hash in (e.get("tags") or [])]
         if same:
             unchanged.append(f)
             stale = [e for e in owned if e is not same[0]]
@@ -1108,16 +1171,17 @@ def cmd_submit(args, opener=None):
     from .operations import MUTATION_CREATE_MISSION_PLAN
     from .operations import MUTATION_DELETE_MISSION_FILE
     from .operations import MUTATION_SUBMIT_MISSION_PLAN
-    from .operations import MUTATION_SUBMIT_REPORTS
     from .operations import MUTATION_UPDATE_MISSION
     from .operations import MUTATION_UPDATE_MISSION_PLAN
     from .operations import MUTATION_UPDATE_MISSION_STATUS
     from .operations import QUERY_GET_MISSION_INVITATION
     from .documents import build_plan_markdown
     from .documents import collect_mission_files
+    from .documents import short_mission_folder_name
     from .auth import decode_jwt_payload
     from .auth import ensure_main_token
     from .common import fail
+    from .api import fetch_files_by_board_and_folder
     from .api import fetch_missions_by_board
     from .auth import fetch_my_pods
     from .documents import find_latest_mission_dir
@@ -1146,7 +1210,8 @@ def cmd_submit(args, opener=None):
     title = args.title or meta["title"]
     short_description = args.description or meta["short_description"]
     plan_markdown = build_plan_markdown(mission_dir)
-    files_to_upload = collect_mission_files(mission_dir)
+    phase = getattr(args, "phase", None)
+    files_to_upload = collect_mission_files(mission_dir, phase=phase)
 
     if not plan_markdown and not files_to_upload:
         fail("no mission documents (brief, plan, or report) found in %s" % mission_dir)
@@ -1157,10 +1222,11 @@ def cmd_submit(args, opener=None):
             "mission_dir": os.path.abspath(mission_dir),
             "slug": meta["slug"],
             "title": title,
+            "mission_folder": "Missions/%s" % short_mission_folder_name(title, fallback_id=meta["slug"]),
             "short_description": short_description,
             "has_plan_markdown": bool(plan_markdown),
             "plan_markdown_bytes": len(plan_markdown.encode("utf-8")),
-            "files": [f["fileName"] for f in files_to_upload],
+            "files": [f.get("relPath") or f["fileName"] for f in files_to_upload],
             "s3_bucket": settings["s3_bucket"],
             "s3_region": settings["s3_region"],
             "s3_prefix": settings["s3_prefix"],
@@ -1366,32 +1432,67 @@ def cmd_submit(args, opener=None):
     uploaded_files = []
     unchanged_files = []
     replaced_ids = []
+    folder_info = None
     if files_to_upload and not args.skip_reports:
         aws_creds = resolve_aws_credentials(settings["creds"])
         timestamp_ms = int(time.time() * 1000)
         reports_input = []
 
+        subfolder_paths = [tuple(f.get("subfolders") or ()) for f in files_to_upload]
+        folder_info = ensure_board_folder_hierarchy(
+            settings,
+            pod_id_token,
+            board_id,
+            mission_id,
+            title,
+            subfolder_paths=subfolder_paths,
+            opener=opener,
+        )
+
         hashes = {}
         for f in files_to_upload:
+            rel_key = f.get("relPath") or f["fileName"]
             with open(f["path"], "rb") as fh:
-                hashes[f["fileName"]] = hashlib.sha256(fh.read()).hexdigest()
+                hashes[rel_key] = hashlib.sha256(fh.read()).hexdigest()
+
         existing_files = []
         if not created_new_mission:
+            seen_existing_ids = set()
+            for fid in dict.fromkeys(folder_info["folder_map"].values()):
+                for ef in fetch_files_by_board_and_folder(settings, pod_id_token, board_id, fid, opener=opener):
+                    eid = ef.get("id")
+                    if eid and eid not in seen_existing_ids:
+                        seen_existing_ids.add(eid)
+                        existing_files.append(ef)
             try:
-                existing_files = list_mission_files(settings, pod_id_token, board_id, mission_id, opener=opener)
+                for ef in list_mission_files(settings, pod_id_token, board_id, mission_id, opener=opener):
+                    eid = ef.get("id")
+                    if eid and eid not in seen_existing_ids:
+                        seen_existing_ids.add(eid)
+                        existing_files.append(ef)
             except RuntimeError as exc:
-                warn("could not list the mission's current files, uploading all: %s" % exc)
+                if not existing_files:
+                    warn("could not list the mission's current files, uploading all: %s" % exc)
+
         to_upload, unchanged_files, to_delete = plan_file_sync(
-            files_to_upload, existing_files, mission_id, hashes, replace=not args.keep_old
+            files_to_upload,
+            existing_files,
+            mission_id,
+            hashes,
+            replace=not args.keep_old,
+            folder_map=folder_info["folder_map"],
         )
         for f in unchanged_files:
-            info("Unchanged, skipped: %s" % f["fileName"])
+            info("Unchanged, skipped: %s" % (f.get("relPath") or f["fileName"]))
 
         for item_idx, f in enumerate(to_upload):
-            s3_key = "%s/%s/missions/%s/%d-%s" % (
+            sub_parts = f.get("subfolders") or []
+            s3_sub = ("/".join(sub_parts) + "/") if sub_parts else ""
+            s3_key = "%s/%s/missions/%s/%s%d-%s" % (
                 settings["s3_prefix"],
                 board_id,
                 mission_id,
+                s3_sub,
                 timestamp_ms + item_idx,
                 f["fileName"],
             )
@@ -1423,7 +1524,7 @@ def cmd_submit(args, opener=None):
                         )
                     except RuntimeError as exc:
                         fail("failed to upload mission file: %s" % exc)
-                    info("Uploaded %s -> %s" % (f["fileName"], s3_meta["s3_uri"]))
+                    info("Uploaded %s -> %s" % (f.get("relPath") or f["fileName"], s3_meta["s3_uri"]))
                 elif not aws_creds:
                     # Direct mode without AWS keys: upload through the pod web app instead.
                     if not pod_hostname:
@@ -1439,7 +1540,7 @@ def cmd_submit(args, opener=None):
                         )
                     except RuntimeError as exc:
                         fail("failed to upload mission file: %s" % exc)
-                    info("Uploaded %s -> %s" % (f["fileName"], s3_meta["s3_uri"]))
+                    info("Uploaded %s -> %s" % (f.get("relPath") or f["fileName"], s3_meta["s3_uri"]))
                 else:
                     s3_meta = upload_bytes_to_s3(
                         settings["s3_bucket"],
@@ -1451,10 +1552,13 @@ def cmd_submit(args, opener=None):
                         metadata={"missionid": mission_id, "boardid": board_id},
                         opener=opener,
                     )
-                    info("Uploaded %s -> %s" % (f["fileName"], s3_meta["s3_uri"]))
+                    info("Uploaded %s -> %s" % (f.get("relPath") or f["fileName"], s3_meta["s3_uri"]))
 
+            rel_key = f.get("relPath") or f["fileName"]
             reports_input.append({
                 "fileName": f["fileName"],
+                "subfolders": list(f.get("subfolders") or []),
+                "relPath": rel_key,
                 "fileType": f["fileType"],
                 "fileSize": f["fileSize"],
                 "url": s3_meta["url"],
@@ -1466,48 +1570,30 @@ def cmd_submit(args, opener=None):
                     "s3_uri": s3_meta["s3_uri"],
                 },
                 "note": f["note"],
-                "tags": f["tags"] + [mission_id, CLI_FILE_TAG, "sha256:%s" % hashes[f["fileName"]]],
+                "tags": f["tags"] + [mission_id, CLI_FILE_TAG, "sha256:%s" % hashes[rel_key]],
             })
-
-        submit_input = {
-            "missionId": mission_id,
-            "boardId": board_id,
-            "reports": reports_input,
-        }
-        if plan_id:
-            submit_input["planId"] = plan_id
 
         # Nothing changed means no upload and no registration, but stale copies are still cleaned up.
         registered_on_mission = not reports_input
         if reports_input:
             try:
-                rep_data = graphql_request(
-                    settings["endpoint"],
-                    settings["api_key"],
-                    MUTATION_SUBMIT_REPORTS,
-                    {"input": submit_input},
-                    bearer_token=pod_id_token,
+                uploaded_files, folder_info = register_mission_files_in_filemanager(
+                    settings,
+                    pod_id_token,
+                    board_id,
+                    mission_id,
+                    title,
+                    reports_input,
+                    folder_info=folder_info,
                     opener=opener,
                 )
-                rep_res = rep_data.get("assistprofile_submitReports") or {}
-                if rep_res.get("success"):
-                    uploaded_files = rep_res.get("files") or []
-                    registered_on_mission = True
-                    info(
-                        "Registered %d mission report/brief/plan file(s) via assistprofile_submitReports (totalFiles: %s)."
-                        % (len(uploaded_files), rep_res.get("totalFiles"))
-                    )
-                else:
-                    raise RuntimeError(rep_res.get("message") or "submitReports returned success=false")
+                registered_on_mission = True
+                info(
+                    "Registered %d file(s) in Board File Manager under Missions/%s."
+                    % (len(uploaded_files), folder_info["mission_folder_name"])
+                )
             except RuntimeError as exc:
-                if "Mission folder not found" in str(exc) or "missionFolderId" in str(exc):
-                    warn("mission has no missionFolderId; falling back to filemanager_createFolder + filemanager_createFile")
-                    uploaded_files = fallback_upload_via_filemanager(
-                        settings, pod_id_token, board_id, mission_id, title, reports_input, opener=opener
-                    )
-                    info("Registered %d file(s) in Board File Manager." % len(uploaded_files))
-                else:
-                    fail("failed to submit mission reports: %s" % exc)
+                fail("failed to register mission files in Board File Manager: %s" % exc)
 
         # Old versions are removed only after the new ones are registered, so a failure never loses a file.
         if registered_on_mission:
@@ -1555,8 +1641,11 @@ def cmd_submit(args, opener=None):
         "mission_id": mission_id,
         "created_new_mission": created_new_mission,
         "plan_id": plan_id or "",
+        "missions_folder_id": (folder_info or {}).get("missions_folder_id") or "",
+        "mission_folder_id": (folder_info or {}).get("mission_folder_id") or "",
+        "mission_folder_name": (folder_info or {}).get("mission_folder_name") or "",
         "files_submitted": [f.get("fileName") for f in uploaded_files],
-        "files_unchanged": [f["fileName"] for f in unchanged_files],
+        "files_unchanged": [f.get("relPath") or f["fileName"] for f in unchanged_files],
         "previous_versions_removed": len(replaced_ids),
     }
     if getattr(args, "json", False):
@@ -1567,6 +1656,8 @@ def cmd_submit(args, opener=None):
         info("  Board        : %s (%s)" % (result_summary["board_name"] or board_id, board_id))
         info("  Mission ID   : %s (%s)" % (mission_id, title))
         info("  Plan ID      : %s" % (plan_id or "none"))
+        if result_summary["mission_folder_name"]:
+            info("  Folder       : Missions/%s" % result_summary["mission_folder_name"])
         info("  Files        : %s" % (", ".join(result_summary["files_submitted"]) or "none"))
         if unchanged_files:
             info("  Unchanged    : %s" % ", ".join(result_summary["files_unchanged"]))
@@ -1741,6 +1832,8 @@ def build_parser():
     sp_submit.add_argument("--assigned-agent", help="assignedAgentProfileId (defaults to logged-in user's profileId)")
     sp_submit.add_argument("--title", help="override mission title")
     sp_submit.add_argument("--description", help="override mission shortDescription")
+    sp_submit.add_argument("--phase", "--milestone", dest="phase",
+                           help="optional phase or milestone subfolder name inside the mission folder")
     sp_submit.add_argument("--status", choices=["INITIATED", "IN_PROGRESS", "COMPLETED", "FAILED", "ARCHIVED"],
                            help="explicit mission status to set")
     sp_submit.add_argument("--create-mission", action="store_true", help="always create a new mission on the board")
