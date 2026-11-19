@@ -57,10 +57,12 @@ your project until you reply `go`.
 > **🚀 Quick Start (Easiest way to get started)**
 >
 > **1. Claude Code (In-Chat / Zero Cloning):**
-> Paste into Claude Code chat:
+> Run these as **two separate messages** in Claude Code (press Enter after each one):
 > ```sh
 > /plugin marketplace add Cloudscockpit/ab-mission-command-center
->  /plugin install actionboard-v5-agentformation@actionboard-v5-agentformation
+> ```
+> ```sh
+> /plugin install actionboard-v5-agentformation@actionboard-v5-agentformation
 > ```
 >
 > **2. OpenCode CLI (npx, nothing left behind):**
@@ -105,10 +107,13 @@ your project until you reply `go`.
 **Requirements:** Claude Code (tested with 2.1.310). Python 3.9+ on PATH for the OpenShell guard
 hook.
 
-**Installation** — inside Claude Code:
+**Installation** — inside Claude Code, run each line as its own message (Enter after each):
 
 ```sh
 /plugin marketplace add Cloudscockpit/ab-mission-command-center
+```
+
+```sh
 /plugin install actionboard-v5-agentformation@actionboard-v5-agentformation
 ```
 
