@@ -46,10 +46,12 @@ class FakeHTTPResponse:
 class MockActionBoardTransport:
     """Intercepts AppSync GraphQL POSTs and S3 SigV4 PUTs without network calls."""
 
-    def __init__(self, fail_submit_reports_folder=False):
+    def __init__(self, fail_submit_reports_folder=False, pod_region="ap-southeast-1", pod_bucket="actionboard-kb-agent"):
         self.graphql_calls = []
         self.s3_puts = []
         self.fail_submit_reports_folder = fail_submit_reports_folder
+        self.pod_region = pod_region
+        self.pod_bucket = pod_bucket
         self.folder_files = []
         self.folders = []
         self._folder_seq = 0
@@ -159,7 +161,8 @@ class MockActionBoardTransport:
                                 "podName": "Alpha Engineering Pod",
                                 "slug": "alpha-pod",
                                 "hostname": "alpha.actionboard.ai",
-                                "bucketName": "actionboard-kb-agent",
+                                "bucketName": self.pod_bucket,
+                                "region": self.pod_region,
                                 "status": "ACTIVE",
                                 "memberRole": "ADMIN",
                                 "memberStatus": "ACTIVE",
@@ -1226,6 +1229,95 @@ class TestSubmitMissionCLI(unittest.TestCase):
         finally:
             sys.stdout = saved_stdout
         self.assertEqual(json.loads(out.getvalue())["mission_sync"], "auto")
+
+    def test_pod_region_and_bucket_saved_on_select_and_used_for_s3_sigv4(self):
+        transport = MockActionBoardTransport(pod_region="eu-west-1", pod_bucket="actionboard-kb-eu-west")
+        base = ["--credentials-file", self.cred_file, "--config", self.cfg_file]
+        submit_mission.main(base + [
+            "configure",
+            "--endpoint", "https://example.appsync-api.ap-southeast-1.amazonaws.com/graphql",
+            "--api-key", "da2-testapikey123",
+            "--aws-access-key-id", "AKIATESTKEY",
+            "--aws-secret-access-key", "SECRETTESTKEY",
+        ])
+        submit_mission.main(base + ["login", "--email", "dev@actionboard.ai", "--password", "pw"], opener=transport)
+        submit_mission.main(base + ["select", "--pod", "alpha-pod", "--board", "board-eng-42"], opener=transport)
+
+        cfg = submit_mission.load_json_file(self.cfg_file)
+        self.assertEqual(cfg["pod_region"], "eu-west-1")
+        self.assertEqual(cfg["pod_bucket"], "actionboard-kb-eu-west")
+
+        out = io.StringIO()
+        saved_stdout, sys.stdout = sys.stdout, out
+        try:
+            submit_mission.main(base + ["status", "--json"])
+        finally:
+            sys.stdout = saved_stdout
+        status_json = json.loads(out.getvalue())
+        self.assertEqual(status_json["s3_region"], "eu-west-1")
+        self.assertEqual(status_json["s3_bucket"], "actionboard-kb-eu-west")
+
+        rc = submit_mission.main(base + ["submit", "--mission-dir", self.mission_dir, "--no-input"], opener=transport)
+        self.assertEqual(rc, 0)
+        self.assertEqual(len(transport.s3_puts), 5)
+        first_put = transport.s3_puts[0]
+        self.assertIn("https://actionboard-kb-eu-west.s3.eu-west-1.amazonaws.com/", first_put["url"])
+        self.assertIn("/eu-west-1/s3/aws4_request", first_put["headers"]["authorization"])
+
+    def test_edge_proxy_sign_receives_selected_pod_region_and_bucket(self):
+        transport = MockActionBoardTransport(pod_region="us-west-2", pod_bucket="actionboard-kb-us-west")
+        sign_calls = []
+
+        def opener(req, timeout=30):
+            if req.full_url.endswith("/s3/sign"):
+                body = json.loads(req.data.decode("utf-8"))
+                sign_calls.append(body)
+                reg = body.get("region") or "ap-southeast-1"
+                signed = "https://%s.s3.%s.amazonaws.com/%s?X-Amz-Signature=x" % (body["bucket"], reg, body["key"])
+                return FakeHTTPResponse(json.dumps({"url": signed, "region": reg}).encode("utf-8"))
+            if req.get_method() == "PUT" and ".s3." in req.full_url:
+                transport.s3_puts.append({"url": req.full_url, "headers": dict(req.header_items()), "body": req.data or b""})
+                return FakeHTTPResponse(b"")
+            return transport(req, timeout=timeout)
+
+        base = ["--credentials-file", self.cred_file, "--config", self.cfg_file]
+        saved_env = dict(os.environ)
+        for key in ("AWS_ACCESS_KEY_ID", "AWS_SECRET_ACCESS_KEY", "AWS_SESSION_TOKEN", "S3_REGION", "S3_BUCKET_NAME"):
+            os.environ.pop(key, None)
+        os.environ["AWS_SHARED_CREDENTIALS_FILE"] = os.path.join(self.tmp, "no-aws-credentials")
+        try:
+            submit_mission.main(base + ["login", "--email", "dev@actionboard.ai", "--password", "pw"], opener=opener)
+            submit_mission.main(base + ["select", "--pod", "alpha-pod", "--board", "board-eng-42"], opener=opener)
+            rc = submit_mission.main(base + ["submit", "--mission-dir", self.mission_dir, "--no-input"], opener=opener)
+        finally:
+            os.environ.clear()
+            os.environ.update(saved_env)
+
+        self.assertEqual(rc, 0)
+        self.assertEqual(len(sign_calls), 5)
+        self.assertEqual(sign_calls[0]["bucket"], "actionboard-kb-us-west")
+        self.assertEqual(sign_calls[0]["region"], "us-west-2")
+        self.assertIn("https://actionboard-kb-us-west.s3.us-west-2.amazonaws.com/", transport.s3_puts[0]["url"])
+
+    def test_explicit_s3_region_flag_overrides_pod_region(self):
+        transport = MockActionBoardTransport(pod_region="eu-west-1", pod_bucket="actionboard-kb-eu-west")
+        base = ["--credentials-file", self.cred_file, "--config", self.cfg_file]
+        submit_mission.main(base + [
+            "configure",
+            "--endpoint", "https://example.appsync-api.ap-southeast-1.amazonaws.com/graphql",
+            "--api-key", "da2-testapikey123",
+            "--aws-access-key-id", "AKIATESTKEY",
+            "--aws-secret-access-key", "SECRETTESTKEY",
+        ])
+        submit_mission.main(base + ["login", "--email", "dev@actionboard.ai", "--password", "pw"], opener=transport)
+        submit_mission.main(base + ["select", "--pod", "alpha-pod", "--board", "board-eng-42"], opener=transport)
+
+        rc = submit_mission.main(
+            base + ["submit", "--mission-dir", self.mission_dir, "--s3-region", "ap-south-1", "--no-input"],
+            opener=transport,
+        )
+        self.assertEqual(rc, 0)
+        self.assertIn("https://actionboard-kb-eu-west.s3.ap-south-1.amazonaws.com/", transport.s3_puts[0]["url"])
 
     def test_short_mission_folder_name_is_concise(self):
         self.assertEqual(submit_mission.short_mission_folder_name("CLI Mission Upload"), "CLI Mission Upload")
