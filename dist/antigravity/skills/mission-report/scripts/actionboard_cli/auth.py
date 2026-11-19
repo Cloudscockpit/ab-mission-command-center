@@ -81,6 +81,7 @@ def resolve_settings(cred_path=None, config_path=".actionboard/config.json", arg
     s3_region = (
         getattr(args, "s3_region", None)
         or os.environ.get("S3_REGION")
+        or cfg.get("pod_region")
         or cfg.get("s3_region")
         or creds.get("s3_region")
         or DEFAULT_S3_REGION
@@ -88,6 +89,7 @@ def resolve_settings(cred_path=None, config_path=".actionboard/config.json", arg
     s3_bucket = (
         getattr(args, "s3_bucket", None)
         or os.environ.get("S3_BUCKET_NAME")
+        or cfg.get("pod_bucket")
         or cfg.get("s3_bucket")
         or creds.get("s3_bucket")
         or DEFAULT_S3_BUCKET

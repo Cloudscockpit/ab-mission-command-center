@@ -52,6 +52,7 @@ def select_pod_and_board(settings, main_token=None, pod_arg=None, board_arg=None
             "podName": cfg.get("pod_name") if cfg.get("pod_id") == target_pod_id else "",
             "hostname": cfg.get("pod_hostname") if cfg.get("pod_id") == target_pod_id else "",
             "bucketName": cfg.get("pod_bucket") if cfg.get("pod_id") == target_pod_id else "",
+            "region": cfg.get("pod_region") if cfg.get("pod_id") == target_pod_id else "",
         }
         pod_id = target_pod_id
         pod_hostname = selected_pod.get("hostname")
@@ -131,6 +132,8 @@ def select_pod_and_board(settings, main_token=None, pod_arg=None, board_arg=None
         cfg["pod_hostname"] = pod_hostname
     if selected_pod.get("bucketName"):
         cfg["pod_bucket"] = selected_pod["bucketName"]
+    if selected_pod.get("region"):
+        cfg["pod_region"] = selected_pod["region"]
     cfg["board_id"] = selected_board["boardId"]
     cfg["board_name"] = selected_board.get("name") or ""
     save_config_json(settings["config_file"], cfg)
@@ -496,12 +499,13 @@ def cmd_pods(args, opener=None):
     if not pods:
         info("No pods found for this account.")
         return 0
-    info("%-38s  %-24s  %-10s  %s" % ("POD ID", "NAME", "ROLE", "HOSTNAME"))
+    info("%-38s  %-24s  %-10s  %-16s  %s" % ("POD ID", "NAME", "ROLE", "REGION", "HOSTNAME"))
     for p in pods:
-        info("%-38s  %-24s  %-10s  %s" % (
+        info("%-38s  %-24s  %-10s  %-16s  %s" % (
             p.get("podId") or "",
             (p.get("podName") or p.get("slug") or "")[:24],
             p.get("memberRole") or "",
+            p.get("region") or "",
             p.get("hostname") or "",
         ))
     return 0
@@ -619,6 +623,7 @@ def _resolve_pod_token_and_profile(settings, main_token=None, pod_arg=None, inte
             "podName": cfg.get("pod_name") if cfg.get("pod_id") == target_pod_id else "",
             "hostname": cfg.get("pod_hostname") if cfg.get("pod_id") == target_pod_id else "",
             "bucketName": cfg.get("pod_bucket") if cfg.get("pod_id") == target_pod_id else "",
+            "region": cfg.get("pod_region") if cfg.get("pod_id") == target_pod_id else "",
         }
         pod_id_token = cached_pod_token
     else:
@@ -914,16 +919,19 @@ def cmd_fetch(args, opener=None):
                 s3_obj = fitem.get("s3Object") or {}
                 if (aws_creds or settings.get("edge_proxy")) and s3_obj.get("bucket") and s3_obj.get("key"):
                     try:
+                        dl_region = s3_obj.get("region") or pod.get("region") or settings["s3_region"]
                         if aws_creds:
                             raw_bytes = download_bytes_from_s3(
                                 s3_obj["bucket"],
-                                s3_obj.get("region") or settings["s3_region"],
+                                dl_region,
                                 s3_obj["key"],
                                 aws_creds,
                                 opener=opener,
                             )
                         else:
-                            raw_bytes = download_bytes_via_edge(settings, s3_obj["bucket"], s3_obj["key"], opener=opener)
+                            raw_bytes = download_bytes_via_edge(
+                                settings, s3_obj["bucket"], s3_obj["key"], opener=opener, region=dl_region
+                            )
                         downloaded_files[clean_name] = raw_bytes
                     except Exception as exc:
                         warn("could not download %s from S3: %s" % (clean_name, exc))
@@ -956,6 +964,10 @@ def cmd_fetch(args, opener=None):
     # Save Pod, Board, and Mission linkage to .actionboard/config.json
     cfg["pod_id"] = pod_id
     cfg["pod_name"] = pod.get("podName") or ""
+    if pod.get("bucketName"):
+        cfg["pod_bucket"] = pod["bucketName"]
+    if pod.get("region"):
+        cfg["pod_region"] = pod["region"]
     cfg["board_id"] = board_id
     missions_map = cfg.get("missions") if isinstance(cfg.get("missions"), dict) else {}
     missions_map[slug] = {
@@ -1180,6 +1192,7 @@ def cmd_submit(args, opener=None):
     board_id = board["boardId"]
     pod_hostname = pod.get("hostname") or ""
     pod_bucket = pod.get("bucketName") or ""
+    pod_region = pod.get("region") or ""
     profile_id = (
         args.assigned_agent
         or settings["creds"].get("profile_id")
@@ -1387,6 +1400,30 @@ def cmd_submit(args, opener=None):
         for f in unchanged_files:
             info("Unchanged, skipped: %s" % f["fileName"])
 
+        explicit_bucket = getattr(args, "s3_bucket", None) or os.environ.get("S3_BUCKET_NAME")
+        explicit_region = getattr(args, "s3_region", None) or os.environ.get("S3_REGION")
+        pod_meta_refreshed = False
+
+        def refresh_pod_meta():
+            nonlocal pod_bucket, pod_region, pod_hostname, pod_meta_refreshed
+            if pod_meta_refreshed:
+                return
+            pod_meta_refreshed = True
+            main_token = ensure_main_token(settings, interactive=interactive, opener=opener)
+            for p in fetch_my_pods(settings, main_token, opener=opener):
+                if p.get("podId") == pod_id:
+                    if p.get("bucketName"):
+                        pod_bucket = p["bucketName"]
+                        cfg["pod_bucket"] = pod_bucket
+                    if p.get("region"):
+                        pod_region = p["region"]
+                        cfg["pod_region"] = pod_region
+                    if p.get("hostname"):
+                        pod_hostname = p["hostname"]
+                        cfg["pod_hostname"] = pod_hostname
+                    save_config_json(settings["config_file"], cfg)
+                    break
+
         for item_idx, f in enumerate(to_upload):
             s3_key = "%s/%s/missions/%s/%d-%s" % (
                 settings["s3_prefix"],
@@ -1395,31 +1432,33 @@ def cmd_submit(args, opener=None):
                 timestamp_ms + item_idx,
                 f["fileName"],
             )
+            upload_bucket = explicit_bucket or pod_bucket or settings["s3_bucket"]
+            upload_region = explicit_region or pod_region or settings["s3_region"]
             if args.skip_s3:
-                host = "%s.s3.%s.amazonaws.com" % (settings["s3_bucket"], settings["s3_region"])
+                host = "%s.s3.%s.amazonaws.com" % (upload_bucket, upload_region)
                 s3_meta = {
-                    "bucket": settings["s3_bucket"],
+                    "bucket": upload_bucket,
                     "key": s3_key,
                     "size": f["fileSize"],
-                    "region": settings["s3_region"],
-                    "s3_uri": "s3://%s/%s" % (settings["s3_bucket"], s3_key),
+                    "region": upload_region,
+                    "s3_uri": "s3://%s/%s" % (upload_bucket, s3_key),
                     "url": "https://%s/%s" % (host, s3_key),
                 }
             else:
                 with open(f["path"], "rb") as fh:
                     body_bytes = fh.read()
                 if not aws_creds and settings.get("edge_proxy"):
-                    # Presigned upload through the edge proxy into the pod's own bucket, as the mobile app does.
-                    if not pod_bucket:
-                        main_token = ensure_main_token(settings, interactive=interactive, opener=opener)
-                        for p in fetch_my_pods(settings, main_token, opener=opener):
-                            if p.get("podId") == pod_id:
-                                pod_bucket = p.get("bucketName") or ""
-                    if not pod_bucket:
+                    # Presigned upload through the edge proxy into the pod's own bucket and region.
+                    if not pod_bucket or not pod_region:
+                        refresh_pod_meta()
+                    target_bucket = explicit_bucket or pod_bucket
+                    target_region = explicit_region or pod_region or settings["s3_region"]
+                    if not target_bucket:
                         fail("cannot upload %s: pod %s has no storage bucket" % (f["fileName"], pod_id))
                     try:
                         s3_meta = upload_bytes_via_edge(
-                            settings, pod_bucket, s3_key, body_bytes, f["fileType"], opener=opener
+                            settings, target_bucket, s3_key, body_bytes, f["fileType"],
+                            opener=opener, region=target_region,
                         )
                     except RuntimeError as exc:
                         fail("failed to upload mission file: %s" % exc)
@@ -1427,23 +1466,22 @@ def cmd_submit(args, opener=None):
                 elif not aws_creds:
                     # Direct mode without AWS keys: upload through the pod web app instead.
                     if not pod_hostname:
-                        main_token = ensure_main_token(settings, interactive=interactive, opener=opener)
-                        for p in fetch_my_pods(settings, main_token, opener=opener):
-                            if p.get("podId") == pod_id:
-                                pod_hostname = p.get("hostname") or ""
+                        refresh_pod_meta()
                     if not pod_hostname:
                         fail("cannot upload %s: pod %s has no hostname" % (f["fileName"], pod_id))
+                    target_region = explicit_region or pod_region or settings["s3_region"]
                     try:
                         s3_meta = upload_bytes_via_pod(
-                            pod_hostname, pod_id, board_id, f["fileName"], body_bytes, f["fileType"], opener=opener
+                            pod_hostname, pod_id, board_id, f["fileName"], body_bytes, f["fileType"],
+                            opener=opener, region=target_region,
                         )
                     except RuntimeError as exc:
                         fail("failed to upload mission file: %s" % exc)
                     info("Uploaded %s -> %s" % (f["fileName"], s3_meta["s3_uri"]))
                 else:
                     s3_meta = upload_bytes_to_s3(
-                        settings["s3_bucket"],
-                        settings["s3_region"],
+                        upload_bucket,
+                        upload_region,
                         s3_key,
                         body_bytes,
                         f["fileType"],

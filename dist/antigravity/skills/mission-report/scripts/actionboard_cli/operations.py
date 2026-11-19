@@ -98,6 +98,7 @@ query Pods_getMyPods {
       slug
       hostname
       bucketName
+      region
       status
       memberRole
       memberStatus
