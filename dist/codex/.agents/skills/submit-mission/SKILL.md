@@ -23,7 +23,7 @@ The submission CLI (`<skill-dir>/../mission-report/scripts/submit_mission.py`, P
 3. **Select Board (`boards_getMyBoards`):** Lists boards inside the chosen Pod and saves the selected `pod_id` and `board_id` in `.actionboard/config.json`.
 4. **Create or Match Mission (`assistprofile_listMissionsByBoard` / `assistprofile_createMission`):** Reuses an existing mission ID (from `.actionboard/config.json`, `--mission-id`, or title match) or creates a new mission on the board with its dedicated `missionFolderId` and `reportsSubfolderId`.
 5. **Submit Mission Plan (`assistprofile_createMissionPlan` / `assistprofile_updateMissionPlan` / `assistprofile_submitMissionPlan`):** Publishes the combined Mission Brief and Mission Plan Markdown to the board's mission plan record.
-6. **Upload Deliverables to S3 & Register Reports (`assistprofile_submitReports`):** Uploads `mission-report.md`, `mission-report.html`, `mission-report.jsonld`, `mission-brief.md`, `mission-brief.jsonld`, `mission-plan.md`, `mission-plan.jsonld`, and `mission-metrics.json` through the Pod's own upload route (`https://<pod-hostname>/api/s3/knowledge-base/upload`, the same one the web app uses, so the user needs no AWS keys) and registers them on the mission. When AWS keys are configured it uploads with AWS SigV4 to `s3://<S3_BUCKET_NAME>/<S3_PREFIX>/<boardId>/missions/<missionId>/` instead (with automatic fallback to `filemanager_createFolder` + `filemanager_createFile` for legacy missions).
+6. **Upload Deliverables to S3 & Organize in Board File Manager (`filemanager_createFolder` + `filemanager_createFile`):** Checks whether a root `Missions` folder exists on the board (creating it if missing), creates a short, concise subfolder for the mission under `Missions/<mission-name>/`, preserves any nested folders (such as `case-files/` or phase/milestone subfolders), uploads all mission files to S3, and registers them in their respective folders.
 7. **Mark Completed (`assistprofile_updateMissionStatus`):** Sets mission status to `COMPLETED` when `mission-report.md` is present.
 
 ## Step-by-step execution
@@ -121,6 +121,7 @@ Useful flags for `submit`:
 - `--invitation-id <id>`: Submit the mission plan against an `AssistProfile` mission invitation (`assistprofile_submitMissionPlan`).
 - `--create-mission`: Always create a fresh mission entry on the board even if a mission with the same title exists.
 - `--update-mission`: Update the title and short description of an existing mission.
+- `--phase <name>` / `--milestone <name>`: Group uploaded files inside a phase or milestone subfolder under `Missions/<mission-name>/<name>/`.
 - `--status <INITIATED|IN_PROGRESS|COMPLETED|FAILED|ARCHIVED>`: Override the mission status written after upload.
 - `--skip-s3`: Register report metadata in AppSync without performing the S3 `PUT` request.
 - `--keep-old`: Keep previous versions of changed files instead of replacing them.
