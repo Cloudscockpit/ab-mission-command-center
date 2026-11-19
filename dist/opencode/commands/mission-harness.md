@@ -1,5 +1,5 @@
 ---
-description: Build the sandbox harness for a ActionBoard V5 mission — one isolated environment per assigned Agent, sized and policed by role, created only after go/no-go. Use when forming ActionBoard V5 for real execution.
+description: Provision role-sized, isolated OpenShell sandboxes per assigned Agent after go/no-go.
 agent: sandbox-warden
 subtask: true
 ---

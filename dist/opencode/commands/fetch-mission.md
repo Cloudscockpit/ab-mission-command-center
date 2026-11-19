@@ -1,5 +1,5 @@
 ---
-description: Fetch an assigned ActionBoard mission or mission invitation (Mission Brief and Mission Plan) from a Pod and Board to local disk so you can start working immediately from the CLI. Use when the user asks to "fetch my assigned mission", "pull mission brief and plan", "check tasks assigned to me", "accept mission invitation", or "start work on my assigned ActionBoard task".
+description: Fetch an assigned ActionBoard mission or invitation (Brief & Plan) to local disk. Use to list assigned tasks, accept invitations, or pull a mission.
 ---
 
 Load the `fetch-mission` skill with the `skill` tool and follow its instructions.

@@ -1,152 +1,58 @@
 ---
 name: submit-mission
-description: Submit ActionBoard V5 Mission Brief, Mission Plan, and Mission Report documents directly from the CLI to a Board inside an ActionBoard Pod. Use when the user asks to "submit the mission", "upload the mission report", "push mission to ActionBoard", "submit to pod/board", or after completing a mission report.
+description: Submit ActionBoard Mission Brief, Plan, and Report from the CLI to a Pod Board. Use when asked to submit, upload, or push a mission.
 ---
 
 > Paths written `<skill-dir>/...` are relative to the directory that contains this SKILL.md.
 
 # Submit Mission to ActionBoard Pod & Board
 
-Uploads a mission's **Brief**, **Plan**, and **Report** (Markdown, HTML dashboard, JSON-LD knowledge graphs, and metrics) directly to an ActionBoard Pod's Board from the CLI — without opening the web UI.
+Uploads a mission's Brief, Plan, Report, JSON-LD graphs, metrics, and HTML dashboard to an ActionBoard Pod's Board via `<skill-dir>/../mission-report/scripts/submit_mission.py` (Python 3.9+, stdlib only; on Windows use `py`).
 
-## How it works
-
-By default every call goes through the ActionBoard edge proxy (the same one the mobile app
-uses). The proxy holds the AppSync API key and the AWS keys, so the user needs only their
-ActionBoard login: no API key, no AWS keys, no `configure` step. A setup that already has an
-AppSync API key configured keeps calling AppSync directly.
-
-The submission CLI (`<skill-dir>/../mission-report/scripts/submit_mission.py`, Python 3.9+ standard library only) executes the full ActionBoard control-plane and data-plane flow:
-
-1. **Authenticate (browser sign-in / `auth_refreshToken`):** Signs in through the ActionBoard hosted login page in the browser, the same one the web and mobile apps use, and stores the tokens in the OS keychain (macOS Keychain, Windows Credential Manager, or the Linux Secret Service). Without a usable keychain they stay in `~/.actionboard/credentials.json` with `0600` permissions (falling back to `.actionboard/credentials.json` inside restricted sandboxes).
-2. **Resolve Pod & SSO Exchange (`pods_getMyPods` -> `pods_createExchangeCode` -> `pods_consumeExchangeCode`):** Exchanges the main access token for a Pod-scoped `idToken` carrying `custom:podId` and `custom:profileId`.
-3. **Select Board (`boards_getMyBoards`):** Lists boards inside the chosen Pod and saves the selected `pod_id` and `board_id` in `.actionboard/config.json`.
-4. **Create or Match Mission (`assistprofile_listMissionsByBoard` / `assistprofile_createMission`):** Reuses an existing mission ID (from `.actionboard/config.json`, `--mission-id`, or title match) or creates a new mission on the board with its dedicated `missionFolderId` and `reportsSubfolderId`.
-5. **Submit Mission Plan (`assistprofile_createMissionPlan` / `assistprofile_updateMissionPlan` / `assistprofile_submitMissionPlan`):** Publishes the combined Mission Brief and Mission Plan Markdown to the board's mission plan record.
-6. **Upload Deliverables to S3 & Register Reports (`assistprofile_submitReports`):** Uploads `mission-report.md`, `mission-report.html`, `mission-report.jsonld`, `mission-brief.md`, `mission-brief.jsonld`, `mission-plan.md`, `mission-plan.jsonld`, and `mission-metrics.json` through the Pod's own upload route (`https://<pod-hostname>/api/s3/knowledge-base/upload`, the same one the web app uses, so the user needs no AWS keys) and registers them on the mission. When AWS keys are configured it uploads with AWS SigV4 to `s3://<S3_BUCKET_NAME>/<S3_PREFIX>/<boardId>/missions/<missionId>/` instead (with automatic fallback to `filemanager_createFolder` + `filemanager_createFile` for legacy missions).
-7. **Mark Completed (`assistprofile_updateMissionStatus`):** Sets mission status to `COMPLETED` when `mission-report.md` is present.
+By default every call uses the ActionBoard edge proxy (no API key or AWS keys required). Direct AppSync/AWS configuration details live in `<skill-dir>/references/cli-reference.md`.
 
 ## Step-by-step execution
 
-You run inside an agent session with no interactive terminal, so the script cannot prompt for
-a login or show its Pod/Board picker. Before submitting, run `status --json`. If `logged_in` is
-`false`, or `default_pod_id` or `default_board_id` is empty, follow
-`<skill-dir>/../ab-login/SKILL.md` first: it asks the user to log in and to choose the Pod and
-Board, then saves them. Then run `submit` with `--no-input`. If `submit` itself reports
-"not logged in", do the same and retry the exact command.
+Inside an agent session (non-interactive), always run `status --json` first. If `logged_in` is `false`, or `default_pod_id` / `default_board_id` is empty, run `<skill-dir>/../ab-login/SKILL.md` first, then run `submit --no-input`.
 
-### Step 1 — Check CLI status
-
-Run `status` first to see whether AppSync credentials, login tokens, S3 credentials, and a default Pod/Board are already configured:
+### 1. Check status & select Pod/Board (if needed)
 
 ```sh
-python <skill-dir>/../mission-report/scripts/submit_mission.py status
-```
-
-On Windows use `py` instead of `python`.
-
-### Step 2 — Configure (usually not needed)
-
-The default edge-proxy connection needs no configuration. To move an existing API-key setup onto
-the edge proxy, run `configure --edge-proxy-url https://actionboard-edge-proxy.ab-mobile.workers.dev`
-(pass `--edge-proxy-url ""` to go back). Only if you deliberately use direct mode, import the
-endpoint and API key from an env file or pass them explicitly:
-
-```sh
-python <skill-dir>/../mission-report/scripts/submit_mission.py configure \
-  --from-env-file mission-plan-api.md
-```
-
-Or configure individual settings:
-
-```sh
-python <skill-dir>/../mission-report/scripts/submit_mission.py configure \
-  --endpoint <APPSYNC_GRAPHQL_ENDPOINT> \
-  --api-key <APPSYNC_API_KEY> \
-  --s3-region ap-southeast-1 \
-  --s3-bucket actionboard-kb-agent \
-  --s3-prefix "PremiumBoardKB/Boards/Investor+Boards"
-```
-
-AWS keys are optional. Without them, files upload through presigned URLs from the edge proxy (or, in direct mode, through the Pod's own upload route). To upload straight to S3 instead, set `AWS_ACCESS_KEY_ID` / `AWS_SECRET_ACCESS_KEY`, use `~/.aws/credentials`, or pass `--aws-access-key-id` and `--aws-secret-access-key` to `configure`.
-
-### Step 3 — Log in to ActionBoard (when not authenticated)
-
-If `Authenticated` is `no`, follow `<skill-dir>/../ab-login/SKILL.md`. It runs the browser sign-in, which needs no password in the chat:
-
-```sh
-python <skill-dir>/../mission-report/scripts/submit_mission.py login
-```
-
-Tokens are refreshed automatically after that. For CI, set `ACTIONBOARD_EMAIL` and `ACTIONBOARD_PASSWORD`. `logout` removes the stored tokens.
-
-### Step 4 — Select Pod & Board (first submit in a project, or to switch boards)
-
-List available Pods and Boards or save a project default in `.actionboard/config.json`:
-
-```sh
-# List pods the user belongs to
+python <skill-dir>/../mission-report/scripts/submit_mission.py status --json
 python <skill-dir>/../mission-report/scripts/submit_mission.py pods
-
-# List boards inside a pod
 python <skill-dir>/../mission-report/scripts/submit_mission.py boards --pod <podId-or-slug>
-
-# Save default pod and board for this project
 python <skill-dir>/../mission-report/scripts/submit_mission.py select --pod <podId-or-slug> --board <boardId-or-name>
 ```
 
-When run in an interactive terminal without `--pod` or `--board`, `select` and `submit` present a numbered Pod & Board picker.
-
-### Step 5 — Submit the mission
+### 2. Submit the mission
 
 ```sh
-# Auto-detect the latest mission folder in docs/missions/ or actionboard-v5-missions/
-python <skill-dir>/../mission-report/scripts/submit_mission.py submit
+# Auto-detect latest mission in docs/missions/ or actionboard-v5-missions/
+python <skill-dir>/../mission-report/scripts/submit_mission.py submit --no-input
 
-# Or specify the mission directory, pod, board, or mission ID explicitly
+# Explicit directory, pod, or board
 python <skill-dir>/../mission-report/scripts/submit_mission.py submit \
   --mission-dir docs/missions/<YYYY-MM-DD-slug> \
   --pod <podId-or-slug> \
   --board <boardId-or-name>
 ```
 
-Re-submitting is safe. Each file the CLI registers carries an `actionboard-cli` tag and a content
-hash. On the next submit, unchanged files are skipped, and a changed file is uploaded and then its
-previous CLI version is removed from the mission. Files people uploaded through the web or mobile
-app are never removed. Pass `--keep-old` to keep the previous versions.
+Re-submitting is idempotent: unchanged files are skipped and changed CLI files replace their previous version without touching human-uploaded files (pass `--keep-old` to retain old versions).
 
-Useful flags for `submit`:
-- `--dry-run`: Validate local mission files and print the JSON payload summary without calling AppSync or S3.
-- `--mission-id <id>`: Attach the plan and reports to a specific existing mission on the board.
-- `--invitation-id <id>`: Submit the mission plan against an `AssistProfile` mission invitation (`assistprofile_submitMissionPlan`).
-- `--create-mission`: Always create a fresh mission entry on the board even if a mission with the same title exists.
-- `--update-mission`: Update the title and short description of an existing mission.
-- `--status <INITIATED|IN_PROGRESS|COMPLETED|FAILED|ARCHIVED>`: Override the mission status written after upload.
-- `--skip-s3`: Register report metadata in AppSync without performing the S3 `PUT` request.
-- `--keep-old`: Keep previous versions of changed files instead of replacing them.
-- `--json`: Print machine-readable JSON output.
+Key flags: `--dry-run`, `--mission-id <id>`, `--invitation-id <id>`, `--create-mission`, `--update-mission`, `--status <INITIATED|IN_PROGRESS|COMPLETED|FAILED|ARCHIVED>`, `--skip-s3`, `--keep-old`, `--json`.
 
-### Step 6 — Live progress (optional)
-
-Once a mission is on the board (after `submit` or `fetch`), post a status change or a one-line
-progress comment:
+### 3. Live progress & sync mode (optional)
 
 ```sh
 python <skill-dir>/../mission-report/scripts/submit_mission.py progress \
   --mission-dir docs/missions/<YYYY-MM-DD-slug> --status IN_PROGRESS --comment "Red Agent: done — API client shipped"
+
+python <skill-dir>/../mission-report/scripts/submit_mission.py select --sync auto
 ```
 
-`--status` takes `INITIATED`, `IN_PROGRESS`, `COMPLETED`, `FAILED` or `ARCHIVED`. Never put secrets,
-tokens, or file contents in a comment.
-
-### Mission sync setting
-
-`select --sync <ask|auto|off>` stores whether Black Agent syncs missions to the board: `ask`
-(default) asks once per mission, `auto` syncs without asking, `off` never syncs.
+`select --sync <ask|auto|off>` controls automatic board sync (`ask` default). Never include secrets, tokens, or file contents in progress comments.
 
 ## Security rules
 
-- Never commit `.actionboard/credentials.json`, `~/.actionboard/credentials.json`, or raw API keys/passwords to git.
-- Keep credential files at `0600` (`-rw-------`) permissions.
-- Never ask the user for their password in the conversation; use the browser sign-in.
-
+- Never commit `.actionboard/credentials.json` or raw API keys/passwords; keep credential files `0600`.
+- Never ask for the user's password in chat; use browser sign-in (`login`).

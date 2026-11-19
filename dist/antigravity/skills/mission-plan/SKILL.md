@@ -1,6 +1,6 @@
 ---
 name: mission-plan
-description: Write a ActionBoard V5 Mission Plan (Agent Assignments with file ownership, Skills Gap analysis, Risk Register) as Markdown plus a schema.org JSON-LD knowledge graph. Use when the user asks to "write the mission plan", "draft assignments", "show the risk register", or at Steps 3-5 of the ActionBoard V5 mission flow, and whenever a plan must be exported as structured or machine-readable output.
+description: Write an ActionBoard V5 Mission Plan (Agent Assignments, Skills Gap, Risk Register) as Markdown + compiled JSON-LD.
 ---
 
 > Paths written `<skill-dir>/...` are relative to the directory that contains this SKILL.md.
@@ -15,9 +15,7 @@ apply here, even when they are enabled for the mission. Write in full, clear, st
 keep every table, column, field, and markdown structure intact, and do not shorten, merge, or omit
 any section to save tokens. After writing, list the paths under `Files created/changed:`.
 
-**Read the format reference first:** `<skill-dir>/../actionboard-kb/references/mission-knowledge-format.md`.
-It defines the JSON-LD envelope, the URN identifier scheme, the schema.org type mapping, the
-`actionStatus` vocabulary, and the pre-write validation steps.
+Format spec (read only if inspecting or extending the graph): `<skill-dir>/../actionboard-kb/references/mission-knowledge-format.md`.
 
 ## What a plan contains
 
@@ -29,40 +27,23 @@ It defines the JSON-LD envelope, the URN identifier scheme, the schema.org type 
 
 ## Procedure
 
-1. **Reuse the mission slug** from the existing `mission-brief`. Read the brief's `.jsonld`
-   to recover `urn:voltron:mission:{slug}` rather than re-deriving it from the objective —
-   re-deriving drifts, and a drifted slug silently forks the mission into two graphs.
-2. **Draft assignments.** One `Action` per Agent task. Enforce the file-ownership rule: no two
-   assignments may list the same file in `object`. This is checkable in the graph, so check
-   it — group every assignment's `object` `@id`s and confirm no path appears twice.
-3. **Run Skills Gap** via the `skills-registry` skill and its `actions-map.json`. Status is
-   `covered`, `use-existing-skill:{name}`, or `needs-new-skill`. A registry entry marked
-   `conditional` counts as covered only when its `requires` precondition is actually met —
-   otherwise record the unmet precondition in Notes.
-4. **Build the Risk Register.** Categories: technical, scope, integration, data-loss.
-   Severity is `L`, `M`, or `H`. Every risk gets a mitigation, even if that mitigation is
-   "accept and monitor".
-5. **Write `mission-plan.md`** as three tables, then `mission-plan.jsonld`.
-   At plan stage every assignment carries `PotentialActionStatus` — the plan describes
-   intent, not outcome, and nothing is `Completed` before the Agents have run.
-6. **Update the mission node** so `member` lists every Agent that now has an assignment, and
-   `subjectOf` includes the plan.
-7. **Validate** per the KB checklist, then report both paths.
+1. **Reuse the mission slug** from `mission-brief.jsonld` (never re-derive it).
+2. **Draft assignments** with exclusive file ownership (no two assignments own the same path) and observable acceptance criteria. Omit idle Agents.
+3. **Run Skills Gap** via `skills-registry/actions-map.json`: `covered`, `use-existing-skill:<name>`, or `needs-new-skill` (conditional entries count as covered only when their `requires` precondition is met).
+4. **Build the Risk Register** across `technical`, `scope`, `integration`, `data-loss` with severity `L`/`M`/`H` and a mitigation for every risk.
+5. **Write `mission-plan.md`** with the three tables (`## Agent Assignments`, `## Skills Gap`, `## Risk Register`).
+6. **Compile `mission-plan.jsonld` deterministically** (never hand-author JSON-LD):
 
-## Writing rules
+   ```sh
+   python <skill-dir>/../mission-report/scripts/compile_jsonld.py plan \
+     --md <mission-dir>/mission-plan.md \
+     --brief <mission-dir>/mission-brief.jsonld \
+     --out <mission-dir>/mission-plan.jsonld
+   ```
 
-- Each assignment's Acceptance must be observable by someone who did not write the code.
-- If a Agent has no work this mission, omit them. Do not pad the table to five rows.
-- `Depends On` names another assignment's `@id`, not a prose description — that is what makes
-  the dispatch order derivable from the graph instead of from reading the table.
-- Files in `object` are repo-relative paths, matching `urn:voltron:file:{path}` exactly.
-
-## The go/no-go gate
-
-The plan is the document the user approves. After writing it, present the three tables and
-stop:
+   This reuses `urn:voltron:mission:{slug}`, emits `PotentialActionStatus` assignments, updates `member`/`subjectOf`, and validates every `@id`.
+7. **Report both paths**, present the three tables, and stop at the go/no-go gate:
 
 > "Mission ready. Reply **go** to dispatch Agents, **no-go** to revise, or **edit <section>**."
 
-Do not dispatch Red, Blue, or Yellow Agent before that approval, and do not write
-`mission-report` until the Agents have actually reported.
+Do not dispatch Red, Blue, or Yellow Agent before approval.
