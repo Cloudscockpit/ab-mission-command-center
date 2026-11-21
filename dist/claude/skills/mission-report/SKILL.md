@@ -79,7 +79,7 @@ spec lives in `${CLAUDE_PLUGIN_ROOT}/skills/actionboard-kb/references/mission-kn
      --metrics <mission-dir>/mission-metrics.json [--operator-level <L1-L7>]
    ```
 
-   Report any render failure or stderr `WARNING` line in the Mission Summary. Include
+   Report any render failure, or any line containing `WARNING` on stderr, in the Mission Summary. Include
    `mission-report.md`, `mission-report.jsonld`, `mission-metrics.json`, `mission-report.html`, and
    `.actionboard/registry.json` in `Files created/changed:`.
 
