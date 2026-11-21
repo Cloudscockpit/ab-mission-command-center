@@ -1,5 +1,5 @@
 ---
-description: "Terse progress messages for ActionBoard agents to cut output tokens and generation cost, while mission documents, code, commits, and security reviews stay in full prose. Use when an assignment says \"Terse output: on\", or when the user enables terse output during mission preflight."
+description: "Terse agent chatter rules to cut output tokens when \"Terse output: on\", keeping mission docs, code, commits, and security reviews in full prose."
 ---
 
 Load the `terse-output` skill with the `skill` tool and follow its instructions.

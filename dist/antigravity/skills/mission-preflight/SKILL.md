@@ -1,6 +1,6 @@
 ---
 name: mission-preflight
-description: Prepare a project for a cost-efficient ActionBoard mission — verify the mandatory Context7 MCP, offer to install Graphify and build an offline code graph, and offer terse agent output. Asks before installing or enabling anything. Use at Step 0 of every ActionBoard mission, or when the user asks to set up or check ActionBoard cost optimisation.
+description: Step 0 cost-efficiency preflight — verify Context7 MCP, offer Graphify code graph and terse output, and check context-budgeting rules.
 ---
 
 # Mission preflight
@@ -105,7 +105,14 @@ If preferences have no `terse_output` key, show this note, then ask:
 Record the answer. When `enabled`, add the line `Terse output: on` to every assignment you
 dispatch, and follow the `terse-output` skill for your own chatter.
 
-## 4. Preflight report
+## 4. Context budget (automatic, zero-install)
+
+Check whether a context-budgeting MCP (such as `context-mode` tools `ctx_execute` / `ctx_search`) is
+available in this session. Do not install anything; simply note `active` or `built-in policy only`.
+All Agents automatically follow the bounded-read (`<= 300` lines) and filtered-output (`-q --tb=short`,
+`--stat`, `tail -n 50`) operating policy regardless.
+
+## 5. Preflight report
 
 Write the preferences file, then report in full prose:
 
@@ -114,6 +121,7 @@ Write the preferences file, then report in full prose:
 | Context7 MCP | ready / missing | tool that answered |
 | Graphify | graph ready / declined / install failed | version, node count from GRAPH_REPORT.md |
 | Terse output | on / off | |
+| Context budget | active / built-in policy only | MCP name if present, plus bounded reads & quiet logs |
 
 End with `Files created/changed:` listing `.actionboard/preferences.json`, `graphify-out/` if it
 was built, or `none`.

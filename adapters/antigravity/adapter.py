@@ -19,7 +19,7 @@ from aflib.model import adapter_file, adapter_tree, bash_mode, caps
 
 NAME = "antigravity"
 LABEL = "Antigravity CLI"
-MODELS = {"strong": "pro", "fast": "flash", "inherit": "inherit"}
+MODELS = {"strong": "pro", "fast": "flash", "lite": "flash_lite", "inherit": "inherit"}
 
 TOOLS = {
     "dispatch": "`invoke_subagent` with the agent name",

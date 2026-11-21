@@ -1,6 +1,6 @@
 ---
 name: browser-actions
-description: Guide for using Claude's browser action feature (in-app Browser pane and Claude in Chrome) within ActionBoard V5 missions. Use when the user asks "can you browse", "open this site", "test this page", "how do browser actions work", or when a mission needs live web navigation, form filling, screenshots, or web-app debugging.
+description: Use browser actions (in-app Browser pane and Chrome) inside ActionBoard missions for live navigation, form filling, screenshots, or UI debugging.
 targets: [claude]
 ---
 

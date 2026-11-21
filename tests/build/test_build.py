@@ -87,9 +87,39 @@ class Dist(unittest.TestCase):
             self.assertEqual(build.diff_tree(os.path.join(b, t), files), [])
 
     def test_model_config_override(self):
-        files = build.build_target(Source(), "opencode", {"models": {"opencode": {"strong": "anthropic/x"}}})
+        files = build.build_target(Source(), "opencode", {"models": {"opencode": {"strong": "anthropic/x", "lite": "anthropic/lite"}}})
         self.assertIn("\nmodel: anthropic/x\n", files["agents/black-agent.md"])
+        self.assertIn("\nmodel: anthropic/lite\n", files["agents/green-agent.md"])
+        self.assertIn("\nmodel: anthropic/lite\n", files["agents/sandbox-warden.md"])
         self.assertNotIn("\nmodel:", files["agents/red-agent.md"])
+
+    def test_lite_tier_assigned_to_recon_and_sandbox_warden(self):
+        claude = build.build_target(Source(), "claude", {})
+        ag = build.build_target(Source(), "antigravity", {})
+        for agent in ("green-agent", "sandbox-warden"):
+            self.assertIn("\nmodel: haiku\n", claude["agents/%s.md" % agent])
+            self.assertIn("\nmodel: flash_lite\n", ag["agents/%s.md" % agent])
+
+    def test_token_and_speed_optimizations_reach_every_target(self):
+        agent_dirs = {"claude": ("claude", "agents"), "opencode": ("opencode", "agents"),
+                      "antigravity": ("antigravity", "agents"), "codex": ("codex", ".codex", "agents")}
+        skill_dirs = {"claude": ("claude", "skills"), "opencode": ("opencode", "skills"),
+                      "antigravity": ("antigravity", "skills"), "codex": ("codex", ".agents", "skills")}
+        for t, parts in agent_dirs.items():
+            for path in walk(os.path.join(DIST, *parts), (".md", ".toml")):
+                self.assertIn("Bound reads and shell outputs.", read(path), path)
+            black = read(DIST, *parts, "black-agent.md") if t != "codex" else \
+                read(DIST, "codex", ".agents", "skills", "start-mission", "references", "black-agent.md")
+            self.assertIn("Pass by reference:", black, t)
+            self.assertIn("Prompt-cache order:", black, t)
+            skills = os.path.join(DIST, *skill_dirs[t])
+            self.assertTrue(os.path.exists(os.path.join(skills, "mission-report", "scripts", "compile_jsonld.py")), t)
+            self.assertIn("compile_jsonld.py", read(skills, "mission-brief", "SKILL.md"), t)
+            self.assertIn("compile_jsonld.py", read(skills, "mission-plan", "SKILL.md"), t)
+            self.assertIn("compile_jsonld.py", read(skills, "mission-report", "SKILL.md"), t)
+            # Keep every skill description concise so always-loaded prompt overhead stays small.
+            for spath, meta in Lint().skills(skills):
+                self.assertLessEqual(len(meta["description"]), 240, spath)
 
     def test_versions_stamped(self):
         version = read(ROOT, "src", "VERSION").strip()
@@ -239,7 +269,7 @@ class Lint(unittest.TestCase):
         for path in walk(os.path.join(DIST, "antigravity", "agents"), ".md"):
             meta, body = frontmatter.split(read(path))
             self.assertTrue(set(meta["tools"]) <= known, path)
-            self.assertIn(meta["model"], ("inherit", "flash", "pro"))
+            self.assertIn(meta["model"], ("inherit", "flash_lite", "flash", "pro"))
             self.assertTrue(body.lstrip("\n").startswith("# "), path)
 
     def test_claude_agents(self):
@@ -254,7 +284,7 @@ class Lint(unittest.TestCase):
             self.assertTrue(context7 <= tools, path)
             # Smoke 2026-10-25: on Windows the shell tool can be PowerShell; Bash alone left none.
             self.assertEqual("Bash" in tools, "PowerShell" in tools, path)
-            self.assertIn(meta["model"], ("opus", "sonnet", "inherit"))
+            self.assertIn(meta["model"], ("opus", "sonnet", "haiku", "inherit"))
         for path in walk(os.path.join(DIST, "antigravity", "agents"), ".md"):
             meta, _ = frontmatter.split(read(path))
             self.assertIs(meta.get("inheritMcp"), True, path)

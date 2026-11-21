@@ -10,7 +10,7 @@ from aflib.model import adapter_file, adapter_tree, bash_mode, caps, render_text
 
 NAME = "claude"
 LABEL = "Claude Code"
-MODELS = {"strong": "opus", "fast": "sonnet", "inherit": "inherit"}
+MODELS = {"strong": "opus", "fast": "sonnet", "lite": "haiku", "inherit": "inherit"}
 # Plugin-bundled MCP tools are named mcp__plugin_<plugin>_<server>__<tool>.
 CONTEXT7_PLUGIN_TOOLS = "mcp__plugin_actionboard-v5-agentformation_context7__*"
 

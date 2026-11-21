@@ -2,7 +2,7 @@
 name: sandbox-warden
 description: Owns OpenShell sandbox lifecycle — provisioning, policy iteration, and teardown — in an isolated context so environment plumbing never pollutes a Agent's mission context. Use for any multi-sandbox operation.
 role: subagent
-model_tier: inherit
+model_tier: lite
 capabilities:
   read: true
   write: false

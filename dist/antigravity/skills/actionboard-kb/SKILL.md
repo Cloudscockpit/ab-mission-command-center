@@ -1,6 +1,6 @@
 ---
 name: actionboard-kb
-description: Shared ActionBoard V5 knowledge base — the mission knowledge format (JSON-LD envelope, URN identifier scheme, schema.org type mapping) used by the mission-brief, mission-plan, and mission-report skills. Use when another ActionBoard skill points here, or when the user asks how ActionBoard mission documents are structured.
+description: Shared ActionBoard V5 knowledge base for the schema.org JSON-LD envelope, URN scheme, and mission document types.
 ---
 
 > Paths written `<skill-dir>/...` are relative to the directory that contains this SKILL.md.

@@ -1,5 +1,5 @@
 ---
-description: Write a ActionBoard V5 Mission Plan (Agent Assignments with file ownership, Skills Gap analysis, Risk Register) as Markdown plus a schema.org JSON-LD knowledge graph. Use when the user asks to "write the mission plan", "draft assignments", "show the risk register", or at Steps 3-5 of the ActionBoard V5 mission flow, and whenever a plan must be exported as structured or machine-readable output.
+description: Write an ActionBoard V5 Mission Plan (Agent Assignments, Skills Gap, Risk Register) as Markdown + compiled JSON-LD.
 ---
 
 Load the `mission-plan` skill with the `skill` tool and follow its instructions.

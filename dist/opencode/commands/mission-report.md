@@ -1,5 +1,5 @@
 ---
-description: Write a ActionBoard V5 Mission Report recording what each Agent shipped, blocked on, or deferred, as Markdown plus a schema.org JSON-LD knowledge graph. Use when the user asks to "write the mission report", "summarize the mission", "what shipped", or after Agents report back at the end of the ActionBoard V5 mission flow, and whenever a report must be exported as structured or machine-readable output.
+description: Write the ActionBoard V5 Mission Report (Markdown, compiled JSON-LD graph, maturity summary, metrics, HTML dashboard) after Agents finish.
 ---
 
 Load the `mission-report` skill with the `skill` tool and follow its instructions.
