@@ -1,6 +1,11 @@
 # Changelog
 
-## 1.3.1 — 2026-11-18
+## 1.3.1 — 2026-11-21
+
+### Changed
+- Reduced token usage and accelerated agent execution across all targets by tightening skill
+  and agent prompts and moving detailed CLI/reporting references into on-demand reference files.
+  (#14)
 
 ### Added
 - `submit-mission` organizes uploaded files in the Board File Manager under a root `Missions`
