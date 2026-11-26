@@ -79,7 +79,8 @@
       "missions": [
         "verify-and-release-multi-cli-agent-formation-v1",
         "zero-footprint-installer-npx-zero-clone-v1-1-0",
-        "mission-analytics-dashboard-v1-2-0"
+        "mission-analytics-dashboard-v1-2-0",
+        "regional-actionboard-signup-from-plugin"
       ],
       "runs": [
         {
@@ -138,6 +139,48 @@
           },
           "notes": "Blue report-flow wiring: neutrality and build tests passed. SKILL warning wording did not match renderer stderr and git add -N became obsolete, so two follow-up edits. Final wording verified by tests/report and tests/build re-run by Black.",
           "mission": "mission-analytics-dashboard-v1-2-0"
+        },
+        {
+          "run_id": "regional-actionboard-signup-from-plugin-1",
+          "completed_at": "2026-11-26T15:36:33Z",
+          "mode": "actionlist",
+          "stages": {
+            "orchestrator": true,
+            "data": false,
+            "analysis": true,
+            "action": true,
+            "defense": false
+          },
+          "first_attempt": true,
+          "provenance": "scored",
+          "session_id": "02004bf2-ca0a-4dba-bd6b-03a6057b2882",
+          "environment": {
+            "model": "claude-opus-5-5",
+            "target": "claude"
+          },
+          "notes": "A1 region check. bd verified same Cognito pool, client and callback as the plugin (independently reproduced by Yellow); us not established because actionboard.ai returned an HTML shell, so inputs incomplete. Blue's report misquoted the client_id suffix (0070 vs actual ir70); verdict unaffected.",
+          "mission": "regional-actionboard-signup-from-plugin"
+        },
+        {
+          "run_id": "regional-actionboard-signup-from-plugin-2",
+          "completed_at": "2026-11-26T15:36:33Z",
+          "mode": "actionlist",
+          "stages": {
+            "orchestrator": true,
+            "data": true,
+            "analysis": false,
+            "action": true,
+            "defense": true
+          },
+          "first_attempt": true,
+          "provenance": "scored",
+          "session_id": "02004bf2-ca0a-4dba-bd6b-03a6057b2882",
+          "environment": {
+            "model": "claude-opus-5-5",
+            "target": "claude"
+          },
+          "notes": "A2 SIGNUP_REGIONS plus signup_url/open_signup_page/SignupRegionPending in auth.py and common.py. Acceptance met first time and covered by Yellow's tests; needed a rework round (A2b) to widen the browser catch to OSError and fix spacing.",
+          "mission": "regional-actionboard-signup-from-plugin"
         }
       ]
     },
@@ -149,7 +192,8 @@
       "missions": [
         "verify-and-release-multi-cli-agent-formation-v1",
         "zero-footprint-installer-npx-zero-clone-v1-1-0",
-        "mission-analytics-dashboard-v1-2-0"
+        "mission-analytics-dashboard-v1-2-0",
+        "regional-actionboard-signup-from-plugin"
       ],
       "runs": [
         {
@@ -265,6 +309,27 @@
           },
           "notes": "Yellow browser verification. Plan criterion net-log count 0 was unattainable as written (Chrome background traffic); Yellow proved 0 page requests with controls. Black re-ran with puppeteer: 4 widths no scroll, 0 requests, 0 console, JS-off 12 details.",
           "mission": "mission-analytics-dashboard-v1-2-0"
+        },
+        {
+          "run_id": "regional-actionboard-signup-from-plugin-4",
+          "completed_at": "2026-11-26T15:36:34Z",
+          "mode": "actionlist",
+          "stages": {
+            "orchestrator": true,
+            "data": true,
+            "analysis": true,
+            "action": true,
+            "defense": true
+          },
+          "first_attempt": true,
+          "provenance": "scored",
+          "session_id": "02004bf2-ca0a-4dba-bd6b-03a6057b2882",
+          "environment": {
+            "model": "claude-opus-5-5",
+            "target": "claude"
+          },
+          "notes": "A4 34 new tests in tests/report/test_signup.py plus security review (2 M, 3 L, all resolved). Black Agent re-ran all six CI suites: guard 32, build 23, install 55 (1 skip), maturity 18, report 220 (1 skip), installer 23, all OK; build.py --check clean.",
+          "mission": "regional-actionboard-signup-from-plugin"
         }
       ]
     },
@@ -276,7 +341,8 @@
       "missions": [
         "verify-and-release-multi-cli-agent-formation-v1",
         "zero-footprint-installer-npx-zero-clone-v1-1-0",
-        "mission-analytics-dashboard-v1-2-0"
+        "mission-analytics-dashboard-v1-2-0",
+        "regional-actionboard-signup-from-plugin"
       ],
       "runs": [
         {
@@ -393,6 +459,27 @@
           },
           "notes": "Red release: README section, CHANGELOG 1.2.0, versions 1.2.0, dist regenerated. Black verified build --check, git grep, all suites. Defense scored fail: Red report text with its Files created/changed list never reached Black, so the list could not be matched; git status shows only owned files changed.",
           "mission": "mission-analytics-dashboard-v1-2-0"
+        },
+        {
+          "run_id": "regional-actionboard-signup-from-plugin-3",
+          "completed_at": "2026-11-26T15:36:33Z",
+          "mode": "actionlist",
+          "stages": {
+            "orchestrator": false,
+            "data": true,
+            "analysis": false,
+            "action": false,
+            "defense": true
+          },
+          "first_attempt": false,
+          "provenance": "scored",
+          "session_id": "02004bf2-ca0a-4dba-bd6b-03a6057b2882",
+          "environment": {
+            "model": "claude-opus-5-5",
+            "target": "claude"
+          },
+          "notes": "A3 signup command, ab-signup skill, docs, dist. Plan missed two docs that route users to ab-login (re-plan A3b). Yellow found two Medium interrupt-handling defects; green only after fix round A3c.",
+          "mission": "regional-actionboard-signup-from-plugin"
         }
       ]
     }

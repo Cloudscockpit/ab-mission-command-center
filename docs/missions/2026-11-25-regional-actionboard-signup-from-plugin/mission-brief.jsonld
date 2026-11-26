@@ -1,0 +1,449 @@
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Project",
+      "@id": "urn:voltron:mission:regional-actionboard-signup-from-plugin",
+      "name": "Regional ActionBoard sign-up from the plugin",
+      "description": "Let a person with no ActionBoard account choose a region, sign up on that region's ActionBoard site from the Claude plugin, and end up signed in to the plugin.",
+      "identifier": "regional-actionboard-signup-from-plugin",
+      "startDate": "2026-11-25",
+      "subjectOf": {
+        "@id": "urn:voltron:mission:regional-actionboard-signup-from-plugin:brief"
+      }
+    },
+    {
+      "@type": "Report",
+      "@id": "urn:voltron:mission:regional-actionboard-signup-from-plugin:brief",
+      "name": "Mission Brief — Regional ActionBoard sign-up from the plugin",
+      "about": {
+        "@id": "urn:voltron:mission:regional-actionboard-signup-from-plugin"
+      },
+      "datePublished": "2026-11-25",
+      "creator": {
+        "@id": "urn:voltron:lion:main"
+      },
+      "abstract": "Browser-based, region-first sign-up that ends in the existing plugin login. Trial AI Pod creation is deferred to a later mission.",
+      "mainEntity": {
+        "@type": "ItemList",
+        "itemListElement": [
+          {
+            "@id": "urn:voltron:mission:regional-actionboard-signup-from-plugin:scope"
+          },
+          {
+            "@id": "urn:voltron:mission:regional-actionboard-signup-from-plugin:out-of-scope"
+          },
+          {
+            "@id": "urn:voltron:mission:regional-actionboard-signup-from-plugin:success-criteria"
+          },
+          {
+            "@id": "urn:voltron:mission:regional-actionboard-signup-from-plugin:constraints"
+          }
+        ]
+      }
+    },
+    {
+      "@type": "Organization",
+      "@id": "urn:voltron:lion:main",
+      "additionalType": "https://schema.org/SoftwareApplication",
+      "name": "Black Agent",
+      "description": "Mission commander (Black Agent). Plans, delegates, gates, reports."
+    },
+    {
+      "@type": "ItemList",
+      "@id": "urn:voltron:mission:regional-actionboard-signup-from-plugin:scope",
+      "name": "Scope",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "item": {
+            "@id": "urn:voltron:mission:regional-actionboard-signup-from-plugin:scope:1"
+          }
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "item": {
+            "@id": "urn:voltron:mission:regional-actionboard-signup-from-plugin:scope:2"
+          }
+        },
+        {
+          "@type": "ListItem",
+          "position": 3,
+          "item": {
+            "@id": "urn:voltron:mission:regional-actionboard-signup-from-plugin:scope:3"
+          }
+        },
+        {
+          "@type": "ListItem",
+          "position": 4,
+          "item": {
+            "@id": "urn:voltron:mission:regional-actionboard-signup-from-plugin:scope:4"
+          }
+        },
+        {
+          "@type": "ListItem",
+          "position": 5,
+          "item": {
+            "@id": "urn:voltron:mission:regional-actionboard-signup-from-plugin:scope:5"
+          }
+        }
+      ]
+    },
+    {
+      "@type": "DefinedTerm",
+      "@id": "urn:voltron:mission:regional-actionboard-signup-from-plugin:scope:1",
+      "name": "A signup command in the ActionBoard CLI that takes a region choice, us (https://actionboar",
+      "description": "A signup command in the ActionBoard CLI that takes a region choice, us (https://actionboard.ai) or bd (https://actionboard.com.bd), and opens that site's /auth/signup page in the user's browser.",
+      "inDefinedTermSet": {
+        "@id": "urn:voltron:mission:regional-actionboard-signup-from-plugin:scope"
+      }
+    },
+    {
+      "@type": "DefinedTerm",
+      "@id": "urn:voltron:mission:regional-actionboard-signup-from-plugin:scope:2",
+      "name": "After the user has signed up and verified their email, the command runs the existing brows",
+      "description": "After the user has signed up and verified their email, the command runs the existing browser login so the user ends signed in, with tokens stored exactly as login stores them.",
+      "inDefinedTermSet": {
+        "@id": "urn:voltron:mission:regional-actionboard-signup-from-plugin:scope"
+      }
+    },
+    {
+      "@type": "DefinedTerm",
+      "@id": "urn:voltron:mission:regional-actionboard-signup-from-plugin:scope:3",
+      "name": "A new ab-signup skill that asks the user which region they want before anything else, then",
+      "description": "A new ab-signup skill that asks the user which region they want before anything else, then runs the command; the ab-login skill points new users to it.",
+      "inDefinedTermSet": {
+        "@id": "urn:voltron:mission:regional-actionboard-signup-from-plugin:scope"
+      }
+    },
+    {
+      "@type": "DefinedTerm",
+      "@id": "urn:voltron:mission:regional-actionboard-signup-from-plugin:scope:4",
+      "name": "Unit tests, plus updates to the CLI reference, the README, and the changelog.",
+      "description": "Unit tests, plus updates to the CLI reference, the README, and the changelog.",
+      "inDefinedTermSet": {
+        "@id": "urn:voltron:mission:regional-actionboard-signup-from-plugin:scope"
+      }
+    },
+    {
+      "@type": "DefinedTerm",
+      "@id": "urn:voltron:mission:regional-actionboard-signup-from-plugin:scope:5",
+      "name": "A regenerated dist/ for the Claude, Codex, Antigravity, and OpenCode targets.",
+      "description": "A regenerated dist/ for the Claude, Codex, Antigravity, and OpenCode targets.",
+      "inDefinedTermSet": {
+        "@id": "urn:voltron:mission:regional-actionboard-signup-from-plugin:scope"
+      }
+    },
+    {
+      "@type": "ItemList",
+      "@id": "urn:voltron:mission:regional-actionboard-signup-from-plugin:out-of-scope",
+      "name": "Out of Scope",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "item": {
+            "@id": "urn:voltron:mission:regional-actionboard-signup-from-plugin:out-of-scope:1"
+          }
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "item": {
+            "@id": "urn:voltron:mission:regional-actionboard-signup-from-plugin:out-of-scope:2"
+          }
+        },
+        {
+          "@type": "ListItem",
+          "position": 3,
+          "item": {
+            "@id": "urn:voltron:mission:regional-actionboard-signup-from-plugin:out-of-scope:3"
+          }
+        },
+        {
+          "@type": "ListItem",
+          "position": 4,
+          "item": {
+            "@id": "urn:voltron:mission:regional-actionboard-signup-from-plugin:out-of-scope:4"
+          }
+        },
+        {
+          "@type": "ListItem",
+          "position": 5,
+          "item": {
+            "@id": "urn:voltron:mission:regional-actionboard-signup-from-plugin:out-of-scope:5"
+          }
+        },
+        {
+          "@type": "ListItem",
+          "position": 6,
+          "item": {
+            "@id": "urn:voltron:mission:regional-actionboard-signup-from-plugin:out-of-scope:6"
+          }
+        }
+      ]
+    },
+    {
+      "@type": "DefinedTerm",
+      "@id": "urn:voltron:mission:regional-actionboard-signup-from-plugin:out-of-scope:1",
+      "name": "Creating a trial AI Pod",
+      "description": "Creating a trial AI Pod. This is deferred to a later mission; the recon findings about pods_createPod carry forward to it.",
+      "inDefinedTermSet": {
+        "@id": "urn:voltron:mission:regional-actionboard-signup-from-plugin:out-of-scope"
+      }
+    },
+    {
+      "@type": "DefinedTerm",
+      "@id": "urn:voltron:mission:regional-actionboard-signup-from-plugin:out-of-scope:2",
+      "name": "Changes to the ab-marketing site, the edge proxy, the ActionBoard backend, or the Cognito ",
+      "description": "Changes to the ab-marketing site, the edge proxy, the ActionBoard backend, or the Cognito user pools.",
+      "inDefinedTermSet": {
+        "@id": "urn:voltron:mission:regional-actionboard-signup-from-plugin:out-of-scope"
+      }
+    },
+    {
+      "@type": "DefinedTerm",
+      "@id": "urn:voltron:mission:regional-actionboard-signup-from-plugin:out-of-scope:3",
+      "name": "Paid tiers, payment, and billing.",
+      "description": "Paid tiers, payment, and billing.",
+      "inDefinedTermSet": {
+        "@id": "urn:voltron:mission:regional-actionboard-signup-from-plugin:out-of-scope"
+      }
+    },
+    {
+      "@type": "DefinedTerm",
+      "@id": "urn:voltron:mission:regional-actionboard-signup-from-plugin:out-of-scope:4",
+      "name": "A version bump or a release.",
+      "description": "A version bump or a release.",
+      "inDefinedTermSet": {
+        "@id": "urn:voltron:mission:regional-actionboard-signup-from-plugin:out-of-scope"
+      }
+    },
+    {
+      "@type": "DefinedTerm",
+      "@id": "urn:voltron:mission:regional-actionboard-signup-from-plugin:out-of-scope:5",
+      "name": "The known status bug that reports a session as logged in whenever any refresh token exists",
+      "description": "The known status bug that reports a session as logged in whenever any refresh token exists.",
+      "inDefinedTermSet": {
+        "@id": "urn:voltron:mission:regional-actionboard-signup-from-plugin:out-of-scope"
+      }
+    },
+    {
+      "@type": "DefinedTerm",
+      "@id": "urn:voltron:mission:regional-actionboard-signup-from-plugin:out-of-scope:6",
+      "name": "Creating a real ActionBoard account during the mission.",
+      "description": "Creating a real ActionBoard account during the mission.",
+      "inDefinedTermSet": {
+        "@id": "urn:voltron:mission:regional-actionboard-signup-from-plugin:out-of-scope"
+      }
+    },
+    {
+      "@type": "ItemList",
+      "@id": "urn:voltron:mission:regional-actionboard-signup-from-plugin:success-criteria",
+      "name": "Success Criteria",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "item": {
+            "@id": "urn:voltron:mission:regional-actionboard-signup-from-plugin:criterion:1"
+          }
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "item": {
+            "@id": "urn:voltron:mission:regional-actionboard-signup-from-plugin:criterion:2"
+          }
+        },
+        {
+          "@type": "ListItem",
+          "position": 3,
+          "item": {
+            "@id": "urn:voltron:mission:regional-actionboard-signup-from-plugin:criterion:3"
+          }
+        },
+        {
+          "@type": "ListItem",
+          "position": 4,
+          "item": {
+            "@id": "urn:voltron:mission:regional-actionboard-signup-from-plugin:criterion:4"
+          }
+        },
+        {
+          "@type": "ListItem",
+          "position": 5,
+          "item": {
+            "@id": "urn:voltron:mission:regional-actionboard-signup-from-plugin:criterion:5"
+          }
+        }
+      ]
+    },
+    {
+      "@type": "DefinedTerm",
+      "@id": "urn:voltron:mission:regional-actionboard-signup-from-plugin:criterion:1",
+      "name": "The region is always the user's choice",
+      "description": "With --no-input and no --region, the command exits with a non-zero status and an error that names us and bd. Checked by a unit test.",
+      "inDefinedTermSet": {
+        "@id": "urn:voltron:mission:regional-actionboard-signup-from-plugin:success-criteria"
+      }
+    },
+    {
+      "@type": "DefinedTerm",
+      "@id": "urn:voltron:mission:regional-actionboard-signup-from-plugin:criterion:2",
+      "name": "The right page opens and the user ends signed in",
+      "description": "signup --region us opens exactly https://actionboard.ai/auth/signup and signup --region bd opens exactly https://actionboard.com.bd/auth/signup; the command then completes the existing login against a mocked server and stores the tokens. Checked by unit tests with a mocked browser and a mocked HTTP opener.",
+      "inDefinedTermSet": {
+        "@id": "urn:voltron:mission:regional-actionboard-signup-from-plugin:success-criteria"
+      }
+    },
+    {
+      "@type": "DefinedTerm",
+      "@id": "urn:voltron:mission:regional-actionboard-signup-from-plugin:criterion:3",
+      "name": "No password or verification code passes through the plugin",
+      "description": "The signup command has no password or code option and never prompts for either. Checked by a unit test and by Yellow Agent's security review.",
+      "inDefinedTermSet": {
+        "@id": "urn:voltron:mission:regional-actionboard-signup-from-plugin:success-criteria"
+      }
+    },
+    {
+      "@type": "DefinedTerm",
+      "@id": "urn:voltron:mission:regional-actionboard-signup-from-plugin:criterion:4",
+      "name": "A region the plugin cannot log in to is not presented as working",
+      "description": "The command's behaviour per region matches Blue Agent's A1 verdict on whether that region's accounts are the ones the plugin logs in to. Checked by Yellow Agent against the A1 evidence.",
+      "inDefinedTermSet": {
+        "@id": "urn:voltron:mission:regional-actionboard-signup-from-plugin:success-criteria"
+      }
+    },
+    {
+      "@type": "DefinedTerm",
+      "@id": "urn:voltron:mission:regional-actionboard-signup-from-plugin:criterion:5",
+      "name": "The build stays clean",
+      "description": "Every test suite passes and python3 scripts/build.py --check reports no drift. Checked by Yellow Agent running both commands and reporting the exact counts.",
+      "inDefinedTermSet": {
+        "@id": "urn:voltron:mission:regional-actionboard-signup-from-plugin:success-criteria"
+      }
+    },
+    {
+      "@type": "ItemList",
+      "@id": "urn:voltron:mission:regional-actionboard-signup-from-plugin:constraints",
+      "name": "Constraints",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "item": {
+            "@id": "urn:voltron:mission:regional-actionboard-signup-from-plugin:constraint:1"
+          }
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "item": {
+            "@id": "urn:voltron:mission:regional-actionboard-signup-from-plugin:constraint:2"
+          }
+        },
+        {
+          "@type": "ListItem",
+          "position": 3,
+          "item": {
+            "@id": "urn:voltron:mission:regional-actionboard-signup-from-plugin:constraint:3"
+          }
+        },
+        {
+          "@type": "ListItem",
+          "position": 4,
+          "item": {
+            "@id": "urn:voltron:mission:regional-actionboard-signup-from-plugin:constraint:4"
+          }
+        },
+        {
+          "@type": "ListItem",
+          "position": 5,
+          "item": {
+            "@id": "urn:voltron:mission:regional-actionboard-signup-from-plugin:constraint:5"
+          }
+        },
+        {
+          "@type": "ListItem",
+          "position": 6,
+          "item": {
+            "@id": "urn:voltron:mission:regional-actionboard-signup-from-plugin:constraint:6"
+          }
+        },
+        {
+          "@type": "ListItem",
+          "position": 7,
+          "item": {
+            "@id": "urn:voltron:mission:regional-actionboard-signup-from-plugin:constraint:7"
+          }
+        }
+      ]
+    },
+    {
+      "@type": "DefinedTerm",
+      "@id": "urn:voltron:mission:regional-actionboard-signup-from-plugin:constraint:1",
+      "name": "The CLI targets Python 3.9 or newer, uses the standard library only, and must run on Windo",
+      "description": "The CLI targets Python 3.9 or newer, uses the standard library only, and must run on Windows, macOS, and Linux.",
+      "inDefinedTermSet": {
+        "@id": "urn:voltron:mission:regional-actionboard-signup-from-plugin:constraints"
+      }
+    },
+    {
+      "@type": "DefinedTerm",
+      "@id": "urn:voltron:mission:regional-actionboard-signup-from-plugin:constraint:2",
+      "name": "src/ is the canonical source and dist/ is generated from it by scripts/build.py (ADR-0001)",
+      "description": "src/ is the canonical source and dist/ is generated from it by scripts/build.py (ADR-0001); nobody edits dist/ by hand.",
+      "inDefinedTermSet": {
+        "@id": "urn:voltron:mission:regional-actionboard-signup-from-plugin:constraints"
+      }
+    },
+    {
+      "@type": "DefinedTerm",
+      "@id": "urn:voltron:mission:regional-actionboard-signup-from-plugin:constraint:3",
+      "name": "Work happens on the branch feat/ab-signup",
+      "description": "Work happens on the branch feat/ab-signup. Nothing is committed or pushed unless the operator asks.",
+      "inDefinedTermSet": {
+        "@id": "urn:voltron:mission:regional-actionboard-signup-from-plugin:constraints"
+      }
+    },
+    {
+      "@type": "DefinedTerm",
+      "@id": "urn:voltron:mission:regional-actionboard-signup-from-plugin:constraint:4",
+      "name": "Passwords and verification codes are entered only in the browser, never in the chat or the",
+      "description": "Passwords and verification codes are entered only in the browser, never in the chat or the CLI.",
+      "inDefinedTermSet": {
+        "@id": "urn:voltron:mission:regional-actionboard-signup-from-plugin:constraints"
+      }
+    },
+    {
+      "@type": "DefinedTerm",
+      "@id": "urn:voltron:mission:regional-actionboard-signup-from-plugin:constraint:5",
+      "name": "Assumption: the two regions are the ones defined in ab-marketing's src/shared/config/regio",
+      "description": "Assumption: the two regions are the ones defined in ab-marketing's src/shared/config/region.ts, us and bd.",
+      "inDefinedTermSet": {
+        "@id": "urn:voltron:mission:regional-actionboard-signup-from-plugin:constraints"
+      }
+    },
+    {
+      "@type": "DefinedTerm",
+      "@id": "urn:voltron:mission:regional-actionboard-signup-from-plugin:constraint:6",
+      "name": "Assumption: the chosen region is saved only if A1 shows that login needs to know it.",
+      "description": "Assumption: the chosen region is saved only if A1 shows that login needs to know it.",
+      "inDefinedTermSet": {
+        "@id": "urn:voltron:mission:regional-actionboard-signup-from-plugin:constraints"
+      }
+    },
+    {
+      "@type": "DefinedTerm",
+      "@id": "urn:voltron:mission:regional-actionboard-signup-from-plugin:constraint:7",
+      "name": "The operator's uncommitted changes to .actionboard/config.json and .graphifyignore stay ou",
+      "description": "The operator's uncommitted changes to .actionboard/config.json and .graphifyignore stay out of the feature.",
+      "inDefinedTermSet": {
+        "@id": "urn:voltron:mission:regional-actionboard-signup-from-plugin:constraints"
+      }
+    }
+  ]
+}

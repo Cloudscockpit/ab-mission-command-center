@@ -1,0 +1,772 @@
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Project",
+      "@id": "urn:voltron:mission:regional-actionboard-signup-from-plugin",
+      "name": "Regional ActionBoard sign-up from the plugin",
+      "description": "Let a person with no ActionBoard account choose a region, sign up on that region's ActionBoard site from the Claude plugin, and end up signed in to the plugin.",
+      "identifier": "regional-actionboard-signup-from-plugin",
+      "startDate": "2026-11-25",
+      "member": [
+        {
+          "@id": "urn:voltron:lion:blue"
+        },
+        {
+          "@id": "urn:voltron:lion:red"
+        },
+        {
+          "@id": "urn:voltron:lion:yellow"
+        }
+      ],
+      "subjectOf": [
+        {
+          "@id": "urn:voltron:mission:regional-actionboard-signup-from-plugin:brief"
+        },
+        {
+          "@id": "urn:voltron:mission:regional-actionboard-signup-from-plugin:plan"
+        }
+      ]
+    },
+    {
+      "@type": "Report",
+      "@id": "urn:voltron:mission:regional-actionboard-signup-from-plugin:plan",
+      "name": "Mission Plan — Regional ActionBoard sign-up from the plugin",
+      "about": {
+        "@id": "urn:voltron:mission:regional-actionboard-signup-from-plugin"
+      },
+      "datePublished": "2026-11-25",
+      "creator": {
+        "@id": "urn:voltron:lion:main"
+      },
+      "abstract": "Four sequential assignments (Blue A1 region check, Blue A2 sign-up flow, Red A3 command, skill, docs and dist, Yellow A4 tests and security review), eight skills-gap entries with no new skills, and twelve risks. Approved by the operator on 2026-11-25.",
+      "mainEntity": {
+        "@type": "ItemList",
+        "itemListElement": [
+          {
+            "@id": "urn:voltron:mission:regional-actionboard-signup-from-plugin:assignment:1"
+          },
+          {
+            "@id": "urn:voltron:mission:regional-actionboard-signup-from-plugin:assignment:2"
+          },
+          {
+            "@id": "urn:voltron:mission:regional-actionboard-signup-from-plugin:assignment:3"
+          },
+          {
+            "@id": "urn:voltron:mission:regional-actionboard-signup-from-plugin:assignment:4"
+          },
+          {
+            "@id": "urn:voltron:mission:regional-actionboard-signup-from-plugin:gap:1"
+          },
+          {
+            "@id": "urn:voltron:mission:regional-actionboard-signup-from-plugin:gap:2"
+          },
+          {
+            "@id": "urn:voltron:mission:regional-actionboard-signup-from-plugin:gap:3"
+          },
+          {
+            "@id": "urn:voltron:mission:regional-actionboard-signup-from-plugin:gap:4"
+          },
+          {
+            "@id": "urn:voltron:mission:regional-actionboard-signup-from-plugin:gap:5"
+          },
+          {
+            "@id": "urn:voltron:mission:regional-actionboard-signup-from-plugin:gap:6"
+          },
+          {
+            "@id": "urn:voltron:mission:regional-actionboard-signup-from-plugin:gap:7"
+          },
+          {
+            "@id": "urn:voltron:mission:regional-actionboard-signup-from-plugin:gap:8"
+          },
+          {
+            "@id": "urn:voltron:mission:regional-actionboard-signup-from-plugin:risk:1"
+          },
+          {
+            "@id": "urn:voltron:mission:regional-actionboard-signup-from-plugin:risk:2"
+          },
+          {
+            "@id": "urn:voltron:mission:regional-actionboard-signup-from-plugin:risk:3"
+          },
+          {
+            "@id": "urn:voltron:mission:regional-actionboard-signup-from-plugin:risk:4"
+          },
+          {
+            "@id": "urn:voltron:mission:regional-actionboard-signup-from-plugin:risk:5"
+          },
+          {
+            "@id": "urn:voltron:mission:regional-actionboard-signup-from-plugin:risk:6"
+          },
+          {
+            "@id": "urn:voltron:mission:regional-actionboard-signup-from-plugin:risk:7"
+          },
+          {
+            "@id": "urn:voltron:mission:regional-actionboard-signup-from-plugin:risk:8"
+          },
+          {
+            "@id": "urn:voltron:mission:regional-actionboard-signup-from-plugin:risk:9"
+          },
+          {
+            "@id": "urn:voltron:mission:regional-actionboard-signup-from-plugin:risk:10"
+          },
+          {
+            "@id": "urn:voltron:mission:regional-actionboard-signup-from-plugin:risk:11"
+          },
+          {
+            "@id": "urn:voltron:mission:regional-actionboard-signup-from-plugin:risk:12"
+          }
+        ]
+      }
+    },
+    {
+      "@type": "Organization",
+      "@id": "urn:voltron:lion:main",
+      "additionalType": "https://schema.org/SoftwareApplication",
+      "name": "Black Agent",
+      "description": "Mission commander (Black Agent). Plans, delegates, gates, reports."
+    },
+    {
+      "@type": "Organization",
+      "@id": "urn:voltron:lion:blue",
+      "additionalType": "https://schema.org/SoftwareApplication",
+      "name": "Blue Agent",
+      "description": "Data and integrations specialist. APIs, data plumbing, external service wiring.",
+      "additionalProperty": {
+        "@type": "PropertyValue",
+        "name": "specialty",
+        "value": "data-integrations"
+      }
+    },
+    {
+      "@type": "Organization",
+      "@id": "urn:voltron:lion:red",
+      "additionalType": "https://schema.org/SoftwareApplication",
+      "name": "Red Agent",
+      "description": "Rapid execution specialist. Writes code, scaffolds features.",
+      "additionalProperty": {
+        "@type": "PropertyValue",
+        "name": "specialty",
+        "value": "rapid-execution"
+      }
+    },
+    {
+      "@type": "Organization",
+      "@id": "urn:voltron:lion:yellow",
+      "additionalType": "https://schema.org/SoftwareApplication",
+      "name": "Yellow Agent",
+      "description": "Quality and defense specialist. Tests, verification, security review.",
+      "additionalProperty": {
+        "@type": "PropertyValue",
+        "name": "specialty",
+        "value": "quality-defense"
+      }
+    },
+    {
+      "@type": "Action",
+      "@id": "urn:voltron:mission:regional-actionboard-signup-from-plugin:assignment:1",
+      "name": "A1 Region check using public pages only",
+      "description": "Load /auth/signup on https://actionboard.ai and https://actionboard.com.bd and the plugin's /cli login page; request each site's /api/auth/social/Google without following the redirect and compare the Cognito domain and client ID with the plugin's defaults.",
+      "agent": {
+        "@id": "urn:voltron:lion:blue"
+      },
+      "actionStatus": "https://schema.org/PotentialActionStatus",
+      "result": {
+        "@type": "DefinedTerm",
+        "name": "acceptance",
+        "description": "For each region the report states whether the sign-up page works and whether its accounts are the same as the plugin's, different, or not established, with every request's URL and status code. No saved login is used and no form is submitted."
+      }
+    },
+    {
+      "@type": "Action",
+      "@id": "urn:voltron:mission:regional-actionboard-signup-from-plugin:assignment:2",
+      "name": "A2 Regional sign-up flow",
+      "description": "Add a fixed list of regional sign-up addresses and the sign-up flow: open the chosen region's sign-up page, then run the existing browser login.",
+      "agent": {
+        "@id": "urn:voltron:lion:blue"
+      },
+      "actionStatus": "https://schema.org/PotentialActionStatus",
+      "result": {
+        "@type": "DefinedTerm",
+        "name": "acceptance",
+        "description": "Sign-up addresses come only from the fixed us/bd list, never from user input. Existing login behaviour and its tests are unchanged. Only regions A1 verified are offered as working."
+      },
+      "object": [
+        {
+          "@id": "urn:voltron:file:src/skills/mission-report/scripts/actionboard_cli/auth.py"
+        },
+        {
+          "@id": "urn:voltron:file:src/skills/mission-report/scripts/actionboard_cli/common.py"
+        }
+      ],
+      "additionalProperty": [
+        {
+          "@type": "PropertyValue",
+          "name": "dependsOn",
+          "value": "urn:voltron:mission:regional-actionboard-signup-from-plugin:assignment:1"
+        }
+      ]
+    },
+    {
+      "@type": "Action",
+      "@id": "urn:voltron:mission:regional-actionboard-signup-from-plugin:assignment:3",
+      "name": "A3 signup command, ab-signup skill, docs and dist",
+      "description": "Add the signup command and the ab-signup skill, link it from ab-login, update the docs and changelog, then regenerate dist/ with python3 scripts/build.py.",
+      "agent": {
+        "@id": "urn:voltron:lion:red"
+      },
+      "actionStatus": "https://schema.org/PotentialActionStatus",
+      "result": {
+        "@type": "DefinedTerm",
+        "name": "acceptance",
+        "description": "In a terminal the command asks for the region; with --no-input it requires --region us or --region bd and otherwise fails with an error naming both. --json output works. It asks before replacing an existing login. python3 scripts/build.py --check passes."
+      },
+      "object": [
+        {
+          "@id": "urn:voltron:file:src/skills/mission-report/scripts/actionboard_cli/commands.py"
+        },
+        {
+          "@id": "urn:voltron:file:src/skills/mission-report/scripts/submit_mission.py"
+        },
+        {
+          "@id": "urn:voltron:file:src/skills/ab-signup/SKILL.md"
+        },
+        {
+          "@id": "urn:voltron:file:src/skills/ab-login/SKILL.md"
+        },
+        {
+          "@id": "urn:voltron:file:src/skills/submit-mission/references/cli-reference.md"
+        },
+        {
+          "@id": "urn:voltron:file:README.md"
+        },
+        {
+          "@id": "urn:voltron:file:CHANGELOG.md"
+        },
+        {
+          "@id": "urn:voltron:file:dist/"
+        }
+      ],
+      "additionalProperty": [
+        {
+          "@type": "PropertyValue",
+          "name": "dependsOn",
+          "value": "urn:voltron:mission:regional-actionboard-signup-from-plugin:assignment:2"
+        }
+      ]
+    },
+    {
+      "@type": "Action",
+      "@id": "urn:voltron:mission:regional-actionboard-signup-from-plugin:assignment:4",
+      "name": "A4 Tests and security review",
+      "description": "Write the tests, run every suite, and review the change for security.",
+      "agent": {
+        "@id": "urn:voltron:lion:yellow"
+      },
+      "actionStatus": "https://schema.org/PotentialActionStatus",
+      "result": {
+        "@type": "DefinedTerm",
+        "name": "acceptance",
+        "description": "Tests cover both regions, a missing region, an invalid region, a timeout, a bad nonce, and a declined replacement of an existing login. The report gives the exact test command and pass/fail counts, and security findings rated by severity."
+      },
+      "object": [
+        {
+          "@id": "urn:voltron:file:tests/report/test_signup.py"
+        },
+        {
+          "@id": "urn:voltron:file:tests/report/test_browser_login.py"
+        }
+      ],
+      "additionalProperty": [
+        {
+          "@type": "PropertyValue",
+          "name": "dependsOn",
+          "value": "urn:voltron:mission:regional-actionboard-signup-from-plugin:assignment:3"
+        }
+      ]
+    },
+    {
+      "@type": "SoftwareSourceCode",
+      "@id": "urn:voltron:file:src/skills/mission-report/scripts/actionboard_cli/auth.py",
+      "name": "src/skills/mission-report/scripts/actionboard_cli/auth.py",
+      "codeRepository": "ab-mission-command-center"
+    },
+    {
+      "@type": "SoftwareSourceCode",
+      "@id": "urn:voltron:file:src/skills/mission-report/scripts/actionboard_cli/common.py",
+      "name": "src/skills/mission-report/scripts/actionboard_cli/common.py",
+      "codeRepository": "ab-mission-command-center"
+    },
+    {
+      "@type": "SoftwareSourceCode",
+      "@id": "urn:voltron:file:src/skills/mission-report/scripts/actionboard_cli/commands.py",
+      "name": "src/skills/mission-report/scripts/actionboard_cli/commands.py",
+      "codeRepository": "ab-mission-command-center"
+    },
+    {
+      "@type": "SoftwareSourceCode",
+      "@id": "urn:voltron:file:src/skills/mission-report/scripts/submit_mission.py",
+      "name": "src/skills/mission-report/scripts/submit_mission.py",
+      "codeRepository": "ab-mission-command-center"
+    },
+    {
+      "@type": "SoftwareSourceCode",
+      "@id": "urn:voltron:file:src/skills/ab-signup/SKILL.md",
+      "name": "src/skills/ab-signup/SKILL.md",
+      "codeRepository": "ab-mission-command-center"
+    },
+    {
+      "@type": "SoftwareSourceCode",
+      "@id": "urn:voltron:file:src/skills/ab-login/SKILL.md",
+      "name": "src/skills/ab-login/SKILL.md",
+      "codeRepository": "ab-mission-command-center"
+    },
+    {
+      "@type": "SoftwareSourceCode",
+      "@id": "urn:voltron:file:src/skills/submit-mission/references/cli-reference.md",
+      "name": "src/skills/submit-mission/references/cli-reference.md",
+      "codeRepository": "ab-mission-command-center"
+    },
+    {
+      "@type": "SoftwareSourceCode",
+      "@id": "urn:voltron:file:README.md",
+      "name": "README.md",
+      "codeRepository": "ab-mission-command-center"
+    },
+    {
+      "@type": "SoftwareSourceCode",
+      "@id": "urn:voltron:file:CHANGELOG.md",
+      "name": "CHANGELOG.md",
+      "codeRepository": "ab-mission-command-center"
+    },
+    {
+      "@type": "SoftwareSourceCode",
+      "@id": "urn:voltron:file:dist/",
+      "name": "dist/",
+      "codeRepository": "ab-mission-command-center"
+    },
+    {
+      "@type": "SoftwareSourceCode",
+      "@id": "urn:voltron:file:tests/report/test_signup.py",
+      "name": "tests/report/test_signup.py",
+      "codeRepository": "ab-mission-command-center"
+    },
+    {
+      "@type": "SoftwareSourceCode",
+      "@id": "urn:voltron:file:tests/report/test_browser_login.py",
+      "name": "tests/report/test_browser_login.py",
+      "codeRepository": "ab-mission-command-center"
+    },
+    {
+      "@type": "DefinedTerm",
+      "@id": "urn:voltron:mission:regional-actionboard-signup-from-plugin:gap:1",
+      "name": "Regional site check",
+      "additionalProperty": [
+        {
+          "@type": "PropertyValue",
+          "name": "status",
+          "value": "covered"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "notes",
+          "value": "Registry action api-integration, Blue Agent. Public GET requests only."
+        }
+      ]
+    },
+    {
+      "@type": "DefinedTerm",
+      "@id": "urn:voltron:mission:regional-actionboard-signup-from-plugin:gap:2",
+      "name": "Sign-up flow in the CLI",
+      "additionalProperty": [
+        {
+          "@type": "PropertyValue",
+          "name": "status",
+          "value": "covered"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "notes",
+          "value": "Registry action api-integration, Blue Agent. Reuses the existing local callback, nonce, and PKCE code in auth.py."
+        }
+      ]
+    },
+    {
+      "@type": "DefinedTerm",
+      "@id": "urn:voltron:mission:regional-actionboard-signup-from-plugin:gap:3",
+      "name": "CLI command, skill file, and docs",
+      "additionalProperty": [
+        {
+          "@type": "PropertyValue",
+          "name": "status",
+          "value": "covered"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "notes",
+          "value": "Registry actions code-implementation and file-scaffolding, Red Agent."
+        }
+      ]
+    },
+    {
+      "@type": "DefinedTerm",
+      "@id": "urn:voltron:mission:regional-actionboard-signup-from-plugin:gap:4",
+      "name": "Building dist/",
+      "additionalProperty": [
+        {
+          "@type": "PropertyValue",
+          "name": "status",
+          "value": "covered"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "notes",
+          "value": "scripts/build.py, run by Red Agent; CI runs --check."
+        }
+      ]
+    },
+    {
+      "@type": "DefinedTerm",
+      "@id": "urn:voltron:mission:regional-actionboard-signup-from-plugin:gap:5",
+      "name": "Tests",
+      "additionalProperty": [
+        {
+          "@type": "PropertyValue",
+          "name": "status",
+          "value": "covered"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "notes",
+          "value": "Registry action test-authoring, Yellow Agent."
+        }
+      ]
+    },
+    {
+      "@type": "DefinedTerm",
+      "@id": "urn:voltron:mission:regional-actionboard-signup-from-plugin:gap:6",
+      "name": "Security review",
+      "additionalProperty": [
+        {
+          "@type": "PropertyValue",
+          "name": "status",
+          "value": "covered"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "notes",
+          "value": "Registry action security-review, Yellow Agent."
+        }
+      ]
+    },
+    {
+      "@type": "DefinedTerm",
+      "@id": "urn:voltron:mission:regional-actionboard-signup-from-plugin:gap:7",
+      "name": "Checking current Cognito behaviour",
+      "additionalProperty": [
+        {
+          "@type": "PropertyValue",
+          "name": "status",
+          "value": "covered"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "notes",
+          "value": "Registry action version-lookup; its precondition is met because Context7 answered during preflight."
+        }
+      ]
+    },
+    {
+      "@type": "DefinedTerm",
+      "@id": "urn:voltron:mission:regional-actionboard-signup-from-plugin:gap:8",
+      "name": "Real sign-up in a browser",
+      "additionalProperty": [
+        {
+          "@type": "PropertyValue",
+          "name": "status",
+          "value": "use-existing-skill:browser-actions"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "notes",
+          "value": "Conditional on per-site approval, and the operator enters any credentials. Not part of this plan."
+        }
+      ]
+    },
+    {
+      "@type": "Thing",
+      "@id": "urn:voltron:mission:regional-actionboard-signup-from-plugin:risk:1",
+      "additionalType": "Risk",
+      "name": "A region's accounts live in a different Cognito pool, so a user signs up and then cannot log in through the plugin.",
+      "additionalProperty": [
+        {
+          "@type": "PropertyValue",
+          "name": "category",
+          "value": "integration"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "severity",
+          "value": "H"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "mitigation",
+          "value": "A1 compares each region with the plugin's defaults before any code is written. If they differ or cannot be established, Black Agent stops and asks the operator."
+        }
+      ]
+    },
+    {
+      "@type": "Thing",
+      "@id": "urn:voltron:mission:regional-actionboard-signup-from-plugin:risk:2",
+      "additionalType": "Risk",
+      "name": "A site hides its Cognito settings or blocks the check.",
+      "additionalProperty": [
+        {
+          "@type": "PropertyValue",
+          "name": "category",
+          "value": "integration"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "severity",
+          "value": "M"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "mitigation",
+          "value": "A1 reports not established instead of guessing, and the operator decides."
+        }
+      ]
+    },
+    {
+      "@type": "Thing",
+      "@id": "urn:voltron:mission:regional-actionboard-signup-from-plugin:risk:3",
+      "additionalType": "Risk",
+      "name": "The default names say absaas-dev and the site's social-login callback is a development Lambda in every environment.",
+      "additionalProperty": [
+        {
+          "@type": "PropertyValue",
+          "name": "category",
+          "value": "integration"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "severity",
+          "value": "H"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "mitigation",
+          "value": "Recorded for the operator to confirm before any release."
+        }
+      ]
+    },
+    {
+      "@type": "Thing",
+      "@id": "urn:voltron:mission:regional-actionboard-signup-from-plugin:risk:4",
+      "additionalType": "Risk",
+      "name": "A new user may not have an ActionBoard profile or any Pod yet, so Pod selection finds nothing.",
+      "additionalProperty": [
+        {
+          "@type": "PropertyValue",
+          "name": "category",
+          "value": "integration"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "severity",
+          "value": "M"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "mitigation",
+          "value": "signup ends with a clear no-Pods-yet message instead of an error."
+        }
+      ]
+    },
+    {
+      "@type": "Thing",
+      "@id": "urn:voltron:mission:regional-actionboard-signup-from-plugin:risk:5",
+      "additionalType": "Risk",
+      "name": "A stale dist/ fails CI, because CI runs build.py --check.",
+      "additionalProperty": [
+        {
+          "@type": "PropertyValue",
+          "name": "category",
+          "value": "integration"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "severity",
+          "value": "M"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "mitigation",
+          "value": "Only Red Agent writes dist/, and only through build.py; Yellow Agent runs --check."
+        }
+      ]
+    },
+    {
+      "@type": "Thing",
+      "@id": "urn:voltron:mission:regional-actionboard-signup-from-plugin:risk:6",
+      "additionalType": "Risk",
+      "name": "After email verification the site ends at its own login page and cannot hand control back to the plugin.",
+      "additionalProperty": [
+        {
+          "@type": "PropertyValue",
+          "name": "category",
+          "value": "technical"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "severity",
+          "value": "M"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "mitigation",
+          "value": "The plugin starts its own login after sign-up. The site's unvalidated ?redirect= parameter is not used."
+        }
+      ]
+    },
+    {
+      "@type": "Thing",
+      "@id": "urn:voltron:mission:regional-actionboard-signup-from-plugin:risk:7",
+      "additionalType": "Risk",
+      "name": "Email verification takes longer than the five-minute login wait.",
+      "additionalProperty": [
+        {
+          "@type": "PropertyValue",
+          "name": "category",
+          "value": "technical"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "severity",
+          "value": "M"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "mitigation",
+          "value": "The user can run login later to finish signing in, and the command says so."
+        }
+      ]
+    },
+    {
+      "@type": "Thing",
+      "@id": "urn:voltron:mission:regional-actionboard-signup-from-plugin:risk:8",
+      "additionalType": "Risk",
+      "name": "A password or verification code reaches the chat, the CLI, or the logs.",
+      "additionalProperty": [
+        {
+          "@type": "PropertyValue",
+          "name": "category",
+          "value": "technical"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "severity",
+          "value": "H"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "mitigation",
+          "value": "The plugin never calls auth_register; sign-up happens only in the browser, and tests check that no password or code option exists."
+        }
+      ]
+    },
+    {
+      "@type": "Thing",
+      "@id": "urn:voltron:mission:regional-actionboard-signup-from-plugin:risk:9",
+      "additionalType": "Risk",
+      "name": "New users have an account but cannot run missions until they have a Pod.",
+      "additionalProperty": [
+        {
+          "@type": "PropertyValue",
+          "name": "category",
+          "value": "scope"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "severity",
+          "value": "M"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "mitigation",
+          "value": "Accepted for this mission; the command's final message says so."
+        }
+      ]
+    },
+    {
+      "@type": "Thing",
+      "@id": "urn:voltron:mission:regional-actionboard-signup-from-plugin:risk:10",
+      "additionalType": "Risk",
+      "name": "Trial Pod work creeps back into this mission.",
+      "additionalProperty": [
+        {
+          "@type": "PropertyValue",
+          "name": "category",
+          "value": "scope"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "severity",
+          "value": "L"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "mitigation",
+          "value": "Out of scope by the operator's decision; recon findings are carried to the later mission."
+        }
+      ]
+    },
+    {
+      "@type": "Thing",
+      "@id": "urn:voltron:mission:regional-actionboard-signup-from-plugin:risk:11",
+      "additionalType": "Risk",
+      "name": "Signing up replaces the saved login of the person already signed in.",
+      "additionalProperty": [
+        {
+          "@type": "PropertyValue",
+          "name": "category",
+          "value": "data-loss"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "severity",
+          "value": "M"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "mitigation",
+          "value": "The command detects an existing session and asks before replacing it; with --no-input it refuses unless told to replace."
+        }
+      ]
+    },
+    {
+      "@type": "Thing",
+      "@id": "urn:voltron:mission:regional-actionboard-signup-from-plugin:risk:12",
+      "additionalType": "Risk",
+      "name": "Board sync from the installed plugin 1.3.0 would upload files to the wrong S3 bucket.",
+      "additionalProperty": [
+        {
+          "@type": "PropertyValue",
+          "name": "category",
+          "value": "data-loss"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "severity",
+          "value": "H"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "mitigation",
+          "value": "Board sync for this mission runs the repository's 1.3.1 CLI, which uploads through the edge proxy to the Pod's bucket."
+        }
+      ]
+    }
+  ]
+}

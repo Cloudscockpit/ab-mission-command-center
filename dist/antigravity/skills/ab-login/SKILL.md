@@ -7,6 +7,8 @@ description: Log in to ActionBoard from the CLI and select a Pod and Board. Use 
 
 # ActionBoard Login, Pod and Board Selection
 
+No ActionBoard account yet? Use the ab-signup skill first, then come back here.
+
 Signs the user in once, then saves the Pod and Board that `submit-mission` and `fetch-mission`
 use. Tokens are cached and renewed automatically, so the user logs in again only when the
 refresh token itself expires.

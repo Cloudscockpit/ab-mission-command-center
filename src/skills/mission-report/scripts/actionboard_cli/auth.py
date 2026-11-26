@@ -604,3 +604,41 @@ def ensure_pod_id_token(settings, main_token, pod_id, pod_hostname=None, opener=
     return pod_id_token
 
 
+class SignupRegionPending(Exception):
+    """Raised when a region's sign-up works but its accounts cannot sign in to the plugin yet."""
+
+    def __init__(self, region, label, signup_url):
+        super().__init__("%s sign-up is not available for the plugin yet" % label)
+        self.region = region
+        self.label = label
+        self.signup_url = signup_url
+
+
+def _signup_region(region):
+    """Normalise a region code and return (code, config); ValueError lists the valid codes."""
+    from .common import SIGNUP_REGIONS
+    code = region.strip().lower() if isinstance(region, str) else ""
+    if code not in SIGNUP_REGIONS:
+        raise ValueError("unknown region %r; choose one of: %s" % (region, ", ".join(SIGNUP_REGIONS)))
+    return code, SIGNUP_REGIONS[code]
+
+
+def signup_url(region):
+    """Return the sign-up page URL for a region code, built only from SIGNUP_REGIONS."""
+    _, entry = _signup_region(region)
+    return entry["site"] + entry["signup_path"]
+
+
+def open_signup_page(region, browser_open=None):
+    """Open a region's sign-up page; raise SignupRegionPending without opening if plugin login is unavailable."""
+    import webbrowser
+    code, entry = _signup_region(region)
+    url = signup_url(code)
+    if not entry["plugin_login"]:
+        raise SignupRegionPending(code, entry["label"], url)
+    opener = browser_open or webbrowser.open
+    try:
+        opened = bool(opener(url))
+    except (webbrowser.Error, OSError):
+        opened = False
+    return {"region": code, "label": entry["label"], "signup_url": url, "opened": opened}
