@@ -31,7 +31,7 @@ profiles: orchestrator | data | analysis | action | defense | train | inference 
 
 required:
   --usecase <p>          profile from the table above
-  --name <n>             sandbox name
+  --name <n>             sandbox name, at most 19 characters (gateway limit)
 
 targeting:
   --workspace <w>        workspace (default: $OPENSHELL_WORKSPACE or "default")
@@ -94,6 +94,12 @@ done
 
 [[ -n "$USECASE" ]] || usage
 [[ -n "$NAME" ]] || usage
+
+# The gateway rejects longer names at create time ("name exceeds maximum length
+# (21 > 19)"). Check here so --dry-run catches it before the plan is approved.
+MAX_NAME_LEN=19
+[[ ${#NAME} -le $MAX_NAME_LEN ]] || \
+  die "sandbox name '$NAME' is ${#NAME} characters; the gateway allows at most $MAX_NAME_LEN"
 
 # ---------- profile resolution -------------------------------------------
 p_image="base"; p_cpu="2"; p_mem="4Gi"; p_gpu=""; p_policy=""; p_agent="claude"; p_agent_role=""
@@ -199,7 +205,8 @@ WS_ARGS=()
 [[ -n "$WORKSPACE" ]] && WS_ARGS=(--workspace "$WORKSPACE")
 
 phase_of() {
-  openshell sandbox get "$NAME" "${WS_ARGS[@]}" --output json 2>/dev/null \
+  # ${arr[@]+...}: an empty array is "unbound" under set -u on macOS Bash 3.2.
+  openshell sandbox get "$NAME" ${WS_ARGS[@]+"${WS_ARGS[@]}"} --output json 2>/dev/null \
     | python3 -c 'import json,sys
 try:
     d = json.load(sys.stdin)

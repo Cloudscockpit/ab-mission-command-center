@@ -48,14 +48,19 @@ done
 [[ -n "$NAME" || -n "$SELECTOR" ]] || usage
 command -v openshell >/dev/null 2>&1 || die "openshell CLI not found in PATH"
 
+# Must run on the Bash 3.2 that ships with macOS: no `mapfile`, and under `set -u`
+# an empty array expands as "unbound", so optional args use ${arr[@]+"${arr[@]}"}.
 WS_ARGS=()
 [[ -n "$WORKSPACE" ]] && WS_ARGS=(--workspace "$WORKSPACE")
 
+TARGETS=()
 if [[ -n "$NAME" ]]; then
   TARGETS=("$NAME")
 else
-  mapfile -t TARGETS < <(
-    openshell sandbox list "${WS_ARGS[@]}" --selector "$SELECTOR" -o json \
+  while IFS= read -r target; do
+    [[ -n "$target" ]] && TARGETS+=("$target")
+  done < <(
+    openshell sandbox list ${WS_ARGS[@]+"${WS_ARGS[@]}"} --selector "$SELECTOR" -o json \
       | python3 -c 'import json,sys
 d = json.load(sys.stdin)
 items = d if isinstance(d, list) else (d.get("sandboxes") or d.get("items") or [])
@@ -80,8 +85,8 @@ for t in "${TARGETS[@]}"; do
     openshell sandbox download "$t" output "$ARCHIVE/$t" || log "archive failed for $t (continuing)"
   fi
   log "$MODE $t"
-  openshell sandbox "$MODE" "$t" "${WS_ARGS[@]}"
+  openshell sandbox "$MODE" "$t" ${WS_ARGS[@]+"${WS_ARGS[@]}"}
 done
 
 log "done. remaining:"
-openshell sandbox list "${WS_ARGS[@]}" || true
+openshell sandbox list ${WS_ARGS[@]+"${WS_ARGS[@]}"} || true
