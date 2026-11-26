@@ -12,6 +12,7 @@ sys.path.insert(0, os.path.join(ROOT, "scripts"))
 
 import build  # noqa: E402
 from aflib import frontmatter, render  # noqa: E402
+from aflib.common import ACTIONBOARD_MCP_SOURCE  # noqa: E402
 from aflib.model import Source  # noqa: E402
 
 DIST = os.path.join(ROOT, "dist")
@@ -250,6 +251,23 @@ class Lint(unittest.TestCase):
         self.assertEqual(json.loads(read(DIST, "opencode", "actionboard", "mcp.json"))["mcp"]["context7"]["url"], url)
         self.assertIn('url = "%s"' % url, read(DIST, "codex", ".codex", "actionboard", "mcp.toml"))
 
+    def test_actionboard_mcp_configured_for_every_target(self):
+        args = ["--from", ACTIONBOARD_MCP_SOURCE, "actionboard-mcp"]
+        for parts in (("claude", ".mcp.json"), ("antigravity", "mcp_config.json")):
+            self.assertEqual(json.loads(read(DIST, *parts))["mcpServers"]["actionboard"],
+                             {"command": "uvx", "args": args}, parts)
+        self.assertEqual(json.loads(read(DIST, "opencode", "actionboard", "mcp.json"))["mcp"]["actionboard"],
+                         {"type": "local", "command": ["uvx"] + args, "enabled": True})
+        toml = read(DIST, "codex", ".codex", "actionboard", "mcp.toml")
+        self.assertIn('[mcp_servers.actionboard]\ncommand = "uvx"\nargs = %s\n' % json.dumps(args), toml)
+        self.assertIn("tool_timeout_sec = 330", toml)  # ab_login waits for the browser sign-in
+        # The skills drive the board only through these tools, never the bundled CLI script.
+        for skill in ("ab-login", "fetch-mission", "submit-mission"):
+            text = read(DIST, "claude", "skills", skill, "SKILL.md")
+            self.assertIn("ab_", text, skill)
+            self.assertNotIn("submit_mission.py", text, skill)
+        self.assertNotIn("submit_mission.py", read(DIST, "claude", "agents", "black-agent.md"))
+
     def test_codex_agents(self):
         try:
             import tomllib
@@ -274,8 +292,9 @@ class Lint(unittest.TestCase):
 
     def test_claude_agents(self):
         context7 = {"mcp__plugin_actionboard-v5-agentformation_context7__*", "mcp__context7__*"}
+        actionboard = {"mcp__plugin_actionboard-v5-agentformation_actionboard__*", "mcp__actionboard__*"}
         allowed = {"Read", "Write", "Edit", "Bash", "PowerShell", "Glob", "Grep", "WebFetch", "WebSearch",
-                   "Agent", "Skill"} | context7
+                   "Agent", "Skill"} | context7 | actionboard
         for path in walk(os.path.join(DIST, "claude", "agents"), ".md"):
             meta, _ = frontmatter.split(read(path))
             tools = set(meta["tools"].split(", "))
@@ -284,6 +303,8 @@ class Lint(unittest.TestCase):
             self.assertTrue(context7 <= tools, path)
             # Smoke 2026-10-25: on Windows the shell tool can be PowerShell; Bash alone left none.
             self.assertEqual("Bash" in tools, "PowerShell" in tools, path)
+            # Only the commander talks to the board; it needs the ActionBoard MCP tools as a subagent too.
+            self.assertEqual(actionboard <= tools, path.endswith("black-agent.md"), path)
             self.assertIn(meta["model"], ("opus", "sonnet", "haiku", "inherit"))
         for path in walk(os.path.join(DIST, "antigravity", "agents"), ".md"):
             meta, _ = frontmatter.split(read(path))

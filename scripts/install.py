@@ -127,10 +127,12 @@ def merge_agents_md(path, block, dry):
         write_atomic(path, text)
 
 
-# ---------------------------------------------------------------- merges (Context7 MCP)
+# ---------------------------------------------------------------- merges (MCP servers)
+# Servers the user configured themselves are never touched. Servers an earlier install added
+# (`previous`) are ours: they are refreshed, so an upgrade picks up newly shipped servers.
 
-def merged_opencode_mcp(path, ours):
-    """opencode.json with mcp.context7 added; None when a context7 server already exists."""
+def merged_opencode_mcp(path, ours, previous=()):
+    """(opencode.json with our missing MCP servers added, names added); text None when nothing changes."""
     data = {"$schema": "https://opencode.ai/config.json"}
     if os.path.exists(path):
         with open(path, encoding="utf-8") as fh:
@@ -139,23 +141,41 @@ def merged_opencode_mcp(path, ours):
             except ValueError:
                 raise SystemExit(
                     "%s is not plain JSON (comments?), so the installer cannot merge into it.\n"
-                    "Add the mandatory Context7 MCP by hand, then re-run:\n%s" % (path, ours))
-    if (data.get("mcp") or {}).get("context7"):
-        return None
-    data.setdefault("mcp", {})["context7"] = json.loads(ours)["mcp"]["context7"]
-    return json.dumps(data, indent=2) + "\n"
+                    "Add these MCP servers by hand, then re-run:\n%s" % (path, ours))
+    servers = json.loads(ours)["mcp"]
+    mcp = dict(data.get("mcp") or {})
+    for name in previous:
+        mcp.pop(name, None)
+    added = [name for name in servers if name not in mcp]
+    if not added and not previous:
+        return None, []
+    for name in added:
+        mcp[name] = servers[name]
+    data["mcp"] = mcp
+    return json.dumps(data, indent=2) + "\n", added
 
 
 def merged_codex_mcp(path, block):
-    """config.toml with a marked [mcp_servers.context7] block; None when one exists."""
+    """(config.toml with a marked block of our missing [mcp_servers.*], names added); text None when unchanged."""
     text = ""
     if os.path.exists(path):
         with open(path, encoding="utf-8") as fh:
             text = fh.read()
-    if re.search(r'^\s*\[mcp_servers\.("?)context7\1\]', text, re.M):
-        return None
-    body = "%s\n%s%s\n" % (CONTEXT7_BEGIN, block.rstrip("\n") + "\n", CONTEXT7_END)
-    return (text.rstrip("\n") + "\n\n" if text.strip() else "") + body
+    start, end = text.find(CONTEXT7_BEGIN), text.find(CONTEXT7_END)
+    ours = start != -1 and end != -1
+    if ours:  # the block an earlier install wrote: rebuilt below
+        text = (text[:start].rstrip("\n") + "\n" + text[end + len(CONTEXT7_END):].lstrip("\n")).strip("\n")
+    sections = [(m.group(1), m.group(0).strip("\n")) for m in
+                re.finditer(r"(?ms)^\[mcp_servers\.([\w-]+)\]\n.*?(?=^\[mcp_servers\.|\Z)", block)]
+    added = [(name, sec) for name, sec in sections
+             if not re.search(r'^\s*\[mcp_servers\.("?)%s\1\]' % re.escape(name), text, re.M)]
+    if not added and not ours:
+        return None, []
+    head = text.rstrip("\n") + "\n\n" if text.strip() else ""
+    if not added:
+        return head.rstrip("\n") + "\n", []
+    body = "%s\n%s\n%s\n" % (CONTEXT7_BEGIN, "\n\n".join(sec for _, sec in added), CONTEXT7_END)
+    return head + body, [name for name, _ in added]
 
 
 # ---------------------------------------------------------------- optional cost tools
@@ -322,16 +342,17 @@ def install(target, scope, project, files, version, force, dry):
         elif m["kind"] == "agents-md":
             merged.append((m["path"], lambda p=m["path"]: merge_agents_md(p, files["AGENTS.actionboard.md"], False)))
             continue
-        else:  # Context7: never touch a server the user configured themselves
+        else:  # MCP servers: never touch one the user configured themselves
             m["created"] = old["created"] if old else not os.path.exists(m["path"])
             if m["kind"] == "codex-mcp":
-                text = merged_codex_mcp(m["path"], files[".codex/actionboard/mcp.toml"])
+                text, m["servers"] = merged_codex_mcp(m["path"], files[".codex/actionboard/mcp.toml"])
             else:
-                text = merged_opencode_mcp(m["path"], files["actionboard/mcp.json"])
+                previous_servers = old.get("servers", ["context7"]) if old else []
+                text, m["servers"] = merged_opencode_mcp(m["path"], files["actionboard/mcp.json"], previous_servers)
             if text is None:
                 if not old:  # configured by the user: leave it, and do not remove it later
                     record["merges"].remove(m)
-                    print("Context7 MCP already configured in %s; leaving it as is." % m["path"])
+                    print("MCP servers already configured in %s; leaving them as they are." % m["path"])
                 continue
         merged.append((m["path"], lambda p=m["path"], t=text: write_atomic(p, t)))
 

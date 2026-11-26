@@ -3,6 +3,14 @@
     "context7": {
       "type": "http",
       "url": "https://mcp.context7.com/mcp"
+    },
+    "actionboard": {
+      "command": "uvx",
+      "args": [
+        "--from",
+        "git+https://github.com/Cloudscockpit/ab-mission-command-center#subdirectory=packages/actionboard-mcp",
+        "actionboard-mcp"
+      ]
     }
   }
 }

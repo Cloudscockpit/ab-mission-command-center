@@ -23,6 +23,8 @@ MANIFEST = "actionboard-install.json"
 HOOK_MARK = "--cli codex --event"
 SHARED_DIRS = {".agents", "plugins", "skills"}
 AGENTS_BEGIN, AGENTS_END = "<!-- actionboard:begin -->", "<!-- actionboard:end -->"
+# Marks the Codex MCP block, which now holds every server ActionBoard adds; the text is unchanged so
+# blocks written by older installs are still found and removed.
 CONTEXT7_BEGIN, CONTEXT7_END = "# actionboard:begin context7", "# actionboard:end context7"
 TARGETS = ("opencode", "codex", "antigravity")
 
@@ -104,12 +106,14 @@ def unmerge_agents_md(path):
         os.remove(path)
 
 
-def unmerge_opencode_mcp(path, created):
+def unmerge_opencode_mcp(path, created, servers=("context7",)):
+    """Remove the MCP servers the install added (older installs recorded none and added only context7)."""
     if not os.path.exists(path):
         return
     with open(path, encoding="utf-8") as fh:
         data = json.load(fh)
-    (data.get("mcp") or {}).pop("context7", None)
+    for name in servers:
+        (data.get("mcp") or {}).pop(name, None)
     if "mcp" in data and not data["mcp"]:
         del data["mcp"]
     if created and set(data) <= {"$schema"}:
@@ -186,7 +190,7 @@ def uninstall(target, scope, project):
         elif m["kind"] == "codex-mcp":
             unmerge_codex_mcp(m["path"], m.get("created", False))
         elif m["kind"] == "opencode-mcp":
-            unmerge_opencode_mcp(m["path"], m.get("created", False))
+            unmerge_opencode_mcp(m["path"], m.get("created", False), m.get("servers", ("context7",)))
     os.remove(manifest_path)
     dirs.add(os.path.dirname(manifest_path))
     roots = {os.path.abspath(d) for _, d in mapping}

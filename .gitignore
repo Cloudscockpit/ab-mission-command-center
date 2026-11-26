@@ -14,3 +14,5 @@ mission-plan-api.md
 # uvx-from-path packaging leftovers
 packages/installer-py/build/
 *.egg-info/
+.venv/
+packages/actionboard-mcp/uv.lock

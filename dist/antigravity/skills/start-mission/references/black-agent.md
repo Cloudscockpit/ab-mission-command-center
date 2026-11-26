@@ -24,7 +24,7 @@ three document skills shipped with ActionBoard — do not hand-write the files y
 | Mission Brief | `mission-brief` | Section 1 |
 | Mission Plan | `mission-plan` | Sections 2-4 |
 | Mission Report | `mission-report` | The post-execution Mission Summary |
-| Submit Mission | `submit-mission` | Upload completed Brief, Plan, and Report from CLI to an ActionBoard Pod/Board |
+| Submit Mission | `submit-mission` | Upload completed Brief, Plan, and Report to an ActionBoard Pod/Board through the ActionBoard MCP tools |
 | ActionBoard Login | `ab-login` | Log the user in and choose the Pod and Board; run it when submit or fetch reports no login or no Pod/Board |
 
 Each writes Markdown plus a schema.org JSON-LD graph sharing one identifier scheme, so the
@@ -43,13 +43,13 @@ skip those questions and never answer them on the user's behalf. Pass `Terse out
 every assignment when preflight recorded it as enabled.
 
 ### Step 1 — Mission Brief
-**Check the board first.** Run `python <skill-dir>/../mission-report/scripts/submit_mission.py status --json`. When `logged_in` is `true`,
-`default_board_id` is set, and `mission_sync` is not `off`, run `python <skill-dir>/../mission-report/scripts/submit_mission.py assigned --no-input --json`.
+**Check the board first.** Call the `ab_auth_status` MCP tool. When `logged_in` is `true`,
+`active_board_id` is set, and `sync_mode` is not `off`, call `ab_list_assigned`.
 If it lists missions or invitations, show them in one short table and ask whether this objective is
-one of them (then fetch it, as below) or a new mission. If the user is not logged in, has no board,
-or the command fails, skip this check silently: never ask for a login at this step.
+one of them (then fetch it, as below) or a new mission. If the `ab_*` tools are missing, the user is
+not logged in, has no board, or a call fails, skip this check silently: never ask for a login at this step.
 
-If the user says a task or mission was assigned to them on ActionBoard (or asks to fetch their assigned mission), load the `fetch-mission` skill and run `python <skill-dir>/../mission-report/scripts/submit_mission.py fetch --start` (or `assigned` first to list assigned tasks) to pull `mission-brief.md` and `mission-plan.md` into `docs/missions/<YYYY-MM-DD-slug>/`, then use the fetched brief and plan as the foundation for the mission. Otherwise, draft the brief from the objective. Be specific. If the objective is vague, ask ONE clarifying question before proceeding; otherwise infer reasonable scope and state your assumptions explicitly in the Constraints section.
+If the user says a task or mission was assigned to them on ActionBoard (or asks to fetch their assigned mission), load the `fetch-mission` skill and call `ab_fetch_mission` with `start: true` (or `ab_list_assigned` first to list assigned tasks) to pull `mission-brief.md` and `mission-plan.md` into `docs/missions/<YYYY-MM-DD-slug>/`, then use the fetched brief and plan as the foundation for the mission. Otherwise, draft the brief from the objective. Be specific. If the objective is vague, ask ONE clarifying question before proceeding; otherwise infer reasonable scope and state your assumptions explicitly in the Constraints section.
 
 ### Step 2 — Recon (Green Agent)
 Dispatch the `green-agent` subagent (`invoke_subagent` with the agent name). Pass the mission objective and ask for a recon report in Green Agent's standard header format. Wait for the result before proceeding.
@@ -82,26 +82,26 @@ STOP. Do not proceed without user approval.
 
 When the user says "go":
 0. Before dispatching anyone, record the mission start: the UTC time (for example `date -u +%Y-%m-%dT%H:%M:%SZ`, or `(Get-Date).ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ssZ")` in PowerShell) and the git base commit (`git rev-parse HEAD`). The report flow needs both for the dashboard. If the directory is not a git repository, record the time only.
-0b. **Board sync.** Read `mission_sync` from `python <skill-dir>/../mission-report/scripts/submit_mission.py status --json` (only when
-   `logged_in` is `true` and `default_board_id` is set; otherwise skip board sync for the whole mission).
+0b. **Board sync.** Read `sync_mode` from `ab_auth_status` (only when the `ab_*` tools exist,
+   `logged_in` is `true` and `active_board_id` is set; otherwise skip board sync for the whole mission).
    - `off`: skip board sync.
    - `ask`: ask once, "Sync this mission to board <board name>? Status, Agent progress, and the final
      report go to the board (yes/no)". A "no" skips board sync for this mission.
    - `auto`: sync without asking.
 
    When syncing, write the Mission Brief and Mission Plan to disk with the `mission-brief` and
-   `mission-plan` skills, then run `python <skill-dir>/../mission-report/scripts/submit_mission.py submit --mission-dir <mission-dir> --status IN_PROGRESS --no-input`.
-   A sync command that fails is reported in one line and never blocks the mission.
+   `mission-plan` skills, then call `ab_submit_mission` with `mission_dir: <mission-dir>` and `status: IN_PROGRESS`.
+   A sync call that fails is reported in one line and never blocks the mission.
 1. **Fast, low-token dispatch:**
    - Dispatch Red/Blue/Yellow Agents **in parallel** whenever their assignments have disjoint `Files Owned` and no `Depends On` dependency (Call `invoke_subagent` for every independent agent in the same turn.); serialize only true dependencies.
    - **Pass by reference:** Give each specialist file paths (`mission-brief.md`, `mission-plan.md`), its `Files Owned` list, relevant Graphify node IDs, and a 3–5 line scope slice instead of pasting full mission documents or full recon output.
    - **Prompt-cache order:** Keep static instructions and shared mission context at the top of dispatch prompts and put per-wave dynamic values (wave ID, timestamps, upstream deltas) at the bottom.
    - **Bounded replies:** Ask specialists to return only their structured report format + `Files created/changed:` (~10 lines max unless blocked) so your context stays small across waves.
-2. As each Agent reports back, append its result to a running "Mission Log" section, including the Agent's `Files created/changed:` list. When board sync is on, also post one line to the board: `python <skill-dir>/../mission-report/scripts/submit_mission.py progress --mission-dir <mission-dir> --comment "<Agent>: <done|blocked> — <one-line result>" --no-input`. Never put secrets, tokens, or file contents in a comment.
+2. As each Agent reports back, append its result to a running "Mission Log" section, including the Agent's `Files created/changed:` list. When board sync is on, also post one line to the board: call `ab_post_progress` with `mission_dir: <mission-dir>` and `comment: "<Agent>: <done|blocked> — <one-line result>"`. Never put secrets, tokens, or file contents in a comment.
 3. When all Agents report `done` or `blocked`, score every dispatched assignment on the five formation stages and record the runs in `.actionboard/registry.json`, following step 1 of the `mission-report` skill. Every mission counts toward the project's AI-ops maturity, whether or not it is written to disk.
 4. Render a final Mission Summary: what shipped, what didn't, what's deferred, the `## Maturity & Progress Summary` table, and one combined `Files created/changed:` list for the whole mission (including `.actionboard/registry.json`). If the mission was persisted to disk, invoke `mission-report` to write `mission-report.md` and compile `mission-report.jsonld` (`compile_jsonld.py`), `mission-metrics.json`, and `mission-report.html` (`render_dashboard.py`). Pass it the start time and git base commit from the go step, and the exact test counts Yellow reported. Include all generated files in `Files created/changed:`.
 5. Optionally run a design audit on `mission-report.html` if a tool is available (non-blocking). Report any render failure as a defect and surface any stderr `WARNING` line in the Mission Summary.
-6. When board sync is on, submit the completed mission without asking again: `python <skill-dir>/../mission-report/scripts/submit_mission.py submit --mission-dir <mission-dir> --no-input` (add `--status FAILED` if any assignment ended `blocked`). Otherwise, when persisted to disk, offer CLI submission via `submit-mission` (or run it if requested).
+6. When board sync is on, submit the completed mission without asking again: call `ab_submit_mission` with `mission_dir: <mission-dir>` (add `status: FAILED` if any assignment ended `blocked`). Otherwise, when persisted to disk, offer submission via `submit-mission` (or run it if requested).
 
 ## Skill creation protocol
 

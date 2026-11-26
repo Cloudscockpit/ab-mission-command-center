@@ -7,7 +7,7 @@ import json
 from collections import OrderedDict
 
 from aflib import frontmatter
-from aflib.common import agent_body, context7_json, plain_skill
+from aflib.common import agent_body, mcp_json, plain_skill
 from aflib.model import adapter_file, adapter_tree, bash_mode, caps, render_text
 
 NAME = "opencode"
@@ -134,6 +134,6 @@ def build(src, out, models):
             adapter_file("opencode", "legacy", "actionboard-guard.v1.ts"))
     out.add_tree("actionboard/hooks/core/", src.hooks_core)
     # Merged into opencode.json by scripts/install.py (project root or global config dir).
-    out.add("actionboard/mcp.json", context7_json("opencode"))
+    out.add("actionboard/mcp.json", mcp_json("opencode"))
     out.add("actionboard/config.json", json.dumps(
         OrderedDict([("version", src.version), ("python", "__PYTHON__")]), indent=2))

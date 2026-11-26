@@ -1,4 +1,4 @@
-"""Unit and end-to-end tests for submit_mission.py (ActionBoard CLI mission submission)."""
+"""Unit and end-to-end tests for the ActionBoard CLI (packages/actionboard-mcp actionboard_cli): mission submission."""
 
 import base64
 import io
@@ -7,19 +7,17 @@ import os
 import re
 import shutil
 import stat
-import subprocess
 import sys
 import tempfile
 import time
 import unittest
 
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-SCRIPTS_DIR = os.path.join(ROOT, "src", "skills", "mission-report", "scripts")
-sys.path.insert(0, SCRIPTS_DIR)
 # Tests must never read or write the developer's real OS keychain.
 os.environ["ACTIONBOARD_KEYCHAIN"] = "off"
 
-import submit_mission  # noqa: E402
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from ab_cli import submit_mission  # noqa: E402
 
 
 def make_jwt(claims):
@@ -895,25 +893,26 @@ class TestSubmitMissionCLI(unittest.TestCase):
         self.assertTrue(any("assistprofile_updateMissionStatus" in q for q in queries))
 
     def test_skill_documented_flags_match_cli_parser(self):
-        script_path = os.path.join(SCRIPTS_DIR, "submit_mission.py")
-        for skill_dir in ("submit-mission", "fetch-mission"):
-            skill_path = os.path.join(ROOT, "src", "skills", skill_dir, "SKILL.md")
-            with open(skill_path, encoding="utf-8") as fh:
-                skill_text = fh.read()
-
-            for sub in ("status", "configure", "login", "pods", "boards", "assigned", "fetch", "select", "submit", "progress"):
-                proc = subprocess.run(
-                    [sys.executable, script_path, sub, "--help"],
-                    stdout=subprocess.PIPE,
-                    stderr=subprocess.PIPE,
-                    universal_newlines=True,
-                    timeout=30,
-                )
-                self.assertEqual(proc.returncode, 0, proc.stderr)
-                for match in re.finditer(r"submit_mission\.py %s((?:[^\n]*\\\n)*[^\n]*)" % sub, skill_text):
-                    flags = set(re.findall(r"--[a-z0-9][a-z0-9-]*", match.group(1)))
-                    for flag in flags:
-                        self.assertIn(flag, proc.stdout, "%s: %s %s not in --help" % (skill_dir, sub, flag))
+        """Every `actionboard-cli <command> --flag` the skills document exists in the CLI parser."""
+        import argparse
+        parser = submit_mission.build_parser()
+        commands = next(a for a in parser._actions if isinstance(a, argparse._SubParsersAction)).choices
+        skills = os.path.join(ROOT, "src", "skills")
+        documented = 0
+        for dirpath, _dirs, files in os.walk(skills):
+            for name in files:
+                if not name.endswith(".md"):
+                    continue
+                with open(os.path.join(dirpath, name), encoding="utf-8") as fh:
+                    text = fh.read()
+                for match in re.finditer(r"actionboard-cli ([a-z]+)((?:[^\n]*\\\n)*[^\n]*)", text):
+                    sub = match.group(1)
+                    self.assertIn(sub, commands, "%s: unknown command %s" % (name, sub))
+                    help_text = commands[sub].format_help()
+                    for flag in set(re.findall(r"--[a-z0-9][a-z0-9-]*", match.group(2))):
+                        self.assertIn(flag, help_text, "%s: %s %s not in --help" % (name, sub, flag))
+                    documented += 1
+        self.assertTrue(documented)  # submit-mission/references/cli-reference.md documents `configure`
 
     def test_refresh_token_and_cached_pod_token_when_main_token_expired(self):
         transport = MockActionBoardTransport()
