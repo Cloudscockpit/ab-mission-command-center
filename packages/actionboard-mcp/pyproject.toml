@@ -1,0 +1,29 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "actionboard-mcp"
+version = "0.1.0"
+description = "ActionBoard MCP server (stdio) and `ab` CLI: fetch and submit missions from any MCP client."
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+# mcp 2.x is the official SDK; its MCPServer is the renamed FastMCP.
+dependencies = ["mcp>=2.3,<3"]
+
+[project.optional-dependencies]
+dev = ["pytest>=8"]
+
+[project.urls]
+Repository = "https://github.com/Cloudscockpit/ab-mission-command-center"
+
+[project.scripts]
+actionboard-mcp = "actionboard_mcp.server:main"
+ab = "actionboard_mcp.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
