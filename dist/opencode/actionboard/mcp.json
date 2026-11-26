@@ -4,6 +4,16 @@
       "type": "remote",
       "url": "https://mcp.context7.com/mcp",
       "enabled": true
+    },
+    "actionboard": {
+      "type": "local",
+      "command": [
+        "uvx",
+        "--from",
+        "git+https://github.com/Cloudscockpit/ab-mission-command-center#subdirectory=packages/actionboard-mcp",
+        "actionboard-mcp"
+      ],
+      "enabled": true
     }
   }
 }

@@ -51,7 +51,7 @@ MISSION_FILES = [
 
 
 def fail(message, code=2):
-    sys.stderr.write("submit_mission: %s\n" % " ".join(str(message).split()))
+    sys.stderr.write("actionboard-cli: %s\n" % " ".join(str(message).split()))
     sys.exit(code)
 
 
@@ -60,7 +60,7 @@ def info(message):
 
 
 def warn(message):
-    sys.stderr.write("submit_mission: WARNING: %s\n" % message)
+    sys.stderr.write("actionboard-cli: WARNING: %s\n" % message)
 
 
 def default_credentials_path():

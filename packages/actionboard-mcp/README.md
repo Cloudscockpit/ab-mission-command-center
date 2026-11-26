@@ -1,11 +1,12 @@
 # actionboard-mcp
 
-Connect any MCP client (Claude Code, Claude Desktop, Cursor, Codex, Antigravity, OpenCode) to ActionBoard with your own LLM subscription. The package ships two entry points over the same core:
+Connect any MCP client (Claude Code, Claude Desktop, Cursor, Codex, Antigravity, OpenCode) to ActionBoard with your own LLM subscription. This package is the only ActionBoard client code in the repository. It ships three entry points:
 
 - `actionboard-mcp`: an MCP server over stdio
-- `ab`: a CLI that prints one JSON object per command
+- `ab`: a CLI over the same core that prints one JSON object per command
+- `actionboard-cli`: the full CLI they are built on (`configure` for direct AppSync/AWS mode, password login, `missions --delete`)
 
-It reuses the ActionBoard CLI (`actionboard_cli`): browser sign-in, OS keychain token storage, the edge proxy, Pod token exchange and presigned S3 uploads.
+The backend lives in `actionboard_mcp/actionboard_cli/`. It handles browser sign-in, OS keychain token storage, the edge proxy, Pod token exchange and presigned S3 uploads, using only the Python 3.9+ standard library.
 
 ## Tools
 
@@ -121,7 +122,7 @@ ab pods && ab boards --pod <podId>
 ab select --pod <podId> --board <boardId> --sync auto
 ab assigned
 ab fetch --invitation-id <id> --accept --start
-ab submit --mission-dir docs/missions/<dir> --dry-run
+ab submit --mission-dir docs/missions/<dir> --dry-run   # --phase <name> groups files in a board subfolder
 ab progress --mission-dir docs/missions/<dir> --comment "wave 1 done"
 ```
 
@@ -129,7 +130,7 @@ Exit codes: `0` ok, `1` error, `3` not logged in. Errors go to stderr.
 
 ## Settings
 
-The server and CLI honor the same environment as `submit_mission.py`: `ACTIONBOARD_CREDENTIALS_FILE`, `ACTIONBOARD_EDGE_PROXY_URL`, `ACTIONBOARD_LOGIN_URL`, `ACTIONBOARD_KEYCHAIN=off` (file storage only), and so on. Tokens live in the OS keychain when one is available. Otherwise they go in `~/.actionboard/credentials.json` (mode 0600).
+The server and both CLIs read the same environment: `ACTIONBOARD_CREDENTIALS_FILE`, `ACTIONBOARD_EDGE_PROXY_URL`, `ACTIONBOARD_LOGIN_URL`, `ACTIONBOARD_KEYCHAIN=off` (file storage only), and so on. Tokens live in the OS keychain when one is available. Otherwise they go in `~/.actionboard/credentials.json` (mode 0600).
 
 ## Development
 
@@ -140,11 +141,6 @@ uv run ab status                                # CLI against your real account
 npx @modelcontextprotocol/inspector uv run actionboard-mcp   # poke the server interactively
 ```
 
-`src/actionboard_mcp/_vendor/actionboard_cli/` is an exact copy of `src/skills/mission-report/scripts/actionboard_cli/`. That keeps the package installable on its own while the plugin keeps working unchanged. A test fails when the two drift. To resync from the repo root:
-
-```sh
-rsync -a --delete --exclude __pycache__ src/skills/mission-report/scripts/actionboard_cli/ \
-  packages/actionboard-mcp/src/actionboard_mcp/_vendor/actionboard_cli/
-```
+The repository's `tests/report` suite (run with `python -m unittest discover -s tests/report` from the repo root) covers `actionboard_cli` on Python 3.9 and up. Add GraphQL documents to `actionboard_cli/operations.py` so the schema-contract check (`tests/contract`) validates them.
 
 Transport is isolated in `server.py:main()`. A Streamable HTTP entry point can serve the same `mcp` object later.

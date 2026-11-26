@@ -12,11 +12,11 @@ import os
 import sys
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[2] / 'src/skills/mission-report/scripts'))
-from actionboard_cli import operations
-from actionboard_cli.api import graphql_request
-from actionboard_cli.common import DEFAULT_EDGE_PROXY_URL
-from actionboard_cli.operations import MUTATION_REFRESH
+sys.path.insert(0, str(Path(__file__).resolve().parents[2] / 'packages/actionboard-mcp/src'))
+from actionboard_mcp.actionboard_cli import operations
+from actionboard_mcp.actionboard_cli.api import graphql_request
+from actionboard_mcp.actionboard_cli.common import DEFAULT_EDGE_PROXY_URL
+from actionboard_mcp.actionboard_cli.operations import MUTATION_REFRESH
 from graphql import build_client_schema, get_introspection_query, parse, validate
 
 

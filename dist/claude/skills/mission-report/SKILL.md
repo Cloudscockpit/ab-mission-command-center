@@ -83,9 +83,5 @@ spec lives in `${CLAUDE_PLUGIN_ROOT}/skills/actionboard-kb/references/mission-kn
    `mission-report.md`, `mission-report.jsonld`, `mission-metrics.json`, `mission-report.html`, and
    `.actionboard/registry.json` in `Files created/changed:`.
 
-5. **Submit to ActionBoard Pod & Board** (when board sync is on or requested):
-
-   ```sh
-   python ${CLAUDE_PLUGIN_ROOT}/skills/mission-report/scripts/submit_mission.py submit \
-     --mission-dir <mission-dir> [--pod <podId>] [--board <boardId>]
-   ```
+5. **Submit to ActionBoard Pod & Board** (when board sync is on or requested): call the
+   `ab_submit_mission` MCP tool with `mission_dir: <mission-dir>` (see the `submit-mission` skill).

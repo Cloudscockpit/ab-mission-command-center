@@ -1,5 +1,5 @@
 ---
-description: Log in to ActionBoard from the CLI and select a Pod and Board. Use for "ab-login", login/pod/board switching, or unauthenticated submit/fetch errors.
+description: Log in to ActionBoard and select a Pod and Board through the ActionBoard MCP tools. Use for "ab-login", login/pod/board switching, or "Not logged in" errors from submit or fetch.
 ---
 
 Load the `ab-login` skill with the `skill` tool and follow its instructions.

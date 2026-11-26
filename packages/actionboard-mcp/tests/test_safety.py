@@ -1,5 +1,4 @@
 """Proofs the MCP layer never exits, never writes to stdout, and never leaks tokens; plus CLI and vendor checks."""
-import filecmp
 import json
 import os
 import subprocess
@@ -11,7 +10,7 @@ from pathlib import Path
 import pytest
 
 from actionboard_mcp import cli
-from actionboard_mcp._vendor.actionboard_cli import auth
+from actionboard_mcp.actionboard_cli import auth
 from actionboard_mcp.core import bridge
 from conftest import MISSION_DIR, REPO, call, data, ref
 
@@ -155,12 +154,3 @@ def test_cli_prints_json_and_uses_exit_codes(transport, mission_dir, capsys):
     assert cli.main(["pods"]) == 3
     out = capsys.readouterr()
     assert out.out == "" and "Not logged in" in out.err
-
-
-def test_vendored_cli_matches_repo_source():
-    source = REPO / "src" / "skills" / "mission-report" / "scripts" / "actionboard_cli"
-    vendored = Path(__file__).resolve().parents[1] / "src" / "actionboard_mcp" / "_vendor" / "actionboard_cli"
-    names = sorted(p.name for p in source.glob("*.py"))
-    assert names == sorted(p.name for p in vendored.glob("*.py"))
-    _match, mismatch, errors = filecmp.cmpfiles(source, vendored, names, shallow=False)
-    assert not mismatch and not errors, "vendored actionboard_cli drifted; resync it (see README): %s" % mismatch

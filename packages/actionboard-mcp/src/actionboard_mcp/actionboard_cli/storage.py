@@ -28,7 +28,7 @@ def upload_bytes_to_s3(bucket, region, key, body_bytes, content_type, aws_creds,
         raise RuntimeError(
             "AWS credentials not found for S3 upload. Set AWS_ACCESS_KEY_ID and "
             "AWS_SECRET_ACCESS_KEY, configure ~/.aws/credentials, or run "
-            "`python submit_mission.py configure --aws-access-key-id ... --aws-secret-access-key ...`."
+            "`actionboard-cli configure --aws-access-key-id ... --aws-secret-access-key ...`."
         )
 
     now = datetime.datetime.now(datetime.timezone.utc)

@@ -37,6 +37,7 @@ def build_parser():
     s.add_argument("--dry-run", action="store_true")
     s.add_argument("--keep-old", action="store_true")
     s.add_argument("--skip-s3", action="store_true")
+    s.add_argument("--phase", "--milestone", dest="phase")
     s = sub.add_parser("progress", help="post a status change or comment")
     s.add_argument("--mission-dir")
     s.add_argument("--mission-id")
@@ -57,7 +58,7 @@ def dispatch(a):
         "fetch": lambda: core.fetch_mission(a.mission_id, a.invitation_id, a.pod, a.board, a.plan_id, a.out_dir,
                                             a.accept, a.start),
         "submit": lambda: core.submit_mission(a.mission_dir, a.pod, a.board, a.mission_id, a.invitation_id, a.status,
-                                              a.dry_run, a.keep_old, a.skip_s3),
+                                              a.dry_run, a.keep_old, a.skip_s3, a.phase),
         "progress": lambda: core.post_progress(a.mission_dir, a.mission_id, a.status, a.comment),
     }[a.cmd]()
 

@@ -586,8 +586,15 @@ request, and any text from the reports is HTML-escaped.
 
 When a manager or board owner assigns you a mission (or sends a mission invitation) on an
 ActionBoard Board, you can pull its **Mission Brief** and **Mission Plan** into your project, do the
-work, and send the finished **Mission Report** back, all from your CLI. You only need Python 3.9+,
-a browser and an ActionBoard account: no API key, no AWS keys, no configuration.
+work, and send the finished **Mission Report** back, all from your CLI. You only need
+[uv](https://docs.astral.sh/uv/), a browser and an ActionBoard account: no API key, no AWS keys, no
+configuration.
+
+The plugin talks to ActionBoard through the **`actionboard` MCP server**
+([`packages/actionboard-mcp`](packages/actionboard-mcp)), which every install registers for you and
+`uvx` starts on demand. The agent calls its `ab_*` tools (`ab_login`, `ab_fetch_mission`,
+`ab_submit_mission`, …). Any other MCP client, such as Cursor or Claude Desktop, can use the same
+server; the package README has copy-paste configs.
 
 ### Commands in your CLI
 
@@ -603,42 +610,27 @@ in there.
 
 ### Commands in your terminal
 
-The agent runs these for you, but you can run them yourself. The script is installed at:
-
-| CLI | Path (from your project folder) |
-|---|---|
-| Claude Code | inside the plugin; ask the agent to run it, or use the slash commands above |
-| OpenCode | `.opencode/skills/mission-report/scripts/submit_mission.py` |
-| Codex CLI | `.agents/skills/mission-report/scripts/submit_mission.py` |
-| Antigravity | `.agents/plugins/actionboard-v5-agentformation/skills/mission-report/scripts/submit_mission.py` |
-
-| Command | What it does |
-|---|---|
-| `login` | Sign in through the browser. `--provider Google` or `--provider LinkedIn` goes straight to that provider; `--no-browser` prints the link instead |
-| `logout` | Remove your stored tokens from the keychain |
-| `status` | Show the connection, who is signed in, where tokens are stored, and the selected Pod and Board |
-| `select` | Choose your default Pod and Board; `select --sync ask\|auto\|off` sets mission sync |
-| `pods`, `boards`, `missions` | List your Pods, the Boards in a Pod, or the missions on a Board |
-| `assigned` | List missions and invitations assigned to you |
-| `fetch` | Pull an assigned mission's brief and plan (`--accept` accepts an invitation, `--start` marks it in progress) |
-| `submit` | Send the mission to the Board. Unchanged files are skipped; `--keep-old` keeps previous copies |
-| `progress` | Set a mission's status or post a comment, e.g. `progress --mission-dir <dir> --comment "Red Agent: done"` |
-
-Example (OpenCode path shown):
+The agent runs everything for you, but the same package ships an `ab` command that prints JSON:
 
 ```sh
-python .opencode/skills/mission-report/scripts/submit_mission.py login
-python .opencode/skills/mission-report/scripts/submit_mission.py select
-python .opencode/skills/mission-report/scripts/submit_mission.py assigned
-python .opencode/skills/mission-report/scripts/submit_mission.py fetch --start
-python .opencode/skills/mission-report/scripts/submit_mission.py submit --mission-dir docs/missions/<date>-<slug>
+alias ab='uvx --from "git+https://github.com/Cloudscockpit/ab-mission-command-center#subdirectory=packages/actionboard-mcp" ab'
+ab login                                  # browser sign-in; --provider Google|LinkedIn
+ab status
+ab pods && ab boards --pod <podId>
+ab select --pod <podId> --board <boardId> --sync ask
+ab assigned
+ab fetch --invitation-id <id> --accept --start
+ab submit --mission-dir docs/missions/<date>-<slug>      # --dry-run previews, --keep-old keeps old copies
+ab progress --mission-dir docs/missions/<date>-<slug> --comment "Red Agent: done"
+ab logout
 ```
 
-On Windows use `py` instead of `python`.
+For direct AppSync/AWS mode, password login, or deleting a mission, the full CLI is
+`actionboard-cli` in the same package (`uvx --from <same source> actionboard-cli --help`).
 
 ### Mission sync
 
-`select --sync` (or the last step of `/ab-login`) decides how missions reach your Board:
+`ab select --sync` (or the last step of `/ab-login`) decides how missions reach your Board:
 
 | Setting | Behaviour |
 |---|---|
@@ -649,8 +641,9 @@ On Windows use `py` instead of `python`.
 ### Good to know
 
 - **Sign-in needs port 3000 or 3001 free** on your machine for a moment. If a dev server holds both,
-  stop it while you sign in. On a remote machine over SSH the browser cannot reach your terminal,
-  so run `login --email <you@company.com>` there instead; it asks for the password in the terminal.
+  stop it while you sign in. On a remote machine over SSH, forward both ports first
+  (`ssh -L 3000:localhost:3000 -L 3001:localhost:3001 <host>`), run `ab login` there, and open the
+  printed link in your local browser.
 - **Tokens are refreshed automatically.** You sign in again only after about 30 days, or after
   `logout`.
 - **Fetched briefs and plans are treated as untrusted:** they are wrapped in markers and the agent
@@ -682,6 +675,7 @@ Full research and sources: [`docs/capability-matrix.md`](docs/capability-matrix.
 src/          neutral source — edit here
 adapters/     one adapter per CLI (+ shared hook adapter)
 scripts/      build.py (src → dist), install.py
+packages/     actionboard-mcp (MCP server + ab CLI, the only ActionBoard client code), installers
 dist/         generated, committed, checked in CI — do not edit
 tests/        guard, build/lint, installer, maturity, report dashboard, OpenCode plugin, live smoke results
 ```
@@ -696,6 +690,7 @@ python -m unittest discover -s tests/maturity
 python -m unittest discover -s tests/report
 node --test tests/opencode/plugin.test.mjs      # Node 23.6+
 pip install graphql-core==3.2.6 && python -m unittest discover -s tests/contract
+(cd packages/actionboard-mcp && uv run --extra dev pytest)   # MCP server, `ab` CLI and their backend
 ```
 
 The `Live GraphQL schema contract` workflow also checks every CLI query and mutation against the

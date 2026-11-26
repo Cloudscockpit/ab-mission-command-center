@@ -81,6 +81,7 @@ def resolve_settings(cred_path=None, config_path=".actionboard/config.json", arg
     s3_region = (
         getattr(args, "s3_region", None)
         or os.environ.get("S3_REGION")
+        or cfg.get("pod_region")
         or cfg.get("s3_region")
         or creds.get("s3_region")
         or DEFAULT_S3_REGION
@@ -88,6 +89,7 @@ def resolve_settings(cred_path=None, config_path=".actionboard/config.json", arg
     s3_bucket = (
         getattr(args, "s3_bucket", None)
         or os.environ.get("S3_BUCKET_NAME")
+        or cfg.get("pod_bucket")
         or cfg.get("s3_bucket")
         or creds.get("s3_bucket")
         or DEFAULT_S3_BUCKET
@@ -147,10 +149,14 @@ def resolve_aws_credentials(creds):
             "session_token": session_token.strip() if session_token else None,
         }
 
-    aws_cred_path = os.path.expanduser(
-        os.environ.get("AWS_SHARED_CREDENTIALS_FILE", "~/.aws/credentials")
-    )
-    profile = os.environ.get("AWS_PROFILE") or os.environ.get("AWS_DEFAULT_PROFILE") or "default"
+    # Read the shared credentials file only when the user points at it: an unrelated
+    # ~/.aws [default] profile must not move uploads off the edge proxy or the Pod route.
+    shared_file = os.environ.get("AWS_SHARED_CREDENTIALS_FILE")
+    profile = os.environ.get("AWS_PROFILE") or os.environ.get("AWS_DEFAULT_PROFILE")
+    if not (shared_file or profile):
+        return None
+    aws_cred_path = os.path.expanduser(shared_file or "~/.aws/credentials")
+    profile = profile or "default"
     if os.path.exists(aws_cred_path):
         cp = configparser.ConfigParser()
         try:
@@ -242,7 +248,7 @@ def login_with_browser(settings, provider=None, open_browser=True, timeout=300, 
     port, servers = _login_listeners(ports or BROWSER_LOGIN_PORTS)
     if not servers:
         fail("browser login needs a free localhost port (%s). Close the app using it, or run "
-             "`submit_mission.py login --email <email>` to sign in with a password."
+             "`actionboard-cli login --email <email>` to sign in with a password."
              % ", ".join(str(p) for p in (ports or BROWSER_LOGIN_PORTS)))
 
     nonce = secrets.token_urlsafe(24)
@@ -318,7 +324,7 @@ def login_with_browser(settings, provider=None, open_browser=True, timeout=300, 
                 pass
         info("Waiting for sign-in (up to %d seconds)..." % timeout)
         if not done.wait(timeout):
-            fail("browser login timed out after %d seconds. Run `submit_mission.py login` again." % timeout)
+            fail("browser login timed out after %d seconds. Run `actionboard-cli login` again." % timeout)
     finally:
         for server in servers:
             server.shutdown()
@@ -504,7 +510,7 @@ def ensure_main_token(settings, interactive=True, opener=None):
         return updated["access_token"]
 
     fail(
-        "not logged in to ActionBoard. Run `python submit_mission.py login` (opens your browser) "
+        "not logged in to ActionBoard. Run `actionboard-cli login` (opens your browser) "
         "or set ACTIONBOARD_EMAIL and ACTIONBOARD_PASSWORD."
     )
 

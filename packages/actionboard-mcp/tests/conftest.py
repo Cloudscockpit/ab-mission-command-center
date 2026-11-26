@@ -19,7 +19,7 @@ ref = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(ref)
 
 from actionboard_mcp import server  # noqa: E402
-from actionboard_mcp._vendor.actionboard_cli import auth  # noqa: E402
+from actionboard_mcp.actionboard_cli import auth  # noqa: E402
 
 MISSION_DIR = "docs/missions/2026-11-13-cli-mission-upload"
 

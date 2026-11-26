@@ -86,7 +86,8 @@ query Auth_me {
 }
 """
 
-
+# Pods_PodWithMembership has no `region` on the live API (introspected 2026-11-26); callers fall back to
+# the presign response or the configured S3 region. Asking for it fails every pods_getMyPods call.
 QUERY_MY_PODS = """
 query Pods_getMyPods {
   pods_getMyPods {
@@ -98,7 +99,6 @@ query Pods_getMyPods {
       slug
       hostname
       bucketName
-      region
       status
       memberRole
       memberStatus

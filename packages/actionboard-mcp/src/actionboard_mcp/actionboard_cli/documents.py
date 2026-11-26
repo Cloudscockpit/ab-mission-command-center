@@ -12,6 +12,21 @@ def slugify_title(title, fallback_id="mission"):
     return raw[:64].rstrip("-")
 
 
+def short_mission_folder_name(title, fallback_id="mission", max_len=48):
+    """Return a short, concise, filesystem-safe folder name for a mission under Missions/."""
+    cleaned = re.sub(r"^(?:Mission(?:\s+(?:Brief|Plan|Report))?)\s*[:\u2014-]\s*", "", (title or "").strip(), flags=re.I)
+    cleaned = re.sub(r'[\\/:*?"<>|]+', " ", cleaned)
+    cleaned = re.sub(r"\s+", " ", cleaned).strip(" .-_")
+    if len(cleaned) > max_len:
+        cut = cleaned[:max_len]
+        if " " in cut:
+            cut = cut.rsplit(" ", 1)[0]
+        cleaned = cut.strip(" .-_,;:")
+    if not cleaned:
+        cleaned = "mission-%s" % str(fallback_id)[:8].lower()
+    return cleaned
+
+
 def materialize_fetched_mission_docs(out_dir, slug, mission, plan_obj=None, downloaded_files=None):
     """Write mission-brief.md, mission-brief.jsonld, and mission-plan.md into out_dir."""
     os.makedirs(out_dir, exist_ok=True)
@@ -84,7 +99,7 @@ def materialize_fetched_mission_docs(out_dir, slug, mission, plan_obj=None, down
             "",
             "1. **Wave 1 — Recon & Design:** Inspect affected modules and refine task breakdown.",
             "2. **Wave 2 — Implementation:** Execute code/data changes for `%s`." % title,
-            "3. **Wave 3 — Verification & Report:** Run test suites, generate `mission-report.md` / `mission-report.html`, and run `submit_mission.py submit`.",
+            "3. **Wave 3 — Verification & Report:** Run test suites, generate `mission-report.md` / `mission-report.html`, and submit it with the `ab_submit_mission` MCP tool (or `ab submit`).",
             "",
         ]
         plan_md_text = "\n".join(lines)
@@ -274,20 +289,103 @@ def build_plan_markdown(mission_dir):
     return "\n\n---\n\n".join(p for p in parts if p)
 
 
-def collect_mission_files(mission_dir):
+_SKIP_DIR_NAMES = {"__pycache__", "node_modules"}
+_SKIP_FILE_SUFFIXES = (".pyc", ".pyo", ".tmp")
+_EXTRA_MIME_TYPES = {
+    ".md": "text/markdown",
+    ".markdown": "text/markdown",
+    ".jsonld": "application/ld+json",
+    ".json": "application/json",
+    ".yaml": "text/yaml",
+    ".yml": "text/yaml",
+}
+
+
+def _guess_mime_type(filename):
+    ext = os.path.splitext(filename)[1].lower()
+    if ext in _EXTRA_MIME_TYPES:
+        return _EXTRA_MIME_TYPES[ext]
+    return mimetypes.guess_type(filename)[0] or "application/octet-stream"
+
+
+def _sanitize_folder_segment(segment):
+    cleaned = re.sub(r'[\\/:*?"<>|]+', " ", (segment or "").strip())
+    return re.sub(r"\s+", " ", cleaned).strip(" .")
+
+
+def collect_mission_files(mission_dir, phase=None):
     from .common import MISSION_FILES
+    known_meta = {
+        filename: (mime_type, list(tags), note)
+        for filename, mime_type, tags, note in MISSION_FILES
+    }
+    phase_segments = []
+    if phase:
+        for seg in re.split(r"[/\\]+", str(phase)):
+            clean_seg = _sanitize_folder_segment(seg)
+            if clean_seg:
+                phase_segments.append(clean_seg)
+
+    def make_entry(full_path, filename, rel_dirs):
+        subfolders = list(rel_dirs)
+        if phase_segments:
+            if len(subfolders) < len(phase_segments) or [s.lower() for s in subfolders[:len(phase_segments)]] != [s.lower() for s in phase_segments]:
+                subfolders = list(phase_segments) + subfolders
+        rel_path = "/".join(subfolders + [filename]) if subfolders else filename
+        if filename in known_meta:
+            mime_type, tags, note = known_meta[filename]
+            file_tags = list(tags)
+            for s in subfolders:
+                sl = s.lower()
+                if sl not in file_tags:
+                    file_tags.append(sl)
+        else:
+            mime_type = _guess_mime_type(filename)
+            file_tags = ["mission"] + [s.lower() for s in subfolders]
+            note = "Mission file (%s)" % rel_path
+        return {
+            "path": full_path,
+            "fileName": filename,
+            "subfolders": subfolders,
+            "relPath": rel_path,
+            "fileType": mime_type or _guess_mime_type(filename),
+            "fileSize": os.path.getsize(full_path),
+            "tags": file_tags,
+            "note": note,
+        }
+
     found = []
-    for filename, mime_type, tags, note in MISSION_FILES:
+    seen_paths = set()
+
+    # Keep canonical mission documents at the root ordered first for stability.
+    for filename, _mime_type, _tags, _note in MISSION_FILES:
         full = os.path.join(mission_dir, filename)
         if os.path.isfile(full):
-            found.append({
-                "path": full,
-                "fileName": filename,
-                "fileType": mime_type or mimetypes.guess_type(filename)[0] or "application/octet-stream",
-                "fileSize": os.path.getsize(full),
-                "tags": list(tags),
-                "note": note,
-            })
+            abs_full = os.path.abspath(full)
+            seen_paths.add(abs_full)
+            found.append(make_entry(full, filename, []))
+
+    # Walk root and any nested directories (e.g. case-files/, phase-1/, milestone-2/).
+    root_abs = os.path.abspath(mission_dir)
+    for dirpath, dirnames, filenames in os.walk(root_abs):
+        dirnames[:] = sorted(
+            d for d in dirnames
+            if not d.startswith(".") and d not in _SKIP_DIR_NAMES
+        )
+        rel_dir = os.path.relpath(dirpath, root_abs)
+        rel_dirs = [] if rel_dir == "." else rel_dir.split(os.sep)
+        for filename in sorted(filenames):
+            if filename.startswith(".") or filename.lower().endswith(_SKIP_FILE_SUFFIXES):
+                continue
+            full = os.path.join(dirpath, filename)
+            if not os.path.isfile(full):
+                continue
+            abs_full = os.path.abspath(full)
+            if abs_full in seen_paths:
+                continue
+            seen_paths.add(abs_full)
+            found.append(make_entry(full, filename, rel_dirs))
+
     return found
 
 

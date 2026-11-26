@@ -115,14 +115,16 @@ def ab_submit_mission(
     dry_run: bool = False,
     keep_old: bool = False,
     skip_s3: bool = False,
+    phase: Optional[str] = None,
 ) -> dict:
     """Upload a local mission folder (brief, plan, report) to its Board. Unchanged files are skipped.
 
     mission_dir defaults to the newest folder under docs/missions/. Use dry_run=True to preview.
+    phase groups the files under Missions/<mission-name>/<phase>/ on the board.
     """
     return core.submit_mission(mission_dir=mission_dir, pod_id=pod_id, board_id=board_id, mission_id=mission_id,
                                invitation_id=invitation_id, status=status, dry_run=dry_run, keep_old=keep_old,
-                               skip_s3=skip_s3)
+                               skip_s3=skip_s3, phase=phase)
 
 
 @_tool

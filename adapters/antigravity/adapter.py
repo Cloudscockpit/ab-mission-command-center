@@ -14,7 +14,7 @@ import json
 from collections import OrderedDict
 
 from aflib import frontmatter
-from aflib.common import agent_body, command_as_skill, context7_json, plain_skill
+from aflib.common import agent_body, command_as_skill, mcp_json, plain_skill
 from aflib.model import adapter_file, adapter_tree, bash_mode, caps
 
 NAME = "antigravity"
@@ -118,6 +118,6 @@ def build(src, out, models):
     ]), indent=2, ensure_ascii=False))
     out.add("hooks.json", adapter_file("antigravity", "hooks.json"))
     out.add("rules/AGENTS.md", RULES)
-    out.add("mcp_config.json", context7_json("antigravity"))
+    out.add("mcp_config.json", mcp_json("antigravity"))
     out.add_tree("actionboard/hooks/", adapter_tree("common", "hooks"))
     out.add_tree("actionboard/hooks/core/", src.hooks_core)

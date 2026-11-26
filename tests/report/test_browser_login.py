@@ -12,12 +12,11 @@ import urllib.parse
 import urllib.request
 from unittest.mock import patch
 
-sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
-                                "src", "skills", "mission-report", "scripts"))
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 os.environ["ACTIONBOARD_KEYCHAIN"] = "off"
 
-import submit_mission  # noqa: E402
-from actionboard_cli.auth import _login_listeners  # noqa: E402
+from ab_cli import submit_mission  # noqa: E402
+from actionboard_mcp.actionboard_cli.auth import _login_listeners  # noqa: E402
 from test_submit_mission import FakeHTTPResponse as FakeResponse, MockActionBoardTransport  # noqa: E402
 
 

@@ -3,8 +3,8 @@ import sys
 import tempfile
 import unittest
 from pathlib import Path
-sys.path.insert(0, str(Path(__file__).resolve().parents[2] / 'src/skills/mission-report/scripts'))
-from actionboard_cli.documents import build_plan_markdown, materialize_fetched_mission_docs, unwrap_untrusted, wrap_untrusted
+sys.path.insert(0, str(Path(__file__).resolve().parents[2] / 'packages/actionboard-mcp/src'))
+from actionboard_mcp.actionboard_cli.documents import build_plan_markdown, materialize_fetched_mission_docs, unwrap_untrusted, wrap_untrusted
 
 
 class FetchTrustTests(unittest.TestCase):

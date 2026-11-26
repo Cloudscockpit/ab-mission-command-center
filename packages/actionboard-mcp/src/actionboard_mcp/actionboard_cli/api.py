@@ -57,15 +57,19 @@ def edge_http(settings, path, payload, opener=None, timeout=60):
         raise RuntimeError("edge proxy %s returned non-JSON: %s" % (path, raw[:200]))
 
 
-def edge_presign(settings, bucket, key, method, opener=None, expires_in=900):
-    res = edge_http(settings, "/s3/sign", {"bucket": bucket, "key": key, "method": method, "expiresIn": expires_in}, opener=opener)
+def edge_presign(settings, bucket, key, method, opener=None, expires_in=900, region=None):
+    effective_region = region or settings.get("s3_region")
+    payload = {"bucket": bucket, "key": key, "method": method, "expiresIn": expires_in}
+    if effective_region:
+        payload["region"] = effective_region
+    res = edge_http(settings, "/s3/sign", payload, opener=opener)
     if not isinstance(res, dict) or not res.get("url"):
         raise RuntimeError("edge proxy returned no signed URL for %s" % key)
-    return res["url"], res.get("region") or settings["s3_region"]
+    return res["url"], res.get("region") or effective_region
 
 
-def upload_bytes_via_edge(settings, bucket, key, body_bytes, content_type, opener=None):
-    url, region = edge_presign(settings, bucket, key, "PUT", opener=opener)
+def upload_bytes_via_edge(settings, bucket, key, body_bytes, content_type, opener=None, region=None):
+    url, resolved_region = edge_presign(settings, bucket, key, "PUT", opener=opener, region=region)
     req = urllib.request.Request(url, data=body_bytes, headers={"Content-Type": content_type}, method="PUT")
     open_fn = opener or urllib.request.urlopen
     try:
@@ -79,14 +83,14 @@ def upload_bytes_via_edge(settings, bucket, key, body_bytes, content_type, opene
         "bucket": bucket,
         "key": key,
         "size": len(body_bytes),
-        "region": region,
+        "region": resolved_region,
         "s3_uri": "s3://%s/%s" % (bucket, key),
-        "url": "https://%s.s3.%s.amazonaws.com/%s" % (bucket, region, key),
+        "url": "https://%s.s3.%s.amazonaws.com/%s" % (bucket, resolved_region, key),
     }
 
 
-def download_bytes_via_edge(settings, bucket, key, opener=None):
-    url, _region = edge_presign(settings, bucket, key, "GET", opener=opener)
+def download_bytes_via_edge(settings, bucket, key, opener=None, region=None):
+    url, _region = edge_presign(settings, bucket, key, "GET", opener=opener, region=region)
     req = urllib.request.Request(url, method="GET")
     open_fn = opener or urllib.request.urlopen
     try:
@@ -102,7 +106,7 @@ def graphql_request(endpoint, api_key, query, variables=None, bearer_token=None,
     from .common import fail
     if not endpoint:
         fail(
-            "AppSync endpoint is not configured. Run `python submit_mission.py configure "
+            "AppSync endpoint is not configured. Run `actionboard-cli configure "
             "--endpoint <url> --api-key <key>` or set APPSYNC_GRAPHQL_ENDPOINT."
         )
     headers = {

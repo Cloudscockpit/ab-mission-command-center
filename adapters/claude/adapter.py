@@ -5,7 +5,7 @@ import json
 from collections import OrderedDict
 
 from aflib import frontmatter
-from aflib.common import context7_json
+from aflib.common import mcp_json
 from aflib.model import adapter_file, adapter_tree, bash_mode, caps, render_text, render_tree, target_meta
 
 NAME = "claude"
@@ -13,6 +13,7 @@ LABEL = "Claude Code"
 MODELS = {"strong": "opus", "fast": "sonnet", "lite": "haiku", "inherit": "inherit"}
 # Plugin-bundled MCP tools are named mcp__plugin_<plugin>_<server>__<tool>.
 CONTEXT7_PLUGIN_TOOLS = "mcp__plugin_actionboard-v5-agentformation_context7__*"
+ACTIONBOARD_TOOLS = ["mcp__plugin_actionboard-v5-agentformation_actionboard__*", "mcp__actionboard__*"]
 
 TOOLS = {
     "dispatch": "the `Agent` tool",
@@ -65,6 +66,8 @@ def tools(agent):
     # without MCP entries hides it from subagents, so name both the server this
     # plugin bundles and a user-configured `context7` server.
     out += [CONTEXT7_PLUGIN_TOOLS, "mcp__context7__*"]
+    if c["delegate"]:  # only the commander (Black Agent) talks to the ActionBoard board
+        out += ACTIONBOARD_TOOLS
     return out
 
 
@@ -114,7 +117,7 @@ def build(src, out, models):
         ("license", p["license"]), ("keywords", p["keywords"]),
     ])
     out.add(".claude-plugin/plugin.json", json.dumps(manifest, indent=2, ensure_ascii=False))
-    out.add(".mcp.json", context7_json("claude"))
+    out.add(".mcp.json", mcp_json("claude"))
 
 
 def root_files(src):

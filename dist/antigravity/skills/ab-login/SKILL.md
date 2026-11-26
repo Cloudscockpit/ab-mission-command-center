@@ -1,97 +1,61 @@
 ---
 name: ab-login
-description: Log in to ActionBoard from the CLI and select a Pod and Board. Use for "ab-login", login/pod/board switching, or unauthenticated submit/fetch errors.
+description: Log in to ActionBoard and select a Pod and Board through the ActionBoard MCP tools. Use for "ab-login", login/pod/board switching, or "Not logged in" errors from submit or fetch.
 ---
-
-> Paths written `<skill-dir>/...` are relative to the directory that contains this SKILL.md.
 
 # ActionBoard Login, Pod and Board Selection
 
 Signs the user in once, then saves the Pod and Board that `submit-mission` and `fetch-mission`
-use. Tokens are cached and renewed automatically, so the user logs in again only when the
-refresh token itself expires.
+use. Everything goes through the `actionboard` MCP server's `ab_*` tools, which ActionBoard
+configures on install. Tokens are cached and renewed automatically, so the user logs in again only
+when the refresh token itself expires.
 
-All commands use `<skill-dir>/../mission-report/scripts/submit_mission.py` (Python 3.9+,
-standard library only). On Windows use `py` instead of `python`.
+If no `ab_*` tools are available, the `actionboard` MCP server is not running: tell the user it
+needs [uv](https://docs.astral.sh/uv/) (`uvx`) and a restart of this agent session, then stop.
 
-You run inside an agent session with no interactive terminal, so the script cannot prompt.
-Ask the user in the conversation and pass their answers as flags, exactly as below.
+## Step 1: Check the current state
 
-## Step 1 — Check the current state
+Call `ab_auth_status`.
 
-```sh
-python <skill-dir>/../mission-report/scripts/submit_mission.py status --json
-```
-
-- `connection` is `edge` by default: calls go through the ActionBoard edge proxy and no API key
-  or AWS key is needed. Do not ask the user for one.
 - `logged_in` is `true`: skip to Step 3.
 - `logged_in` is `false`: continue with Step 2.
 
-## Step 2 — Log in through the browser
+## Step 2: Log in through the browser
 
-Run the login yourself. It opens the ActionBoard sign-in page in the user's browser and waits up
-to five minutes:
+First tell the user: "A browser tab will open. Sign in to ActionBoard there (email and password,
+Google, or LinkedIn)." Then call `ab_login`. It waits up to five minutes and returns once they have
+signed in. Pass `provider: "Google"` or `"LinkedIn"` when the user says which one they use.
 
-```sh
-python <skill-dir>/../mission-report/scripts/submit_mission.py login
-```
+**Never ask for the password in this conversation.** `ab_login` takes none: the password stays in
+the browser. If login fails or times out, show the error and offer to try again; do not guess.
 
-Tell the user: "Sign in to ActionBoard in the browser tab that just opened (email and password,
-Google, or LinkedIn). If no tab opened, open the link printed above." The command finishes
-by itself once they sign in. Add `--provider Google` (or `LinkedIn`) when the user says
-which one they use.
+Over SSH or on a headless machine no local browser can open: ask the user to connect with
+`ssh -L 3000:localhost:3000 -L 3001:localhost:3001 <host>`, run `ab login` there, and open the printed link locally.
 
-**Never ask for the password in this conversation.** The browser sign-in keeps it out of the CLI
-and out of the chat. If browser sign-in cannot work (for example on a remote machine over SSH,
-where the browser cannot reach this machine's localhost), ask the user to run
-`python <skill-dir>/../mission-report/scripts/submit_mission.py login --email <email>` in their
-own terminal, which prompts for the password there.
+## Step 3: Choose the Pod
 
-If login fails, show the script's error and offer to run it again; do not guess.
+Call `ab_list_pods`. Show the pod names and ask which one to use. If there is exactly one pod,
+use it and say so. Keep the chosen `podId`.
 
-## Step 3 — Choose the Pod
+## Step 4: Choose the Board
 
-```sh
-python <skill-dir>/../mission-report/scripts/submit_mission.py pods --no-input --json
-```
+Call `ab_list_boards` with that `pod_id`. Show the board names and ask which one to use. If there is
+exactly one board, use it and say so.
 
-Show the user the pod names and ask which one to use. If there is exactly one pod, use it and
-say so. Keep the chosen `podId`.
+## Step 5: Save the selection and the sync mode
 
-## Step 4 — Choose the Board
-
-```sh
-python <skill-dir>/../mission-report/scripts/submit_mission.py boards --pod <podId> --no-input --json
-```
-
-Show the user the board names and ask which one to use. If there is exactly one board, use it
-and say so.
-
-## Step 5 — Save the selection
-
-```sh
-python <skill-dir>/../mission-report/scripts/submit_mission.py select --pod <podId> --board <boardId>
-```
-
-This writes `pod_id` and `board_id` to `.actionboard/config.json`. Confirm to the user which
-account, Pod and Board are now active.
-
-## Step 6 — Mission sync (optional)
-
-Ask the user how missions should reach this board, and save the answer:
+Ask the user how missions should reach this board:
 
 - `ask` (default): Black Agent asks once per mission.
 - `auto`: every mission syncs its status, Agent progress, and final report without asking.
 - `off`: never sync; the user submits by hand.
 
-```sh
-python <skill-dir>/../mission-report/scripts/submit_mission.py select --sync <ask|auto|off>
-```
+Call `ab_select_board` with `pod_id`, `board_id`, and `sync`. It writes the selection to
+`.actionboard/config.json`. Confirm which account, Pod, Board and sync mode are now active.
 
 ## Security rules
 
 - Never commit `.actionboard/credentials.json` or `~/.actionboard/credentials.json`.
-- Tokens are kept in the OS keychain (macOS Keychain, Windows Credential Manager, or the Linux
-  Secret Service); `status` shows where. Run `logout` to remove them.
-- Never print tokens or the password.
+- Tokens are kept in the OS keychain when one exists; `ab_auth_status` shows where (`token_store`).
+  `ab_logout` removes them.
+- The tools never return tokens. Never print a token or a password.

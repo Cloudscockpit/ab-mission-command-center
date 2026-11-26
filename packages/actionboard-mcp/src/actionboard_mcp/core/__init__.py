@@ -7,8 +7,8 @@ login is needed); nothing calls sys.exit() or writes to stdout.
 import argparse
 import os
 
-from .._vendor.actionboard_cli import auth, commands, common, documents
-from .._vendor.actionboard_cli.operations import SYNC_MODES
+from ..actionboard_cli import auth, commands, common, documents
+from ..actionboard_cli.operations import SYNC_MODES
 from .bridge import CONFIG_PATH, ActionBoardError, AuthRequiredError, redact, run
 
 __all__ = [
@@ -151,14 +151,14 @@ def fetch_mission(mission_id=None, invitation_id=None, pod_id=None, board_id=Non
 
 
 def submit_mission(mission_dir=None, pod_id=None, board_id=None, mission_id=None, invitation_id=None,
-                   status=None, dry_run=False, keep_old=False, skip_s3=False):
+                   status=None, dry_run=False, keep_old=False, skip_s3=False, phase=None):
     _choice(status, STATUSES, "status")
     mission_dir = _project_path(mission_dir, "mission_dir") or documents.find_latest_mission_dir(".")
     s, _, warnings = run(commands.cmd_submit, _args(
         mission_dir=mission_dir, pod=pod_id, board=board_id, mission_id=mission_id, invitation_id=invitation_id,
         status=status, dry_run=dry_run, keep_old=keep_old, skip_s3=skip_s3, plan_id=None, assigned_agent=None,
         title=None, description=None, create_mission=False, update_mission=False, skip_plan=False,
-        skip_reports=False,
+        skip_reports=False, phase=phase or None,
     ))
     if dry_run:
         return redact({"dry_run": True, "mission_dir": s["mission_dir"], "title": s["title"], "files": s["files"]})

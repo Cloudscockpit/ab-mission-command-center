@@ -129,6 +129,69 @@ class RoundTrip(unittest.TestCase):
         with open(os.path.join(self.project, ".codex", "config.toml"), encoding="utf-8") as fh:
             self.assertEqual(fh.read(), mine_toml)
 
+    def test_actionboard_mcp_added_beside_user_context7_and_removed(self):
+        mine_json = {"mcp": {"context7": {"type": "local", "command": ["my-context7"]}}, "theme": "x"}
+        mine_toml = '# mine\n[mcp_servers.context7]\ncommand = "my-context7"\n'
+        json_path = os.path.join(self.project, "opencode.json")
+        toml_path = os.path.join(self.project, ".codex", "config.toml")
+        with open(json_path, "w", encoding="utf-8") as fh:
+            json.dump(mine_json, fh)
+        with open(toml_path, "w", encoding="utf-8") as fh:
+            fh.write(mine_toml)
+        for t in ("opencode", "codex"):
+            self.assertEqual(run("--target", t, "--project", self.project)[0], 0)
+        with open(json_path, encoding="utf-8") as fh:
+            mcp = json.load(fh)["mcp"]
+        self.assertEqual(mcp["context7"], mine_json["mcp"]["context7"])
+        self.assertEqual(mcp["actionboard"]["command"][0], "uvx")
+        self.assertIn("actionboard-mcp", mcp["actionboard"]["command"])
+        with open(toml_path, encoding="utf-8") as fh:
+            text = fh.read()
+        self.assertEqual(text.count("[mcp_servers.context7]"), 1)
+        self.assertIn('[mcp_servers.actionboard]\ncommand = "uvx"', text)
+        for t in ("opencode", "codex"):
+            run("--target", t, "--project", self.project, "--uninstall")
+        with open(json_path, encoding="utf-8") as fh:
+            self.assertEqual(json.load(fh), mine_json)
+        with open(toml_path, encoding="utf-8") as fh:
+            self.assertEqual(fh.read(), mine_toml)
+
+    def test_reinstall_over_context7_only_install_adds_actionboard(self):
+        """An install from before the ActionBoard server recorded no servers and added only context7."""
+        json_path = os.path.join(self.project, "opencode.json")
+        toml_path = os.path.join(self.project, ".codex", "config.toml")
+        manifest = os.path.join(self.project, ".opencode", "actionboard", "actionboard-install.json")
+        for t in ("opencode", "codex"):
+            run("--target", t, "--project", self.project)
+        with open(manifest, encoding="utf-8") as fh:
+            record = json.load(fh)
+        for m in record["merges"]:
+            m.pop("servers", None)
+        with open(manifest, "w", encoding="utf-8") as fh:
+            json.dump(record, fh)
+        with open(json_path, encoding="utf-8") as fh:
+            data = json.load(fh)
+        del data["mcp"]["actionboard"]
+        with open(json_path, "w", encoding="utf-8") as fh:
+            json.dump(data, fh)
+        with open(toml_path, encoding="utf-8") as fh:
+            text = fh.read()
+        with open(toml_path, "w", encoding="utf-8") as fh:
+            fh.write(text[:text.index("\n\n[mcp_servers.actionboard]")] + "\n# actionboard:end context7\n")
+
+        for t in ("opencode", "codex"):
+            self.assertEqual(run("--target", t, "--project", self.project)[0], 0)
+        with open(json_path, encoding="utf-8") as fh:
+            self.assertEqual(sorted(json.load(fh)["mcp"]), ["actionboard", "context7"])
+        with open(toml_path, encoding="utf-8") as fh:
+            text = fh.read()
+        self.assertEqual((text.count("[mcp_servers.context7]"), text.count("[mcp_servers.actionboard]")), (1, 1))
+        self.assertEqual(text.count("# actionboard:begin context7"), 1)
+        for t in ("opencode", "codex"):
+            run("--target", t, "--project", self.project, "--uninstall")
+        self.assertFalse(os.path.exists(json_path))
+        self.assertFalse(os.path.exists(toml_path))
+
     def test_codex_config_keeps_user_settings(self):
         path = os.path.join(self.project, ".codex", "config.toml")
         with open(path, "w", encoding="utf-8") as fh:

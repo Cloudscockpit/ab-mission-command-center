@@ -1,56 +1,48 @@
 ---
 name: submit-mission
-description: Submit ActionBoard Mission Brief, Plan, and Report from the CLI to a Pod Board. Use when asked to submit, upload, or push a mission.
+description: Submit ActionBoard Mission Brief, Plan, and Report to a Pod Board through the ActionBoard MCP tools. Use when asked to submit, upload, or push a mission, or to post mission progress.
 ---
 
 # Submit Mission to ActionBoard Pod & Board
 
-Uploads a mission's Brief, Plan, Report, JSON-LD graphs, metrics, and HTML dashboard to an ActionBoard Pod's Board via `{{skills_root}}/mission-report/scripts/submit_mission.py` (Python 3.9+, stdlib only; on Windows use `py`).
+Uploads a mission's Brief, Plan, Report, JSON-LD graphs, metrics, and HTML dashboard to the
+selected ActionBoard Board with the `actionboard` MCP server's `ab_*` tools.
 
-By default every call uses the ActionBoard edge proxy (no API key or AWS keys required). Direct AppSync/AWS configuration details live in `{{skill_dir}}/references/cli-reference.md`.
+## Step 1: Check login and Board
 
-## Step-by-step execution
+Call `ab_auth_status`. If `logged_in` is `false`, `active_board_id` is empty, or the `ab_*` tools
+are missing, run the `ab-login` skill first.
 
-Inside an agent session (non-interactive), always run `status --json` first. If `logged_in` is `false`, or `default_pod_id` / `default_board_id` is empty, run `{{skills_root}}/ab-login/SKILL.md` first, then run `submit --no-input`.
+## Step 2: Submit
 
-### 1. Check status & select Pod/Board (if needed)
+Call `ab_submit_mission`. Arguments, all optional:
 
-```sh
-python {{skills_root}}/mission-report/scripts/submit_mission.py status --json
-python {{skills_root}}/mission-report/scripts/submit_mission.py pods
-python {{skills_root}}/mission-report/scripts/submit_mission.py boards --pod <podId-or-slug>
-python {{skills_root}}/mission-report/scripts/submit_mission.py select --pod <podId-or-slug> --board <boardId-or-name>
-```
+- `mission_dir`: the mission folder; defaults to the newest folder under `docs/missions/`.
+- `pod_id` / `board_id`: a Pod or Board other than the selected one.
+- `mission_id` / `invitation_id`: the board mission to update. A fetched or earlier-submitted
+  folder is already linked, so it updates the same mission; otherwise a mission with the same
+  title is reused or a new one is created.
+- `status`: `INITIATED`, `IN_PROGRESS`, `COMPLETED`, `FAILED` or `ARCHIVED`. Without one, a
+  folder with `mission-report.md` is marked `COMPLETED`.
+- `dry_run: true`: list what would be uploaded, without logging in or changing anything.
+- `keep_old: true`: keep previous versions of changed files instead of replacing them.
+- `phase`: also group the files under `Missions/<mission-name>/<phase>/` (a phase or milestone name).
 
-### 2. Submit the mission
+Files land in the board's File Manager under `Missions/<mission-name>/`. Re-submitting is idempotent: `skipped_files` lists unchanged files, and only files this
+integration uploaded are ever replaced; files people uploaded in the app are never touched.
+Report `uploaded_files`, `skipped_files` and `status` to the user in one or two lines.
 
-```sh
-# Auto-detect latest mission in docs/missions/ or actionboard-v5-missions/
-python {{skills_root}}/mission-report/scripts/submit_mission.py submit --no-input
+## Step 3: Live progress (optional)
 
-# Explicit directory, pod, or board
-python {{skills_root}}/mission-report/scripts/submit_mission.py submit \
-  --mission-dir docs/missions/<YYYY-MM-DD-slug> \
-  --pod <podId-or-slug> \
-  --board <boardId-or-name>
-```
+Call `ab_post_progress` with `mission_dir` (or `mission_id`), a `status` (default `IN_PROGRESS`),
+and/or a one-line `comment`. Never put secrets, tokens, or file contents in a comment.
 
-Files land in the board's File Manager under `Missions/<mission-name>/` (the root `Missions` folder is reused; nested folders such as `case-files/` are preserved). Re-submitting is idempotent: unchanged files are skipped and changed CLI files replace their previous version without touching human-uploaded files (pass `--keep-old` to retain old versions).
+To change how missions sync, call `ab_select_board` with the current `pod_id`, `board_id` and
+`sync` (`ask`, `auto` or `off`).
 
-Key flags: `--dry-run`, `--mission-id <id>`, `--invitation-id <id>`, `--create-mission`, `--update-mission`, `--phase <name>` / `--milestone <name>` (group files under `Missions/<mission-name>/<name>/`), `--status <INITIATED|IN_PROGRESS|COMPLETED|FAILED|ARCHIVED>`, `--skip-s3`, `--keep-old`, `--json`.
-
-### 3. Live progress & sync mode (optional)
-
-```sh
-python {{skills_root}}/mission-report/scripts/submit_mission.py progress \
-  --mission-dir docs/missions/<YYYY-MM-DD-slug> --status IN_PROGRESS --comment "Red Agent: done — API client shipped"
-
-python {{skills_root}}/mission-report/scripts/submit_mission.py select --sync auto
-```
-
-`select --sync <ask|auto|off>` controls automatic board sync (`ask` default). Never include secrets, tokens, or file contents in progress comments.
+Direct AppSync/AWS mode setup and the full control-plane flow: `{{skill_dir}}/references/cli-reference.md`.
 
 ## Security rules
 
-- Never commit `.actionboard/credentials.json` or raw API keys/passwords; keep credential files `0600`.
-- Never ask for the user's password in chat; use browser sign-in (`login`).
+- Never commit `.actionboard/credentials.json`; the tools never return tokens.
+- Never ask for the user's password in chat; `ab_login` signs in through the browser.

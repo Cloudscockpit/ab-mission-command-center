@@ -11,22 +11,40 @@ from .model import glossary_section, render_text, render_tree
 # Node needed). An optional CONTEXT7_API_KEY raises its rate limits.
 CONTEXT7_URL = "https://mcp.context7.com/mcp"
 
+# The ActionBoard MCP server (packages/actionboard-mcp): login, Pods/Boards, fetch and submit missions.
+# Every target's MCP config runs `uvx --from ACTIONBOARD_MCP_SOURCE actionboard-mcp`, so users need uv,
+# not a clone; the server works in the client's project folder. Pin it here, in one place: a release tag
+# ("git+https://github.com/Cloudscockpit/ab-mission-command-center@v1.4.0#subdirectory=packages/actionboard-mcp")
+# or PyPI ("actionboard-mcp==0.1.0").
+ACTIONBOARD_MCP_SOURCE = "git+https://github.com/Cloudscockpit/ab-mission-command-center#subdirectory=packages/actionboard-mcp"
+ACTIONBOARD_MCP_ARGS = ["--from", ACTIONBOARD_MCP_SOURCE, "actionboard-mcp"]
+MCP_SERVERS = ("context7", "actionboard")
 
-def context7_json(shape):
-    """Context7 MCP config in each CLI's JSON shape."""
+
+def mcp_json(shape):
+    """Context7 and ActionBoard MCP config in each CLI's JSON shape."""
     if shape == "claude":
-        server = OrderedDict([("type", "http"), ("url", CONTEXT7_URL)])
-        return json.dumps({"mcpServers": {"context7": server}}, indent=2)
+        servers = {"context7": OrderedDict([("type", "http"), ("url", CONTEXT7_URL)]),
+                   "actionboard": OrderedDict([("command", "uvx"), ("args", ACTIONBOARD_MCP_ARGS)])}
+        return json.dumps({"mcpServers": servers}, indent=2)
     if shape == "antigravity":
-        return json.dumps({"mcpServers": {"context7": {"url": CONTEXT7_URL}}}, indent=2)
+        servers = {"context7": {"url": CONTEXT7_URL},
+                   "actionboard": OrderedDict([("command", "uvx"), ("args", ACTIONBOARD_MCP_ARGS)])}
+        return json.dumps({"mcpServers": servers}, indent=2)
     if shape == "opencode":
-        server = OrderedDict([("type", "remote"), ("url", CONTEXT7_URL), ("enabled", True)])
-        return json.dumps({"mcp": {"context7": server}}, indent=2)
+        servers = {"context7": OrderedDict([("type", "remote"), ("url", CONTEXT7_URL), ("enabled", True)]),
+                   "actionboard": OrderedDict([("type", "local"), ("command", ["uvx"] + ACTIONBOARD_MCP_ARGS),
+                                               ("enabled", True)])}
+        return json.dumps({"mcp": servers}, indent=2)
     raise ValueError(shape)
 
 
-def context7_toml():
-    return '[mcp_servers.context7]\nurl = "%s"\n' % CONTEXT7_URL
+def mcp_toml():
+    # ab_login waits up to 5 minutes for the browser sign-in; the first uvx run downloads the server.
+    return ('[mcp_servers.context7]\nurl = "%s"\n\n'
+            '[mcp_servers.actionboard]\ncommand = "uvx"\nargs = %s\n'
+            'startup_timeout_sec = 120\ntool_timeout_sec = 330\n'
+            % (CONTEXT7_URL, json.dumps(ACTIONBOARD_MCP_ARGS)))
 
 ARGS_TEXT = "the objective the user typed after the skill name"
 

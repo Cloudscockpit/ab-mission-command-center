@@ -234,7 +234,7 @@ def split_for_storage(path, creds):
             public["keychain_account"] = account
             public["keychain_backend"] = backend
             return public
-        sys.stderr.write("submit_mission: WARNING: could not save tokens to the %s; keeping them in %s (mode 0600).\n"
+        sys.stderr.write("actionboard-cli: WARNING: could not save tokens to the %s; keeping them in %s (mode 0600).\n"
                          % (describe(backend), path))
     if previous_account and previous_backend in _BACKENDS:
         try:
@@ -252,7 +252,7 @@ def merge_from_keychain(creds):
         return creds
     secrets = read_secret(account, backend)
     if secrets is None:
-        sys.stderr.write("submit_mission: WARNING: tokens not found in the %s; log in again.\n" % describe(backend))
+        sys.stderr.write("actionboard-cli: WARNING: tokens not found in the %s; log in again.\n" % describe(backend))
         return creds
     merged = dict(creds)
     for key in SECRET_KEYS:

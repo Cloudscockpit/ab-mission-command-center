@@ -236,3 +236,10 @@ def test_project_tools_refuse_home_as_project(logged_in, monkeypatch, name, args
     result = call(name, **args)
     assert result.is_error and "not running in a project folder" in result.content[0].text
     assert not (Path.home() / "docs").exists()
+
+
+def test_submit_phase_groups_files_in_a_board_subfolder(logged_in, mission_dir):
+    select()
+    result = data(call("ab_submit_mission", mission_dir=mission_dir, phase="wave-2"))
+    assert result["uploaded_files"]
+    assert "wave-2" in [f["folderName"] for f in logged_in.folders]

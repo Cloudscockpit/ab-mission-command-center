@@ -10,12 +10,10 @@ import uuid
 from contextlib import redirect_stderr
 from unittest.mock import patch
 
-sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
-                                "src", "skills", "mission-report", "scripts"))
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 os.environ["ACTIONBOARD_KEYCHAIN"] = "off"
 
-import submit_mission  # noqa: E402
-from actionboard_cli import keychain  # noqa: E402
+from ab_cli import keychain, submit_mission  # noqa: E402
 
 
 class FakeKeychain:

@@ -9,7 +9,7 @@ import re
 import sys
 import threading
 
-from .._vendor.actionboard_cli import common
+from ..actionboard_cli import common
 
 CONFIG_PATH = ".actionboard/config.json"
 
