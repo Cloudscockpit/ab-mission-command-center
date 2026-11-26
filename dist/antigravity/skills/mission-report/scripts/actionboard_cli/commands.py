@@ -394,10 +394,20 @@ def cmd_configure(args):
     return 0
 
 
+def _browser_login(settings, provider, open_browser, timeout, opener=None):
+    from .common import info
+    from .auth import login_with_browser
+    from . import keychain
+    creds = login_with_browser(settings, provider=provider, open_browser=open_browser, timeout=timeout, opener=opener)
+    info("Logged in as %s (profileId: %s). Tokens stored in the %s."
+         % (creds.get("email") or "your account", creds.get("profile_id") or "resolved on pod exchange",
+            keychain.describe(load_backend(settings["cred_file"]))))
+    return creds
+
+
 def cmd_login(args, opener=None):
     from .common import fail
     from .common import info
-    from .auth import login_with_browser
     from .auth import login_with_credentials
     from .auth import resolve_settings
     from . import keychain
@@ -407,16 +417,7 @@ def cmd_login(args, opener=None):
     # Browser sign-in is the default: the password never passes through the CLI or an agent's chat.
     # A password is used only when one is supplied, or when --email is typed in a terminal.
     if not password and (args.browser or args.provider or not args.email or not sys.stdin.isatty()):
-        creds = login_with_browser(
-            settings,
-            provider=args.provider,
-            open_browser=not args.no_browser,
-            timeout=args.timeout,
-            opener=opener,
-        )
-        info("Logged in as %s (profileId: %s). Tokens stored in the %s."
-             % (creds.get("email") or "your account", creds.get("profile_id") or "resolved on pod exchange",
-                keychain.describe(load_backend(settings["cred_file"]))))
+        _browser_login(settings, args.provider, not args.no_browser, args.timeout, opener=opener)
         return 0
 
     email = args.email or os.environ.get("ACTIONBOARD_EMAIL") or settings["creds"].get("email")
@@ -439,6 +440,101 @@ def cmd_login(args, opener=None):
         % (creds.get("email"), creds.get("profile_id") or "resolved on pod exchange",
            keychain.describe(load_backend(settings["cred_file"])))
     )
+    return 0
+
+
+def cmd_signup(args, opener=None, browser_open=None):
+    """Open the regional sign-up page; in a terminal, wait for the email to be verified, then sign in."""
+    from .common import SIGNUP_REGION_CHOICES
+    from .common import SIGNUP_REGIONS
+    from .auth import SignupRegionPending
+    from .auth import ensure_main_token
+    from .common import fail
+    from .auth import fetch_my_pods
+    from .common import info
+    from .auth import open_signup_page
+    from .auth import resolve_settings
+    from .auth import token_is_valid
+    as_json = getattr(args, "json", False)
+    interactive = not getattr(args, "no_input", False) and sys.stdin.isatty()
+    region = (args.region or "").strip().lower()
+    if not region:
+        if not interactive:
+            fail("--region is required with --no-input or without a terminal; choose one of: %s"
+                 % ", ".join(SIGNUP_REGION_CHOICES))
+        info("Select your ActionBoard region:")
+        try:
+            region = prompt_choice(
+                "Region number: ",
+                list(SIGNUP_REGION_CHOICES),
+                lambda code: "%s: %s (%s)%s" % (
+                    code,
+                    SIGNUP_REGIONS[code]["label"],
+                    SIGNUP_REGIONS[code]["site"].split("://", 1)[-1],
+                    "" if SIGNUP_REGIONS[code]["plugin_login"] else ", plugin sign-in not available yet",
+                ),
+            )
+        except KeyboardInterrupt:
+            info("\nStopped. Run `submit_mission.py signup` again when you are ready.")
+            return 1
+    if region not in SIGNUP_REGION_CHOICES:
+        fail("unknown region %r; choose one of: %s" % (args.region, ", ".join(SIGNUP_REGION_CHOICES)))
+
+    try:
+        opened = open_signup_page(region, browser_open=browser_open)
+    except SignupRegionPending as pending:
+        if as_json:
+            info(json.dumps({
+                "success": False,
+                "status": "region_pending",
+                "region": pending.region,
+                "label": pending.label,
+                "signup_url": pending.signup_url,
+            }, indent=2))
+            sys.exit(2)
+        fail("sign-up for %s is at %s. Plugin sign-in for those accounts is not available yet; choose bd to use the plugin now."
+             % (pending.label, pending.signup_url))
+
+    if as_json:
+        info(json.dumps({
+            "success": True,
+            "region": opened["region"],
+            "label": opened["label"],
+            "signup_url": opened["signup_url"],
+            "opened": opened["opened"],
+            "next_step": "login",
+        }, indent=2))
+        return 0
+
+    info("Create your ActionBoard account (%s) in the browser tab that just opened." % opened["label"])
+    if not opened["opened"]:
+        info("No tab opened. Open this link: %s" % opened["signup_url"])
+    info("Enter your password and the email verification code only in the browser, never in a chat.")
+    if not interactive:
+        info("Once your email is verified, run `submit_mission.py login`.")
+        return 0
+
+    try:
+        input("Press Enter once your email is verified to sign in; Ctrl+C to stop. ")
+    except (EOFError, KeyboardInterrupt):
+        info("\nStopped. Run `submit_mission.py login` once your email is verified.")
+        return 1
+    settings = resolve_settings(args.credentials_file, args.config, args)
+    creds = settings["creds"]
+    if (creds.get("access_token") and token_is_valid(creds.get("access_token"))) or creds.get("refresh_token"):
+        try:
+            answer = input("Signed in as %s. Signing in with the new account replaces that session. Continue? [y/N] "
+                           % (creds.get("email") or "an existing account")).strip().lower()
+        except (EOFError, KeyboardInterrupt):
+            info("\nStopped. Your existing session was not changed.")
+            return 1
+        if answer not in ("y", "yes"):
+            info("Stopped. Your existing session was not changed.")
+            return 0
+    _browser_login(settings, None, True, 300, opener=opener)
+    main_token = ensure_main_token(settings, interactive=False, opener=opener)
+    if not fetch_my_pods(settings, main_token, opener=opener):
+        info("This account has no Pod yet, so missions cannot be submitted until it joins or creates one.")
     return 0
 
 
@@ -1771,6 +1867,7 @@ def _add_common_flags(parser, is_subparser=False):
 
 
 def build_parser():
+    from .common import SIGNUP_REGION_CHOICES
     from .operations import SYNC_MODES
     p = argparse.ArgumentParser(
         prog="submit_mission.py",
@@ -1800,6 +1897,11 @@ def build_parser():
     sp_login.add_argument("--provider", choices=["Google", "LinkedIn"], help="go straight to this sign-in provider in the browser")
     sp_login.add_argument("--no-browser", action="store_true", help="print the sign-in link instead of opening a browser")
     sp_login.add_argument("--timeout", type=int, default=300, help="seconds to wait for the browser sign-in (default: 300)")
+
+    sp_signup = sub.add_parser("signup", parents=[common_sub], help="create an ActionBoard account in the browser, then sign in")
+    sp_signup.add_argument("--region", help="region to sign up in: %s" % ", ".join(SIGNUP_REGION_CHOICES))
+    sp_signup.add_argument("--no-input", action="store_true", help="do not prompt; open the sign-up page and stop")
+    sp_signup.add_argument("--json", action="store_true", help="output JSON")
 
     sub.add_parser("logout", parents=[common_sub], help="remove stored tokens from the keychain and credentials file")
 
@@ -1895,6 +1997,7 @@ def main(argv=None, opener=None):
     dispatch = {
         "configure": lambda: cmd_configure(args),
         "login": lambda: cmd_login(args, opener=opener),
+        "signup": lambda: cmd_signup(args, opener=opener),
         "logout": lambda: cmd_logout(args),
         "status": lambda: cmd_status(args),
         "pods": lambda: cmd_pods(args, opener=opener),

@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+### Added
+- `/ab-signup` skill and `signup` command for people with no ActionBoard account. Choose a region
+  (`bd` Bangladesh or `us` United States), create the account on that region's site in the browser,
+  then sign in through the existing `login`. The password and email verification code stay in the
+  browser, never in the CLI or chat. Plugin sign-in for United States accounts is not available yet,
+  so `signup --region us` only reports the sign-up link and exits non-zero.
+
 ### Fixed
 - OpenShell policy templates now allow writes to `/dev/null`. Eight of the nine bundled templates
   (all but `actionboard-okf.yaml`) left it out, so `> /dev/null` failed with `Permission denied`

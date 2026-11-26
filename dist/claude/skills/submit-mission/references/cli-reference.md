@@ -35,4 +35,14 @@ python ${CLAUDE_PLUGIN_ROOT}/skills/mission-report/scripts/submit_mission.py con
 
 AWS keys are optional. Without them, files upload through presigned URLs from the edge proxy (or, in direct mode, through the Pod's own upload route). To upload straight to S3 instead, set `AWS_ACCESS_KEY_ID` / `AWS_SECRET_ACCESS_KEY`, select a shared credentials profile with `AWS_PROFILE` (or a file with `AWS_SHARED_CREDENTIALS_FILE`), or pass `--aws-access-key-id` and `--aws-secret-access-key` to `configure`. A `~/.aws/credentials` `[default]` profile on its own is not used, so an unrelated AWS account never takes over the upload.
 
+### Sign up (`signup`)
+
+`submit_mission.py signup [--region bd|us] [--no-input] [--json]` helps someone with no account. It never takes a password, verification code, email or URL.
+
+- `--region`: `bd` (Bangladesh, https://actionboard.com.bd/auth/signup) or `us` (United States, https://actionboard.ai/auth/signup). Case and spaces are ignored. Without it, a terminal prompts; with `--no-input` or no terminal it fails with exit 2.
+- `bd`: opens the sign-up page, tells the user to create the account and verify the email in the browser, then run `login`. In a terminal (no `--no-input`) it waits for Enter, asks before replacing an existing session, runs the browser `login`, and notes if the account has no Pod yet.
+- `us`: opens nothing, prints the sign-up link, says plugin sign-in is not available yet, and exits 2.
+- `--json` for `bd`: `{"success": true, "region", "label", "signup_url", "opened", "next_step": "login"}`.
+- `--json` for `us` (exit 2): `{"success": false, "status": "region_pending", "region", "label", "signup_url"}`.
+
 For CI login without a browser, set `ACTIONBOARD_EMAIL` and `ACTIONBOARD_PASSWORD`. Run `logout` to clear stored tokens.

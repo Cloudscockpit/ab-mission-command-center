@@ -1,0 +1,841 @@
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Project",
+      "@id": "urn:voltron:mission:regional-actionboard-signup-from-plugin",
+      "name": "Regional ActionBoard sign-up from the plugin",
+      "description": "Let a person with no ActionBoard account choose a region, sign up on that region's ActionBoard site from the Claude plugin, and end up signed in to the plugin.",
+      "identifier": "regional-actionboard-signup-from-plugin",
+      "startDate": "2026-11-25",
+      "member": [
+        {
+          "@id": "urn:voltron:lion:blue"
+        },
+        {
+          "@id": "urn:voltron:lion:red"
+        },
+        {
+          "@id": "urn:voltron:lion:yellow"
+        }
+      ],
+      "subjectOf": [
+        {
+          "@id": "urn:voltron:mission:regional-actionboard-signup-from-plugin:brief"
+        },
+        {
+          "@id": "urn:voltron:mission:regional-actionboard-signup-from-plugin:plan"
+        },
+        {
+          "@id": "urn:voltron:mission:regional-actionboard-signup-from-plugin:report"
+        }
+      ],
+      "endDate": "2026-11-26"
+    },
+    {
+      "@type": "Report",
+      "@id": "urn:voltron:mission:regional-actionboard-signup-from-plugin:report",
+      "name": "Mission Report — Regional ActionBoard sign-up from the plugin",
+      "about": {
+        "@id": "urn:voltron:mission:regional-actionboard-signup-from-plugin"
+      },
+      "datePublished": "2026-11-26",
+      "creator": {
+        "@id": "urn:voltron:lion:main"
+      },
+      "abstract": "All four assignments completed. BD sign-up works end to end through the existing plugin login; US is selectable but marked pending because its Cognito pool is not established. Four of five success criteria met, one partly met. One clean run of four scored.",
+      "mainEntity": {
+        "@type": "ItemList",
+        "itemListElement": [
+          {
+            "@id": "urn:voltron:mission:regional-actionboard-signup-from-plugin:assignment:1"
+          },
+          {
+            "@id": "urn:voltron:mission:regional-actionboard-signup-from-plugin:assignment:2"
+          },
+          {
+            "@id": "urn:voltron:mission:regional-actionboard-signup-from-plugin:assignment:3"
+          },
+          {
+            "@id": "urn:voltron:mission:regional-actionboard-signup-from-plugin:assignment:4"
+          },
+          {
+            "@id": "urn:voltron:mission:regional-actionboard-signup-from-plugin:criterion:1"
+          },
+          {
+            "@id": "urn:voltron:mission:regional-actionboard-signup-from-plugin:criterion:2"
+          },
+          {
+            "@id": "urn:voltron:mission:regional-actionboard-signup-from-plugin:criterion:3"
+          },
+          {
+            "@id": "urn:voltron:mission:regional-actionboard-signup-from-plugin:criterion:4"
+          },
+          {
+            "@id": "urn:voltron:mission:regional-actionboard-signup-from-plugin:criterion:5"
+          },
+          {
+            "@id": "urn:voltron:mission:regional-actionboard-signup-from-plugin:maturity:1"
+          },
+          {
+            "@id": "urn:voltron:mission:regional-actionboard-signup-from-plugin:maturity:2"
+          },
+          {
+            "@id": "urn:voltron:mission:regional-actionboard-signup-from-plugin:maturity:3"
+          },
+          {
+            "@id": "urn:voltron:mission:regional-actionboard-signup-from-plugin:maturity:4"
+          }
+        ]
+      }
+    },
+    {
+      "@type": "Organization",
+      "@id": "urn:voltron:lion:main",
+      "additionalType": "https://schema.org/SoftwareApplication",
+      "name": "Black Agent",
+      "description": "Mission commander (Black Agent). Plans, delegates, gates, reports."
+    },
+    {
+      "@type": "Organization",
+      "@id": "urn:voltron:lion:blue",
+      "additionalType": "https://schema.org/SoftwareApplication",
+      "name": "Blue Agent",
+      "description": "Data and integrations specialist. APIs, data plumbing, external service wiring.",
+      "additionalProperty": {
+        "@type": "PropertyValue",
+        "name": "specialty",
+        "value": "data-integrations"
+      }
+    },
+    {
+      "@type": "Organization",
+      "@id": "urn:voltron:lion:red",
+      "additionalType": "https://schema.org/SoftwareApplication",
+      "name": "Red Agent",
+      "description": "Rapid execution specialist. Writes code, scaffolds features.",
+      "additionalProperty": {
+        "@type": "PropertyValue",
+        "name": "specialty",
+        "value": "rapid-execution"
+      }
+    },
+    {
+      "@type": "Organization",
+      "@id": "urn:voltron:lion:yellow",
+      "additionalType": "https://schema.org/SoftwareApplication",
+      "name": "Yellow Agent",
+      "description": "Quality and defense specialist. Tests, verification, security review.",
+      "additionalProperty": {
+        "@type": "PropertyValue",
+        "name": "specialty",
+        "value": "quality-defense"
+      }
+    },
+    {
+      "@type": "SoftwareSourceCode",
+      "@id": "urn:voltron:file:src/skills/mission-report/scripts/actionboard_cli/auth.py",
+      "name": "src/skills/mission-report/scripts/actionboard_cli/auth.py",
+      "codeRepository": "ab-mission-command-center"
+    },
+    {
+      "@type": "SoftwareSourceCode",
+      "@id": "urn:voltron:file:src/skills/mission-report/scripts/actionboard_cli/common.py",
+      "name": "src/skills/mission-report/scripts/actionboard_cli/common.py",
+      "codeRepository": "ab-mission-command-center"
+    },
+    {
+      "@type": "SoftwareSourceCode",
+      "@id": "urn:voltron:file:src/skills/mission-report/scripts/actionboard_cli/commands.py",
+      "name": "src/skills/mission-report/scripts/actionboard_cli/commands.py",
+      "codeRepository": "ab-mission-command-center"
+    },
+    {
+      "@type": "SoftwareSourceCode",
+      "@id": "urn:voltron:file:src/skills/mission-report/scripts/submit_mission.py",
+      "name": "src/skills/mission-report/scripts/submit_mission.py",
+      "codeRepository": "ab-mission-command-center"
+    },
+    {
+      "@type": "SoftwareSourceCode",
+      "@id": "urn:voltron:file:src/skills/ab-signup/SKILL.md",
+      "name": "src/skills/ab-signup/SKILL.md",
+      "codeRepository": "ab-mission-command-center"
+    },
+    {
+      "@type": "SoftwareSourceCode",
+      "@id": "urn:voltron:file:src/skills/ab-login/SKILL.md",
+      "name": "src/skills/ab-login/SKILL.md",
+      "codeRepository": "ab-mission-command-center"
+    },
+    {
+      "@type": "SoftwareSourceCode",
+      "@id": "urn:voltron:file:src/skills/submit-mission/references/cli-reference.md",
+      "name": "src/skills/submit-mission/references/cli-reference.md",
+      "codeRepository": "ab-mission-command-center"
+    },
+    {
+      "@type": "SoftwareSourceCode",
+      "@id": "urn:voltron:file:README.md",
+      "name": "README.md",
+      "codeRepository": "ab-mission-command-center"
+    },
+    {
+      "@type": "SoftwareSourceCode",
+      "@id": "urn:voltron:file:CHANGELOG.md",
+      "name": "CHANGELOG.md",
+      "codeRepository": "ab-mission-command-center"
+    },
+    {
+      "@type": "SoftwareSourceCode",
+      "@id": "urn:voltron:file:dist/",
+      "name": "dist/",
+      "codeRepository": "ab-mission-command-center"
+    },
+    {
+      "@type": "SoftwareSourceCode",
+      "@id": "urn:voltron:file:tests/report/test_signup.py",
+      "name": "tests/report/test_signup.py",
+      "codeRepository": "ab-mission-command-center"
+    },
+    {
+      "@type": "SoftwareSourceCode",
+      "@id": "urn:voltron:file:tests/report/test_browser_login.py",
+      "name": "tests/report/test_browser_login.py",
+      "codeRepository": "ab-mission-command-center"
+    },
+    {
+      "@type": "Action",
+      "@id": "urn:voltron:mission:regional-actionboard-signup-from-plugin:assignment:1",
+      "name": "A1 Region check using public pages only",
+      "description": "Load /auth/signup on https://actionboard.ai and https://actionboard.com.bd and the plugin's /cli login page; request each site's /api/auth/social/Google without following the redirect and compare the Cognito domain and client ID with the plugin's defaults.",
+      "agent": {
+        "@id": "urn:voltron:lion:blue"
+      },
+      "actionStatus": "https://schema.org/CompletedActionStatus",
+      "result": {
+        "@type": "DefinedTerm",
+        "name": "outcome",
+        "description": "BD sign-ups create accounts in the plugin's Cognito pool (absaas-dev, ap-southeast-1, same client ID and callback); US not established because actionboard.ai returned an HTML shell instead of a Cognito redirect. Independently reproduced by Yellow Agent. Blue's report misquoted the client ID suffix (0070; actual ir70); the verdict was correct."
+      },
+      "endTime": "2026-11-26T15:35:50Z"
+    },
+    {
+      "@type": "Action",
+      "@id": "urn:voltron:mission:regional-actionboard-signup-from-plugin:assignment:2",
+      "name": "A2 Regional sign-up flow",
+      "description": "Add a fixed list of regional sign-up addresses and the sign-up flow: open the chosen region's sign-up page, then run the existing browser login.",
+      "agent": {
+        "@id": "urn:voltron:lion:blue"
+      },
+      "actionStatus": "https://schema.org/CompletedActionStatus",
+      "result": {
+        "@type": "DefinedTerm",
+        "name": "outcome",
+        "description": "Added SIGNUP_REGIONS and SIGNUP_REGION_CHOICES to common.py, and signup_url, SignupRegionPending, _signup_region and open_signup_page to auth.py. Existing login unchanged. One rework round (A2b): browser catch widened to (webbrowser.Error, OSError) and spacing fixed."
+      },
+      "object": [
+        {
+          "@id": "urn:voltron:file:src/skills/mission-report/scripts/actionboard_cli/auth.py"
+        },
+        {
+          "@id": "urn:voltron:file:src/skills/mission-report/scripts/actionboard_cli/common.py"
+        }
+      ],
+      "additionalProperty": [
+        {
+          "@type": "PropertyValue",
+          "name": "dependsOn",
+          "value": "urn:voltron:mission:regional-actionboard-signup-from-plugin:assignment:1"
+        }
+      ],
+      "endTime": "2026-11-26T15:35:50Z"
+    },
+    {
+      "@type": "Action",
+      "@id": "urn:voltron:mission:regional-actionboard-signup-from-plugin:assignment:3",
+      "name": "A3 signup command, ab-signup skill, docs and dist",
+      "description": "Add the signup command and the ab-signup skill, link it from ab-login, update the docs and changelog, then regenerate dist/ with python3 scripts/build.py.",
+      "agent": {
+        "@id": "urn:voltron:lion:red"
+      },
+      "actionStatus": "https://schema.org/CompletedActionStatus",
+      "result": {
+        "@type": "DefinedTerm",
+        "name": "outcome",
+        "description": "Added the signup command and cmd_signup, a shared _browser_login helper with unchanged cmd_login behaviour, the ab-signup skill, ab-login pointer, CLI reference, README and CHANGELOG (Unreleased, no version bump), and regenerated dist/. Re-plan A3b added two docs (black-agent.md, submit-mission SKILL.md). Fix round A3c guarded the region and replace-session prompts against EOF and Ctrl+C."
+      },
+      "object": [
+        {
+          "@id": "urn:voltron:file:src/skills/mission-report/scripts/actionboard_cli/commands.py"
+        },
+        {
+          "@id": "urn:voltron:file:src/skills/mission-report/scripts/submit_mission.py"
+        },
+        {
+          "@id": "urn:voltron:file:src/skills/ab-signup/SKILL.md"
+        },
+        {
+          "@id": "urn:voltron:file:src/skills/ab-login/SKILL.md"
+        },
+        {
+          "@id": "urn:voltron:file:src/skills/submit-mission/references/cli-reference.md"
+        },
+        {
+          "@id": "urn:voltron:file:README.md"
+        },
+        {
+          "@id": "urn:voltron:file:CHANGELOG.md"
+        },
+        {
+          "@id": "urn:voltron:file:dist/"
+        }
+      ],
+      "additionalProperty": [
+        {
+          "@type": "PropertyValue",
+          "name": "dependsOn",
+          "value": "urn:voltron:mission:regional-actionboard-signup-from-plugin:assignment:2"
+        }
+      ],
+      "endTime": "2026-11-26T15:35:50Z"
+    },
+    {
+      "@type": "Action",
+      "@id": "urn:voltron:mission:regional-actionboard-signup-from-plugin:assignment:4",
+      "name": "A4 Tests and security review",
+      "description": "Write the tests, run every suite, and review the change for security.",
+      "agent": {
+        "@id": "urn:voltron:lion:yellow"
+      },
+      "actionStatus": "https://schema.org/CompletedActionStatus",
+      "result": {
+        "@type": "DefinedTerm",
+        "name": "outcome",
+        "description": "34 new tests in tests/report/test_signup.py; security review with two Medium and three Low findings, four fixed and one accepted. Final run: guard 32 OK, build 23 OK, install 55 OK (1 skipped), maturity 18 OK, report 220 OK (1 skipped), installer 23 OK; build.py --check clean. Re-run by Black Agent with identical results."
+      },
+      "object": [
+        {
+          "@id": "urn:voltron:file:tests/report/test_signup.py"
+        },
+        {
+          "@id": "urn:voltron:file:tests/report/test_browser_login.py"
+        }
+      ],
+      "additionalProperty": [
+        {
+          "@type": "PropertyValue",
+          "name": "dependsOn",
+          "value": "urn:voltron:mission:regional-actionboard-signup-from-plugin:assignment:3"
+        }
+      ],
+      "endTime": "2026-11-26T15:35:50Z"
+    },
+    {
+      "@type": "DefinedTerm",
+      "@id": "urn:voltron:mission:regional-actionboard-signup-from-plugin:criterion:1",
+      "name": "The region is always the user's choice",
+      "inDefinedTermSet": {
+        "@id": "urn:voltron:mission:regional-actionboard-signup-from-plugin:success-criteria"
+      },
+      "additionalProperty": [
+        {
+          "@type": "PropertyValue",
+          "name": "status",
+          "value": "met"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "evidence",
+          "value": "test_signup.py covers --no-input without --region and the interactive region prompt; report suite 220 OK."
+        }
+      ]
+    },
+    {
+      "@type": "DefinedTerm",
+      "@id": "urn:voltron:mission:regional-actionboard-signup-from-plugin:criterion:2",
+      "name": "The right page opens and the user ends signed in",
+      "inDefinedTermSet": {
+        "@id": "urn:voltron:mission:regional-actionboard-signup-from-plugin:success-criteria"
+      },
+      "additionalProperty": [
+        {
+          "@type": "PropertyValue",
+          "name": "status",
+          "value": "partly met"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "evidence",
+          "value": "Met for bd: the browser opens exactly https://actionboard.com.bd/auth/signup and the shared _browser_login is called once. The us half was superseded by the operator's decision: us opens nothing and reports region_pending with the exact US URL. No real sign-up performed."
+        }
+      ]
+    },
+    {
+      "@type": "DefinedTerm",
+      "@id": "urn:voltron:mission:regional-actionboard-signup-from-plugin:criterion:3",
+      "name": "No password or verification code passes through the plugin",
+      "inDefinedTermSet": {
+        "@id": "urn:voltron:mission:regional-actionboard-signup-from-plugin:success-criteria"
+      },
+      "additionalProperty": [
+        {
+          "@type": "PropertyValue",
+          "name": "status",
+          "value": "met"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "evidence",
+          "value": "Parser-introspection test finds no password, code, email, url or host option; security review found no path that accepts, prompts for, logs or echoes either."
+        }
+      ]
+    },
+    {
+      "@type": "DefinedTerm",
+      "@id": "urn:voltron:mission:regional-actionboard-signup-from-plugin:criterion:4",
+      "name": "A region the plugin cannot log in to is not presented as working",
+      "inDefinedTermSet": {
+        "@id": "urn:voltron:mission:regional-actionboard-signup-from-plugin:success-criteria"
+      },
+      "additionalProperty": [
+        {
+          "@type": "PropertyValue",
+          "name": "status",
+          "value": "met"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "evidence",
+          "value": "Yellow independently reproduced A1's evidence and confirmed plugin_login is True for bd and False for us."
+        }
+      ]
+    },
+    {
+      "@type": "DefinedTerm",
+      "@id": "urn:voltron:mission:regional-actionboard-signup-from-plugin:criterion:5",
+      "name": "The build stays clean",
+      "inDefinedTermSet": {
+        "@id": "urn:voltron:mission:regional-actionboard-signup-from-plugin:success-criteria"
+      },
+      "additionalProperty": [
+        {
+          "@type": "PropertyValue",
+          "name": "status",
+          "value": "met"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "evidence",
+          "value": "Black Agent re-run: all six suites OK and dist/ is up to date."
+        }
+      ]
+    },
+    {
+      "@type": "ItemList",
+      "@id": "urn:voltron:mission:regional-actionboard-signup-from-plugin:success-criteria",
+      "name": "Success Criteria",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "item": {
+            "@id": "urn:voltron:mission:regional-actionboard-signup-from-plugin:criterion:1"
+          }
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "item": {
+            "@id": "urn:voltron:mission:regional-actionboard-signup-from-plugin:criterion:2"
+          }
+        },
+        {
+          "@type": "ListItem",
+          "position": 3,
+          "item": {
+            "@id": "urn:voltron:mission:regional-actionboard-signup-from-plugin:criterion:3"
+          }
+        },
+        {
+          "@type": "ListItem",
+          "position": 4,
+          "item": {
+            "@id": "urn:voltron:mission:regional-actionboard-signup-from-plugin:criterion:4"
+          }
+        },
+        {
+          "@type": "ListItem",
+          "position": 5,
+          "item": {
+            "@id": "urn:voltron:mission:regional-actionboard-signup-from-plugin:criterion:5"
+          }
+        }
+      ]
+    },
+    {
+      "@type": "Thing",
+      "@id": "urn:voltron:mission:regional-actionboard-signup-from-plugin:maturity:1",
+      "additionalType": "MaturityProgress",
+      "name": "api-integration",
+      "about": {
+        "@id": "urn:voltron:mission:regional-actionboard-signup-from-plugin:assignment:1"
+      },
+      "additionalProperty": [
+        {
+          "@type": "PropertyValue",
+          "name": "actionId",
+          "value": "api-integration"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "stage:orchestrator",
+          "value": "pass"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "stage:data",
+          "value": "fail"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "stage:analysis",
+          "value": "pass"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "stage:action",
+          "value": "pass"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "stage:defense",
+          "value": "fail"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "rate:orchestrator",
+          "value": 1.0
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "rate:data",
+          "value": 0.8
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "rate:analysis",
+          "value": 0.6
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "rate:action",
+          "value": 0.4
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "rate:defense",
+          "value": 0.8
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "cleanRun",
+          "value": false
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "riskTier",
+          "value": "T2"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "cleanRuns",
+          "value": "0/5"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "executionMode",
+          "value": "actionlist"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "nextMilestone",
+          "value": "Raise Action 40% to 90% (about 16 more passing runs), Analysis 60% to 90% (about 15), Data and Defense/Audit 80% to 90% (about 5 each), then reach 5 clean runs to unlock Autonomous."
+        }
+      ]
+    },
+    {
+      "@type": "Thing",
+      "@id": "urn:voltron:mission:regional-actionboard-signup-from-plugin:maturity:2",
+      "additionalType": "MaturityProgress",
+      "name": "api-integration",
+      "about": {
+        "@id": "urn:voltron:mission:regional-actionboard-signup-from-plugin:assignment:2"
+      },
+      "additionalProperty": [
+        {
+          "@type": "PropertyValue",
+          "name": "actionId",
+          "value": "api-integration"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "stage:orchestrator",
+          "value": "pass"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "stage:data",
+          "value": "pass"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "stage:analysis",
+          "value": "fail"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "stage:action",
+          "value": "pass"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "stage:defense",
+          "value": "pass"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "rate:orchestrator",
+          "value": 1.0
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "rate:data",
+          "value": 0.8
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "rate:analysis",
+          "value": 0.6
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "rate:action",
+          "value": 0.4
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "rate:defense",
+          "value": 0.8
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "cleanRun",
+          "value": false
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "riskTier",
+          "value": "T2"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "cleanRuns",
+          "value": "0/5"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "executionMode",
+          "value": "actionlist"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "nextMilestone",
+          "value": "Raise Action 40% to 90% (about 16 more passing runs), Analysis 60% to 90% (about 15), Data and Defense/Audit 80% to 90% (about 5 each), then reach 5 clean runs to unlock Autonomous."
+        }
+      ]
+    },
+    {
+      "@type": "Thing",
+      "@id": "urn:voltron:mission:regional-actionboard-signup-from-plugin:maturity:3",
+      "additionalType": "MaturityProgress",
+      "name": "code-implementation",
+      "about": {
+        "@id": "urn:voltron:mission:regional-actionboard-signup-from-plugin:assignment:3"
+      },
+      "additionalProperty": [
+        {
+          "@type": "PropertyValue",
+          "name": "actionId",
+          "value": "code-implementation"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "stage:orchestrator",
+          "value": "fail"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "stage:data",
+          "value": "pass"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "stage:analysis",
+          "value": "fail"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "stage:action",
+          "value": "fail"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "stage:defense",
+          "value": "pass"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "rate:orchestrator",
+          "value": 0.71
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "rate:data",
+          "value": 1.0
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "rate:analysis",
+          "value": 0.71
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "rate:action",
+          "value": 0.57
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "rate:defense",
+          "value": 0.86
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "cleanRun",
+          "value": false
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "riskTier",
+          "value": "T3"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "cleanRuns",
+          "value": "2/10"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "executionMode",
+          "value": "actionlist"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "nextMilestone",
+          "value": "Raise Action 57% to 95% (about 18 more passing runs), Orchestrator 71% to 95% (about 15), Analysis 71% to 95% (about 18), Defense/Audit 86% to 95% (about 13), then reach 10 clean runs to unlock Autonomous."
+        }
+      ]
+    },
+    {
+      "@type": "Thing",
+      "@id": "urn:voltron:mission:regional-actionboard-signup-from-plugin:maturity:4",
+      "additionalType": "MaturityProgress",
+      "name": "test-authoring",
+      "about": {
+        "@id": "urn:voltron:mission:regional-actionboard-signup-from-plugin:assignment:4"
+      },
+      "additionalProperty": [
+        {
+          "@type": "PropertyValue",
+          "name": "actionId",
+          "value": "test-authoring"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "stage:orchestrator",
+          "value": "pass"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "stage:data",
+          "value": "pass"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "stage:analysis",
+          "value": "pass"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "stage:action",
+          "value": "pass"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "stage:defense",
+          "value": "pass"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "rate:orchestrator",
+          "value": 0.86
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "rate:data",
+          "value": 0.86
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "rate:analysis",
+          "value": 0.86
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "rate:action",
+          "value": 0.57
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "rate:defense",
+          "value": 1.0
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "cleanRun",
+          "value": true
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "riskTier",
+          "value": "T2"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "cleanRuns",
+          "value": "2/5"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "executionMode",
+          "value": "actionlist"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "nextMilestone",
+          "value": "Raise Action 57% to 90% (about 15 more passing runs) and Orchestrator, Data and Analysis 86% to 90% (about 3 each), then reach 5 clean runs to unlock Autonomous."
+        }
+      ]
+    }
+  ]
+}

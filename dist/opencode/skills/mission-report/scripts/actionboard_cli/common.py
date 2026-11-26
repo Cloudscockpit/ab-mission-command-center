@@ -34,6 +34,17 @@ DEFAULT_OAUTH_CALLBACK_URL = "https://zpcrz6q2a3o6uv6oac4b76lzvi0yumdl.lambda-ur
 DEFAULT_CLI_LOGIN_URL = "https://mission-command-center-login.vercel.app"
 
 
+# Regional ActionBoard sites that host account sign-up. `plugin_login` is True once accounts created on that
+# site can sign in to the plugin (they share its Cognito pool); the sign-up URL is always site + signup_path.
+SIGNUP_REGIONS = {
+    "bd": {"label": "Bangladesh", "site": "https://actionboard.com.bd", "signup_path": "/auth/signup", "plugin_login": True},
+    "us": {"label": "United States", "site": "https://actionboard.ai", "signup_path": "/auth/signup", "plugin_login": False},
+}
+
+
+SIGNUP_REGION_CHOICES = tuple(SIGNUP_REGIONS)
+
+
 # The callback Lambda only redirects to allow-listed origins; these two localhost ports are on it.
 BROWSER_LOGIN_PORTS = (3000, 3001)
 

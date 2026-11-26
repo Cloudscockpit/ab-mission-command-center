@@ -1,0 +1,287 @@
+{
+  "mission": "regional-actionboard-signup-from-plugin",
+  "started_at": "2026-11-25T21:39:18Z",
+  "ended_at": "2026-11-26T15:35:50Z",
+  "tests": [
+    {
+      "name": "guard",
+      "command": "PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s tests/guard -v",
+      "passed": 32,
+      "failed": 0,
+      "skipped": 0
+    },
+    {
+      "name": "build",
+      "command": "PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s tests/build -v",
+      "passed": 23,
+      "failed": 0,
+      "skipped": 0
+    },
+    {
+      "name": "install",
+      "command": "PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s tests/install -v",
+      "passed": 54,
+      "failed": 0,
+      "skipped": 1
+    },
+    {
+      "name": "maturity",
+      "command": "PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s tests/maturity -v",
+      "passed": 18,
+      "failed": 0,
+      "skipped": 0
+    },
+    {
+      "name": "report",
+      "command": "PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s tests/report -v",
+      "passed": 219,
+      "failed": 0,
+      "skipped": 1
+    },
+    {
+      "name": "installer",
+      "command": "PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s tests/installer -v",
+      "passed": 23,
+      "failed": 0,
+      "skipped": 0
+    }
+  ],
+  "files": [
+    {
+      "path": ".actionboard/config.json",
+      "status": "edit"
+    },
+    {
+      "path": ".actionboard/registry.json",
+      "status": "edit"
+    },
+    {
+      "path": "CHANGELOG.md",
+      "status": "edit"
+    },
+    {
+      "path": "README.md",
+      "status": "edit"
+    },
+    {
+      "path": "dist/antigravity/agents/black-agent.md",
+      "status": "edit"
+    },
+    {
+      "path": "dist/antigravity/skills/ab-login/SKILL.md",
+      "status": "edit"
+    },
+    {
+      "path": "dist/antigravity/skills/mission-report/scripts/actionboard_cli/auth.py",
+      "status": "edit"
+    },
+    {
+      "path": "dist/antigravity/skills/mission-report/scripts/actionboard_cli/commands.py",
+      "status": "edit"
+    },
+    {
+      "path": "dist/antigravity/skills/mission-report/scripts/actionboard_cli/common.py",
+      "status": "edit"
+    },
+    {
+      "path": "dist/antigravity/skills/mission-report/scripts/submit_mission.py",
+      "status": "edit"
+    },
+    {
+      "path": "dist/antigravity/skills/start-mission/references/black-agent.md",
+      "status": "edit"
+    },
+    {
+      "path": "dist/antigravity/skills/submit-mission/SKILL.md",
+      "status": "edit"
+    },
+    {
+      "path": "dist/antigravity/skills/submit-mission/references/cli-reference.md",
+      "status": "edit"
+    },
+    {
+      "path": "dist/claude/agents/black-agent.md",
+      "status": "edit"
+    },
+    {
+      "path": "dist/claude/skills/ab-login/SKILL.md",
+      "status": "edit"
+    },
+    {
+      "path": "dist/claude/skills/mission-report/scripts/actionboard_cli/auth.py",
+      "status": "edit"
+    },
+    {
+      "path": "dist/claude/skills/mission-report/scripts/actionboard_cli/commands.py",
+      "status": "edit"
+    },
+    {
+      "path": "dist/claude/skills/mission-report/scripts/actionboard_cli/common.py",
+      "status": "edit"
+    },
+    {
+      "path": "dist/claude/skills/mission-report/scripts/submit_mission.py",
+      "status": "edit"
+    },
+    {
+      "path": "dist/claude/skills/submit-mission/SKILL.md",
+      "status": "edit"
+    },
+    {
+      "path": "dist/claude/skills/submit-mission/references/cli-reference.md",
+      "status": "edit"
+    },
+    {
+      "path": "dist/codex/.agents/skills/ab-login/SKILL.md",
+      "status": "edit"
+    },
+    {
+      "path": "dist/codex/.agents/skills/mission-report/scripts/actionboard_cli/auth.py",
+      "status": "edit"
+    },
+    {
+      "path": "dist/codex/.agents/skills/mission-report/scripts/actionboard_cli/commands.py",
+      "status": "edit"
+    },
+    {
+      "path": "dist/codex/.agents/skills/mission-report/scripts/actionboard_cli/common.py",
+      "status": "edit"
+    },
+    {
+      "path": "dist/codex/.agents/skills/mission-report/scripts/submit_mission.py",
+      "status": "edit"
+    },
+    {
+      "path": "dist/codex/.agents/skills/start-mission/references/black-agent.md",
+      "status": "edit"
+    },
+    {
+      "path": "dist/codex/.agents/skills/submit-mission/SKILL.md",
+      "status": "edit"
+    },
+    {
+      "path": "dist/codex/.agents/skills/submit-mission/references/cli-reference.md",
+      "status": "edit"
+    },
+    {
+      "path": "dist/opencode/agents/black-agent.md",
+      "status": "edit"
+    },
+    {
+      "path": "dist/opencode/skills/ab-login/SKILL.md",
+      "status": "edit"
+    },
+    {
+      "path": "dist/opencode/skills/mission-report/scripts/actionboard_cli/auth.py",
+      "status": "edit"
+    },
+    {
+      "path": "dist/opencode/skills/mission-report/scripts/actionboard_cli/commands.py",
+      "status": "edit"
+    },
+    {
+      "path": "dist/opencode/skills/mission-report/scripts/actionboard_cli/common.py",
+      "status": "edit"
+    },
+    {
+      "path": "dist/opencode/skills/mission-report/scripts/submit_mission.py",
+      "status": "edit"
+    },
+    {
+      "path": "dist/opencode/skills/submit-mission/SKILL.md",
+      "status": "edit"
+    },
+    {
+      "path": "dist/opencode/skills/submit-mission/references/cli-reference.md",
+      "status": "edit"
+    },
+    {
+      "path": "src/agents/black-agent.md",
+      "status": "edit"
+    },
+    {
+      "path": "src/skills/ab-login/SKILL.md",
+      "status": "edit"
+    },
+    {
+      "path": "src/skills/mission-report/scripts/actionboard_cli/auth.py",
+      "status": "edit"
+    },
+    {
+      "path": "src/skills/mission-report/scripts/actionboard_cli/commands.py",
+      "status": "edit"
+    },
+    {
+      "path": "src/skills/mission-report/scripts/actionboard_cli/common.py",
+      "status": "edit"
+    },
+    {
+      "path": "src/skills/mission-report/scripts/submit_mission.py",
+      "status": "edit"
+    },
+    {
+      "path": "src/skills/submit-mission/SKILL.md",
+      "status": "edit"
+    },
+    {
+      "path": "src/skills/submit-mission/references/cli-reference.md",
+      "status": "edit"
+    },
+    {
+      "path": ".graphifyignore",
+      "status": "add"
+    },
+    {
+      "path": "dist/antigravity/skills/ab-signup/SKILL.md",
+      "status": "add"
+    },
+    {
+      "path": "dist/claude/skills/ab-signup/SKILL.md",
+      "status": "add"
+    },
+    {
+      "path": "dist/codex/.agents/skills/ab-signup/SKILL.md",
+      "status": "add"
+    },
+    {
+      "path": "dist/opencode/commands/ab-signup.md",
+      "status": "add"
+    },
+    {
+      "path": "dist/opencode/skills/ab-signup/SKILL.md",
+      "status": "add"
+    },
+    {
+      "path": "docs/missions/2026-11-25-regional-actionboard-signup-from-plugin/mission-brief.jsonld",
+      "status": "add"
+    },
+    {
+      "path": "docs/missions/2026-11-25-regional-actionboard-signup-from-plugin/mission-brief.md",
+      "status": "add"
+    },
+    {
+      "path": "docs/missions/2026-11-25-regional-actionboard-signup-from-plugin/mission-plan.jsonld",
+      "status": "add"
+    },
+    {
+      "path": "docs/missions/2026-11-25-regional-actionboard-signup-from-plugin/mission-plan.md",
+      "status": "add"
+    },
+    {
+      "path": "docs/missions/2026-11-25-regional-actionboard-signup-from-plugin/mission-report.jsonld",
+      "status": "add"
+    },
+    {
+      "path": "docs/missions/2026-11-25-regional-actionboard-signup-from-plugin/mission-report.md",
+      "status": "add"
+    },
+    {
+      "path": "src/skills/ab-signup/SKILL.md",
+      "status": "add"
+    },
+    {
+      "path": "tests/report/test_signup.py",
+      "status": "add"
+    }
+  ]
+}

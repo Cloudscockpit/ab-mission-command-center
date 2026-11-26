@@ -11,7 +11,7 @@ By default every call uses the ActionBoard edge proxy (no API key or AWS keys re
 
 ## Step-by-step execution
 
-Inside an agent session (non-interactive), always run `status --json` first. If `logged_in` is `false`, or `default_pod_id` / `default_board_id` is empty, run `${CLAUDE_PLUGIN_ROOT}/skills/ab-login/SKILL.md` first, then run `submit --no-input`.
+Inside an agent session (non-interactive), always run `status --json` first. If `logged_in` is `false`, or `default_pod_id` / `default_board_id` is empty, run `${CLAUDE_PLUGIN_ROOT}/skills/ab-login/SKILL.md` first (if they have no ActionBoard account yet, use the ab-signup skill first), then run `submit --no-input`.
 
 ### 1. Check status & select Pod/Board (if needed)
 
