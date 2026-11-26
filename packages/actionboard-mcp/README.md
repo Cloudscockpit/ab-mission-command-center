@@ -26,6 +26,8 @@ Fetched `mission-brief.md` / `mission-plan.md` keep the `BEGIN/END ACTIONBOARD_U
 
 ## Install in your MCP client
 
+Installing the ActionBoard plugin (the Claude Code marketplace plugin, or `actionboard-install` for Codex, OpenCode and Antigravity) registers this server as `actionboard` automatically. It only needs [uv](https://docs.astral.sh/uv/) on the PATH. The snippets below are for setting it up by hand, for example in Cursor or Claude Desktop.
+
 Every snippet runs the server from GitHub with [uv](https://docs.astral.sh/uv/). The server reads and writes `.actionboard/` and `docs/missions/` in its **project directory**. That is the current directory unless you pass `--project-dir` (or set `ACTIONBOARD_PROJECT_DIR`). Clients that don't start servers in your project folder need `--project-dir`.
 
 `ab_login` waits for you to finish signing in. If your client has a short tool timeout, sign in once from a terminal with `ab login` instead (see [CLI](#cli)). The tokens are shared.
