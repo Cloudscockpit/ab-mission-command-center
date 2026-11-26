@@ -9,7 +9,7 @@ version: 1
 filesystem_policy:
   include_workdir: true
   read_only: [/usr, /lib, /etc]
-  read_write: [/tmp]
+  read_write: [/tmp, /dev/null]
 
 landlock:
   compatibility: best_effort      # or hard_requirement
@@ -42,6 +42,11 @@ In proxy mode OpenShell adds baseline paths automatically: `/usr`, `/lib`,
 `/etc`, `/var/log` read-only, `/tmp` read-write, plus the workdir when
 `include_workdir: true`. GPU sandboxes also get GPU device nodes read-write and
 move `/proc` to read-write for CUDA thread metadata.
+
+The baseline does **not** include `/dev/null`. List it in `read_write`, as every
+bundled template does. Without it, any `> /dev/null` redirect fails with
+`Permission denied`, and `sh` then skips the redirected command entirely, so
+scripts misbehave without an obvious error.
 
 `best_effort` skips a missing baseline path with a warning;
 `hard_requirement` fails startup. User-listed paths are not pre-filtered — a
