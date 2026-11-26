@@ -72,6 +72,14 @@ openshell sandbox delete <name>
 scripts/openshell-provision.sh --usecase <profile> --name <name> --policy ./new-policy.yaml
 ```
 
+## Create and exec errors
+
+| Signal | Cause | Fix |
+|---|---|---|
+| `name exceeds maximum length (21 > 19)` on create | The gateway caps sandbox names at 19 characters | Use a shorter name. `openshell-provision.sh` rejects long names during `--dry-run` |
+| `cannot create /dev/null: Permission denied` inside the sandbox, or commands that redirect to `/dev/null` silently not running | `/dev/null` is missing from `filesystem_policy.read_write`; it is not part of the baseline | Add `/dev/null` to `read_write` and recreate the sandbox (static section, see above) |
+| `mapfile: command not found` or `WS_ARGS[@]: unbound variable` from the scripts | A pre-fix copy of the scripts running on macOS Bash 3.2 | Update the plugin; the scripts now run on Bash 3.2 |
+
 ## Workspace access
 
 - `openshell workspace list` returns no rows → the subject has no membership.

@@ -78,7 +78,7 @@ sandbox, and blocks until the phase is `Ready`:
 ```bash
 ${CLAUDE_SKILL_DIR}/scripts/openshell-provision.sh \
   --usecase data \
-  --name green-agent-ingest-01 \
+  --name green-ingest-01 \
   --workspace team-ml \
   --tenant acme --pod acme-prod --mission mission-4471 \
   --expose 8080:api
@@ -86,12 +86,14 @@ ${CLAUDE_SKILL_DIR}/scripts/openshell-provision.sh \
 
 Always run `--dry-run` first and show the user the resolved plan (image, CPU,
 memory, GPU, policy, labels, provider attachments) before you create anything.
+Sandbox names are at most 19 characters (a gateway limit); the wrapper rejects
+longer names during the dry-run.
 
 The equivalent raw command, when you need to deviate from a profile:
 
 ```bash
 openshell sandbox create \
-  --name green-agent-ingest-01 \
+  --name green-ingest-01 \
   --from base \
   --cpu 2 --memory 4Gi \
   --policy ./policies/data.yaml \

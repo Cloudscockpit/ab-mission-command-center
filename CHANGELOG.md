@@ -9,6 +9,18 @@
   browser, never in the CLI or chat. Plugin sign-in for United States accounts is not available yet,
   so `signup --region us` only reports the sign-up link and exits non-zero.
 
+### Fixed
+- OpenShell policy templates now allow writes to `/dev/null`. Eight of the nine bundled templates
+  (all but `actionboard-okf.yaml`) left it out, so `> /dev/null` failed with `Permission denied`
+  inside the sandbox and `sh` skipped the redirected command. The policy recipes and
+  troubleshooting references document the requirement.
+- `openshell-provision.sh` rejects sandbox names longer than 19 characters (the gateway limit)
+  during `--dry-run`, instead of failing at create time after the plan was approved. The
+  `openshell-admin` skill's example name, which was 21 characters, is shortened.
+- `openshell-teardown.sh` and `openshell-provision.sh` run on the Bash 3.2 that ships with macOS.
+  `teardown --selector` no longer fails with `mapfile: command not found`, and running either script
+  without `--workspace` no longer fails with `WS_ARGS[@]: unbound variable`.
+
 ## 1.3.1 — 2026-11-21
 
 ### Changed

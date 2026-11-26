@@ -3,7 +3,7 @@ version: 1
 filesystem_policy:
   include_workdir: true
   read_only: [/usr, /lib, /etc]
-  read_write: [/tmp, /workspace, /data]
+  read_write: [/tmp, /workspace, /data, /dev/null]
 landlock:
   compatibility: best_effort
 network_policies:
