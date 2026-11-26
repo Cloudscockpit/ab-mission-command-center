@@ -54,7 +54,8 @@ def transport(tmp_path, monkeypatch):
     monkeypatch.setenv("HOME", str(tmp_path))
     monkeypatch.setenv("ACTIONBOARD_KEYCHAIN", "off")  # never touch the developer's real keychain
     monkeypatch.setenv("AWS_SHARED_CREDENTIALS_FILE", str(tmp_path / "no-aws-credentials"))
-    monkeypatch.chdir(tmp_path)
+    (tmp_path / "project").mkdir()
+    monkeypatch.chdir(tmp_path / "project")
     t = EdgeTransport()
     monkeypatch.setattr(urllib.request, "urlopen", t)
     return t

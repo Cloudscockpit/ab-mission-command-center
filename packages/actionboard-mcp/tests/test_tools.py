@@ -223,3 +223,16 @@ def test_network_failure_becomes_tool_error(logged_in, monkeypatch):
     monkeypatch.setattr(urllib.request, "urlopen", offline)
     result = call("ab_list_pods")
     assert result.is_error and "network error contacting AppSync" in result.content[0].text
+
+
+@pytest.mark.parametrize("name,args", [
+    ("ab_select_board", {"pod_id": "pod-alpha-1", "board_id": "board-eng-42"}),
+    ("ab_fetch_mission", {"invitation_id": "inv-boss-888"}),
+    ("ab_submit_mission", {"dry_run": True}),
+    ("ab_post_progress", {"mission_id": "mission-uuid-1001", "comment": "x"}),
+], ids=lambda v: v if isinstance(v, str) else "")
+def test_project_tools_refuse_home_as_project(logged_in, monkeypatch, name, args):
+    monkeypatch.chdir(Path.home())
+    result = call(name, **args)
+    assert result.is_error and "not running in a project folder" in result.content[0].text
+    assert not (Path.home() / "docs").exists()

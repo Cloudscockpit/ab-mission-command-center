@@ -36,11 +36,21 @@ def _choice(value, allowed, name):
         raise ActionBoardError("%s must be one of: %s" % (name, ", ".join(allowed)))
 
 
+def _project_root():
+    """The server's working directory, refused when it is clearly not a project (a client launched it from / or ~)."""
+    root = os.path.realpath(os.getcwd())
+    if root in (os.path.realpath(os.sep), os.path.realpath(os.path.expanduser("~"))):
+        raise ActionBoardError(
+            "the ActionBoard server is not running in a project folder (it is in %s). Set ACTIONBOARD_PROJECT_DIR "
+            "or pass --project-dir in this client's MCP server config, then restart the server." % root)
+    return root
+
+
 def _project_path(path, name):
     """Keep tool-supplied folders inside the project, so remote content cannot steer reads or writes elsewhere."""
+    root = _project_root()
     if not path:
         return None
-    root = os.path.realpath(os.getcwd())
     if os.path.commonpath([os.path.realpath(path), root]) != root:
         raise ActionBoardError("%s must be inside the project directory (%s)" % (name, root))
     return os.path.abspath(path)
@@ -94,6 +104,7 @@ def list_boards(pod_id=None):
 
 def select_board(pod_id, board_id, sync=None):
     _choice(sync, SYNC_MODES, "sync")
+    _project_root()
 
     def select():
         settings = _settings()

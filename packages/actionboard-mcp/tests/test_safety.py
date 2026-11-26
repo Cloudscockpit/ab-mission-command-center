@@ -121,7 +121,7 @@ def test_stdio_server_emits_only_jsonrpc(transport, tmp_path):
     """Real subprocess over stdio: every stdout line must be a JSON-RPC message."""
     env = {k: v for k, v in os.environ.items() if k in ("PATH", "SYSTEMROOT", "PYTHONPATH")}
     env.update(HOME=str(tmp_path), ACTIONBOARD_KEYCHAIN="off", ACTIONBOARD_EDGE_PROXY_URL="http://127.0.0.1:9")
-    proc = subprocess.Popen([sys.executable, "-m", "actionboard_mcp.server", "--project-dir", str(tmp_path)],
+    proc = subprocess.Popen([sys.executable, "-m", "actionboard_mcp.server", "--project-dir", os.getcwd()],
                             stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, env=env, text=True)
     lines = []
 
