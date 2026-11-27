@@ -45,4 +45,15 @@ AWS keys are optional. Without them, files upload through presigned URLs from th
 - `--json` for `bd`: `{"success": true, "region", "label", "signup_url", "opened", "next_step": "login"}`.
 - `--json` for `us` (exit 2): `{"success": false, "status": "region_pending", "region", "label", "signup_url"}`.
 
+### Board data (`actionlist`, `action`, `goal`, `files`)
+
+Each group takes a verb. All verbs accept `--board <id>` (default: `board_id` from `.actionboard/config.json`), `--pod`, `--no-input` and `--json`. Status values are validated (a bad value exits 2). ActionGraph is not yet supported: the live schema has no API for it.
+
+- `actionlist list [--status S] [--limit N] [--next-token T]`, `show <id>`, `create --title TEXT [--status S] [--context TEXT] [--notes TEXT] [--tags a,b] [--important] [--urgent] [--due ISO] [--start ISO]`, `update <id> [same fields]`, `status <id> <STATUS>`, `delete <id> [--yes]`. Status: `New`, `Todo`, `Active`, `In_Progress`, `Done`, `AutoActionAiAgent`, `ActionAssistAgent`. There is no reliable total count; `show` pages the list.
+- `action list --list <listId> [--status S ...]`, `get <id>`, `create --list <listId> --item TEXT [--status S] [--prompt TEXT] [--notes TEXT] [--tags a,b] [--important] [--urgent] [--due ISO] [--start ISO]`, `update <id> [same fields]`, `status <id> <STATUS>`, `delete <id> [--yes]`. Same status values as ActionLists.
+- `goal list [--status S]`, `get <id>`, `create --title TEXT --priority P [--description TEXT] [--status S] [--due ISO] [--start ISO] [--user-id ID]`, `update <id> [fields]`, `status <id> <STATUS>`, `delete <id> [--yes]`. Status: `PENDING`, `IN_PROGRESS`, `COMPLETED`; priority: `LOW`, `MEDIUM`, `HIGH`. Lists show up to 100 goals and warn on stderr if more exist.
+- `files folders`, `mkdir <name> [--parent <folderId>]`, `list --folder <id>`, `upload <path> --folder <id> [--note TEXT] [--tags a,b]`, `download <fileId> [--out DIR] [--overwrite]`, `delete <fileId> [--yes]`.
+- Deletes print the target first. Interactive runs ask y/N; with `--no-input` and no `--yes` the command exits non-zero and changes nothing.
+- Server text is stripped of control characters before it is printed. `create` and `upload` are not idempotent.
+
 For CI login without a browser, set `ACTIONBOARD_EMAIL` and `ACTIONBOARD_PASSWORD`. Run `logout` to clear stored tokens.

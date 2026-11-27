@@ -32,11 +32,12 @@ password in the terminal.
 | New command | What it does |
 |---|---|
 | `/ab-signup` | No account yet? Pick your region and create an ActionBoard account in your browser, then sign in |
+| `/ab-actionlist`, `/ab-goals`, `/ab-files` | Create, read, update and delete ActionLists, action items, Goals and Board files from your CLI (ActionGraph is not yet supported) |
 | `/ab-login` | Sign in through the ActionBoard sign-in page in your browser (email and password, Google or LinkedIn), then pick your Pod and Board |
 | `/fetch-mission` | Pull a mission assigned to you (brief and plan) from your Board into `docs/missions/` |
 | `/submit-mission` | Send the finished mission (brief, plan, report, dashboard) to your Board |
 
-On Codex CLI these are `$ab-signup`, `$ab-login`, `$fetch-mission` and `$submit-mission`.
+On Codex CLI these are `$ab-signup`, `$ab-login`, `$fetch-mission` and `$submit-mission`. The Board data skills are `$ab-actionlist`, `$ab-goals` and `$ab-files`.
 
 - **Re-submitting is safe:** unchanged files are skipped and changed files replace only the
   plugin's previous copy. Files people uploaded on the web or mobile app are never removed.
@@ -137,7 +138,7 @@ Brief, Agent Assignments, Skills Gap and Risk Register, then stops. Reply `go`, 
 `/mission-report`, `/mission-preflight`, `/skills-registry`, `/actionboard-devops-mission`,
 `/mission-harness`, `/sandbox-up`, `/sandbox-status`, `/sandbox-down`, `/policy-widen`,
 `/terse-output`, `/browser-actions` (Claude in Chrome; Claude Code only), and new in 1.3.0
-`/ab-signup`, `/ab-login`, `/fetch-mission`, `/submit-mission` (see [Fetching & submitting missions](#fetching--submitting-missions-to-actionboard)).
+`/ab-signup`, `/ab-login`, `/fetch-mission`, `/submit-mission`, `/ab-actionlist`, `/ab-goals`, `/ab-files` (see [Fetching & submitting missions](#fetching--submitting-missions-to-actionboard)).
 
 **Cost options:** the first mission's preflight asks whether to install Graphify and whether to
 turn on terse output, and saves your answers in `.actionboard/preferences.json`.
@@ -227,7 +228,7 @@ It runs as the `black-agent` primary agent, stops at the gate, and waits for `go
 > `opencode run --agent black-agent "<objective>"`.
 
 **Slash commands:** OpenCode does not show skills in `/`, so the package adds one command per
-skill: `/mission-brief`, `/mission-plan`, `/mission-report`, `/ab-signup`, `/ab-login`, `/fetch-mission`, `/submit-mission`, `/mission-preflight`,
+skill: `/mission-brief`, `/mission-plan`, `/mission-report`, `/ab-signup`, `/ab-login`, `/fetch-mission`, `/submit-mission`, `/ab-actionlist`, `/ab-goals`, `/ab-files`, `/mission-preflight`,
 `/skills-registry`, `/actionboard-devops-mission`, `/mission-harness`, `/sandbox-up`,
 `/sandbox-status`, `/sandbox-down`, `/policy-widen`, `/terse-output`.
 
@@ -334,7 +335,7 @@ the gate and waits for `go`.
 **Skills:** invoke as `$mission-brief`, `$mission-plan`, `$mission-report`,
 `$mission-preflight`, `$skills-registry`, `$actionboard-devops-mission`, `$mission-harness`,
 `$sandbox-up`, `$sandbox-status`, `$sandbox-down`, `$policy-widen`, `$terse-output`, and new in 1.3.0
-`$ab-signup`, `$ab-login`, `$fetch-mission`, `$submit-mission`, or pick
+`$ab-signup`, `$ab-login`, `$fetch-mission`, `$submit-mission`, `$ab-actionlist`, `$ab-goals`, `$ab-files`, or pick
 them from `/skills`.
 
 **Models:** agents inherit the session model. To pin them, copy
@@ -590,6 +591,9 @@ a browser and an ActionBoard account: no API key, no AWS keys, no configuration.
 | Claude Code, OpenCode, Antigravity | Codex CLI | What it does |
 |---|---|---|
 | `/ab-signup` | `$ab-signup` | Asks your region, then opens that region's sign-up page so you can create an account and verify your email in the browser. Bangladesh (`bd`) accounts can then sign in to the plugin. United States (`us`) sign-up is listed, but plugin sign-in for those accounts is not available yet |
+| `/ab-actionlist` | `$ab-actionlist` | Creates, lists, updates and deletes ActionLists and the action items inside them on your Board. Deletes always ask first |
+| `/ab-goals` | `$ab-goals` | Creates, lists, updates and deletes Goals on your Board |
+| `/ab-files` | `$ab-files` | Lists folders and files, creates folders, uploads, downloads and deletes Board files. ActionGraph is not yet supported |
 | `/ab-login` | `$ab-login` | Opens the ActionBoard sign-in page in your browser, then asks which Pod and Board to use and how missions should sync |
 | `/fetch-mission` | `$fetch-mission` | Lists missions and invitations assigned to you and pulls the brief and plan into `docs/missions/<date>-<slug>/` |
 | `/submit-mission` | `$submit-mission` | Sends the mission's brief, plan, report, dashboard and metrics to your Board |
@@ -611,6 +615,7 @@ The agent runs these for you, but you can run them yourself. The script is insta
 | Command | What it does |
 |---|---|
 | `signup` | Open your region's sign-up page (`--region bd` or `us`; asked when omitted in a terminal). In a terminal it then waits for you to verify your email and signs you in. `--no-input` opens the page and stops; `--json` prints the result |
+| `actionlist`, `action`, `goal`, `files` | Manage ActionLists, action items, Goals and Board files (`actionlist list`, `goal create`, `files upload`, and so on; `delete` needs `--yes` with `--no-input`) |
 | `login` | Sign in through the browser. `--provider Google` or `--provider LinkedIn` goes straight to that provider; `--no-browser` prints the link instead |
 | `logout` | Remove your stored tokens from the keychain |
 | `status` | Show the connection, who is signed in, where tokens are stored, and the selected Pod and Board |

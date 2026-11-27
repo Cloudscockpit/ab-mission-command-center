@@ -3,6 +3,11 @@
 ## Unreleased
 
 ### Added
+- `/ab-actionlist`, `/ab-goals` and `/ab-files` skills with matching `actionlist`, `action`, `goal`
+  and `files` CLI commands. Create, read, update and delete ActionLists, action items and Goals on
+  your Board, and list folders, create folders, upload, download and delete Board files. Deletes
+  show the target first and need `--yes` (or a typed yes) to proceed. ActionGraph is not yet
+  supported because the live schema has no API for it.
 - `/ab-signup` skill and `signup` command for people with no ActionBoard account. Choose a region
   (`bd` Bangladesh or `us` United States), create the account on that region's site in the browser,
   then sign in through the existing `login`. The password and email verification code stay in the

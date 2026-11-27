@@ -1,0 +1,467 @@
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Project",
+      "@id": "urn:voltron:mission:actionboard-pod-api-actionlists-goals-files",
+      "name": "ActionBoard Pod API integration: ActionLists, action items, Goals, and Files",
+      "description": "ActionBoard Pod API integration: ActionLists, action items, Goals, and Files",
+      "identifier": "actionboard-pod-api-actionlists-goals-files",
+      "startDate": "2026-11-26",
+      "subjectOf": [
+        {
+          "@id": "urn:voltron:mission:actionboard-pod-api-actionlists-goals-files:brief"
+        }
+      ]
+    },
+    {
+      "@type": "Report",
+      "@id": "urn:voltron:mission:actionboard-pod-api-actionlists-goals-files:brief",
+      "name": "Mission Brief \u2014 ActionBoard Pod API integration: ActionLists, action items, Goals, and Files",
+      "about": {
+        "@id": "urn:voltron:mission:actionboard-pod-api-actionlists-goals-files"
+      },
+      "datePublished": "2026-11-26",
+      "creator": {
+        "@id": "urn:voltron:lion:main"
+      },
+      "abstract": "ActionBoard Pod API integration: ActionLists, action items, Goals, and Files",
+      "mainEntity": {
+        "@type": "ItemList",
+        "itemListElement": [
+          {
+            "@id": "urn:voltron:mission:actionboard-pod-api-actionlists-goals-files:scope"
+          },
+          {
+            "@id": "urn:voltron:mission:actionboard-pod-api-actionlists-goals-files:out-of-scope"
+          },
+          {
+            "@id": "urn:voltron:mission:actionboard-pod-api-actionlists-goals-files:success-criteria"
+          },
+          {
+            "@id": "urn:voltron:mission:actionboard-pod-api-actionlists-goals-files:constraints"
+          }
+        ]
+      }
+    },
+    {
+      "@type": "Organization",
+      "@id": "urn:voltron:lion:main",
+      "additionalType": "https://schema.org/SoftwareApplication",
+      "name": "Black Agent",
+      "description": "Mission commander (Black Agent). Plans, delegates, gates, reports."
+    },
+    {
+      "@type": "ItemList",
+      "@id": "urn:voltron:mission:actionboard-pod-api-actionlists-goals-files:scope",
+      "name": "Scope",
+      "itemListElement": [
+        {
+          "@id": "urn:voltron:mission:actionboard-pod-api-actionlists-goals-files:scope:1"
+        },
+        {
+          "@id": "urn:voltron:mission:actionboard-pod-api-actionlists-goals-files:scope:2"
+        },
+        {
+          "@id": "urn:voltron:mission:actionboard-pod-api-actionlists-goals-files:scope:3"
+        },
+        {
+          "@id": "urn:voltron:mission:actionboard-pod-api-actionlists-goals-files:scope:4"
+        },
+        {
+          "@id": "urn:voltron:mission:actionboard-pod-api-actionlists-goals-files:scope:5"
+        },
+        {
+          "@id": "urn:voltron:mission:actionboard-pod-api-actionlists-goals-files:scope:6"
+        },
+        {
+          "@id": "urn:voltron:mission:actionboard-pod-api-actionlists-goals-files:scope:7"
+        },
+        {
+          "@id": "urn:voltron:mission:actionboard-pod-api-actionlists-goals-files:scope:8"
+        }
+      ]
+    },
+    {
+      "@type": "DefinedTerm",
+      "@id": "urn:voltron:mission:actionboard-pod-api-actionlists-goals-files:scope:1",
+      "name": "ActionLists (actionlists_*): create; list with a status filter and pagination; s",
+      "description": "ActionLists (actionlists_*): create; list with a status filter and pagination; show one by a filtered list lookup, because the schema has no single-get operation; update fields and actionListStatus; delete with confirmation.",
+      "inDefinedTermSet": {
+        "@id": "urn:voltron:mission:actionboard-pod-api-actionlists-goals-files:scope"
+      }
+    },
+    {
+      "@type": "DefinedTerm",
+      "@id": "urn:voltron:mission:actionboard-pod-api-actionlists-goals-files:scope:2",
+      "name": "Action items (actionlists_createAction, getAction, getAllActions, updateAction, ",
+      "description": "Action items (actionlists_createAction, getAction, getAllActions, updateAction, deleteAction): create an item in a list; list the items of a list with a status filter; get one by id; update fields and ActionStatus; delete with confirmation.",
+      "inDefinedTermSet": {
+        "@id": "urn:voltron:mission:actionboard-pod-api-actionlists-goals-files:scope"
+      }
+    },
+    {
+      "@type": "DefinedTerm",
+      "@id": "urn:voltron:mission:actionboard-pod-api-actionlists-goals-files:scope:3",
+      "name": "Goals (actiongoals_*): create with title and priority plus optional description,",
+      "description": "Goals (actiongoals_*): create with title and priority plus optional description, status, and dates; list by board; get one; update fields including status; delete with confirmation.",
+      "inDefinedTermSet": {
+        "@id": "urn:voltron:mission:actionboard-pod-api-actionlists-goals-files:scope"
+      }
+    },
+    {
+      "@type": "DefinedTerm",
+      "@id": "urn:voltron:mission:actionboard-pod-api-actionlists-goals-files:scope:4",
+      "name": "File Service (filemanager_*): list folders; create a folder, because an upload n",
+      "description": "File Service (filemanager_*): list folders; create a folder, because an upload needs a folderId; list the files in a folder; upload a local file through the edge presign route and filemanager_createFile; download a file by id into a local directory; delete a file with confirmation.",
+      "inDefinedTermSet": {
+        "@id": "urn:voltron:mission:actionboard-pod-api-actionlists-goals-files:scope"
+      }
+    },
+    {
+      "@type": "DefinedTerm",
+      "@id": "urn:voltron:mission:actionboard-pod-api-actionlists-goals-files:scope:5",
+      "name": "Four new subcommand groups on the existing submit_mission.py CLI, actionlist, ac",
+      "description": "Four new subcommand groups on the existing submit_mission.py CLI, actionlist, action, goal, and files, which default the Pod and Board to .actionboard/config.json, accept a --board override, and support --json and --no-input.",
+      "inDefinedTermSet": {
+        "@id": "urn:voltron:mission:actionboard-pod-api-actionlists-goals-files:scope"
+      }
+    },
+    {
+      "@type": "DefinedTerm",
+      "@id": "urn:voltron:mission:actionboard-pod-api-actionlists-goals-files:scope:6",
+      "name": "Three thin skills, ab-actionlist, ab-goals, and ab-files, that tell an agent how",
+      "description": "Three thin skills, ab-actionlist, ab-goals, and ab-files, that tell an agent how to run those commands, built to the Claude, Antigravity, OpenCode (including commands), and Codex targets.",
+      "inDefinedTermSet": {
+        "@id": "urn:voltron:mission:actionboard-pod-api-actionlists-goals-files:scope"
+      }
+    },
+    {
+      "@type": "DefinedTerm",
+      "@id": "urn:voltron:mission:actionboard-pod-api-actionlists-goals-files:scope:7",
+      "name": "A registry entry in actions-map.json, plus updates to the CLI reference, the CLI",
+      "description": "A registry entry in actions-map.json, plus updates to the CLI reference, the CLI README, the root README, and the ## Unreleased section of the changelog.",
+      "inDefinedTermSet": {
+        "@id": "urn:voltron:mission:actionboard-pod-api-actionlists-goals-files:scope"
+      }
+    },
+    {
+      "@type": "DefinedTerm",
+      "@id": "urn:voltron:mission:actionboard-pod-api-actionlists-goals-files:scope:8",
+      "name": "Mocked-transport unit tests, validation of every new GraphQL document against th",
+      "description": "Mocked-transport unit tests, validation of every new GraphQL document against the captured live schema, and a live smoke test on the operator's board that cleans up after itself.",
+      "inDefinedTermSet": {
+        "@id": "urn:voltron:mission:actionboard-pod-api-actionlists-goals-files:scope"
+      }
+    },
+    {
+      "@type": "ItemList",
+      "@id": "urn:voltron:mission:actionboard-pod-api-actionlists-goals-files:out-of-scope",
+      "name": "Out of Scope",
+      "itemListElement": [
+        {
+          "@id": "urn:voltron:mission:actionboard-pod-api-actionlists-goals-files:out-of-scope:1"
+        },
+        {
+          "@id": "urn:voltron:mission:actionboard-pod-api-actionlists-goals-files:out-of-scope:2"
+        },
+        {
+          "@id": "urn:voltron:mission:actionboard-pod-api-actionlists-goals-files:out-of-scope:3"
+        },
+        {
+          "@id": "urn:voltron:mission:actionboard-pod-api-actionlists-goals-files:out-of-scope:4"
+        },
+        {
+          "@id": "urn:voltron:mission:actionboard-pod-api-actionlists-goals-files:out-of-scope:5"
+        },
+        {
+          "@id": "urn:voltron:mission:actionboard-pod-api-actionlists-goals-files:out-of-scope:6"
+        },
+        {
+          "@id": "urn:voltron:mission:actionboard-pod-api-actionlists-goals-files:out-of-scope:7"
+        },
+        {
+          "@id": "urn:voltron:mission:actionboard-pod-api-actionlists-goals-files:out-of-scope:8"
+        }
+      ]
+    },
+    {
+      "@type": "DefinedTerm",
+      "@id": "urn:voltron:mission:actionboard-pod-api-actionlists-goals-files:out-of-scope:1",
+      "name": "ActionGraph. No ActionGraph, graph, node, or edge type or operation exists in th",
+      "description": "ActionGraph. No ActionGraph, graph, node, or edge type or operation exists in the live schema. It is deferred until the operator supplies its endpoint and API contract, which may live on the pod gateway rather than in GraphQL.",
+      "inDefinedTermSet": {
+        "@id": "urn:voltron:mission:actionboard-pod-api-actionlists-goals-files:out-of-scope"
+      }
+    },
+    {
+      "@type": "DefinedTerm",
+      "@id": "urn:voltron:mission:actionboard-pod-api-actionlists-goals-files:out-of-scope:2",
+      "name": "ActionList transfer, accept, reject, assign, bookmark, comments and replies, the",
+      "description": "ActionList transfer, accept, reject, assign, bookmark, comments and replies, the cross-board master list, and the shared list.",
+      "inDefinedTermSet": {
+        "@id": "urn:voltron:mission:actionboard-pod-api-actionlists-goals-files:out-of-scope"
+      }
+    },
+    {
+      "@type": "DefinedTerm",
+      "@id": "urn:voltron:mission:actionboard-pod-api-actionlists-goals-files:out-of-scope:3",
+      "name": "Goal bulk delete, and renaming or deleting folders.",
+      "description": "Goal bulk delete, and renaming or deleting folders.",
+      "inDefinedTermSet": {
+        "@id": "urn:voltron:mission:actionboard-pod-api-actionlists-goals-files:out-of-scope"
+      }
+    },
+    {
+      "@type": "DefinedTerm",
+      "@id": "urn:voltron:mission:actionboard-pod-api-actionlists-goals-files:out-of-scope:4",
+      "name": "The pod-gateway REST API (/v3/*) and the actionboard-ai MCP plugin.",
+      "description": "The pod-gateway REST API (/v3/*) and the actionboard-ai MCP plugin.",
+      "inDefinedTermSet": {
+        "@id": "urn:voltron:mission:actionboard-pod-api-actionlists-goals-files:out-of-scope"
+      }
+    },
+    {
+      "@type": "DefinedTerm",
+      "@id": "urn:voltron:mission:actionboard-pod-api-actionlists-goals-files:out-of-scope:5",
+      "name": "Linking missions to ActionLists or Goals; the schema has no such relationship.",
+      "description": "Linking missions to ActionLists or Goals; the schema has no such relationship.",
+      "inDefinedTermSet": {
+        "@id": "urn:voltron:mission:actionboard-pod-api-actionlists-goals-files:out-of-scope"
+      }
+    },
+    {
+      "@type": "DefinedTerm",
+      "@id": "urn:voltron:mission:actionboard-pod-api-actionlists-goals-files:out-of-scope:6",
+      "name": "The known status defect that reports a session as logged in whenever a refresh t",
+      "description": "The known status defect that reports a session as logged in whenever a refresh token is stored, and the swallowed refresh error behind it. This stays a separate follow-up.",
+      "inDefinedTermSet": {
+        "@id": "urn:voltron:mission:actionboard-pod-api-actionlists-goals-files:out-of-scope"
+      }
+    },
+    {
+      "@type": "DefinedTerm",
+      "@id": "urn:voltron:mission:actionboard-pod-api-actionlists-goals-files:out-of-scope:7",
+      "name": "A version bump, a release, or reinstalling the plugin.",
+      "description": "A version bump, a release, or reinstalling the plugin.",
+      "inDefinedTermSet": {
+        "@id": "urn:voltron:mission:actionboard-pod-api-actionlists-goals-files:out-of-scope"
+      }
+    },
+    {
+      "@type": "DefinedTerm",
+      "@id": "urn:voltron:mission:actionboard-pod-api-actionlists-goals-files:out-of-scope:8",
+      "name": "Committing, pushing, or opening a pull request, unless the operator asks afterwa",
+      "description": "Committing, pushing, or opening a pull request, unless the operator asks afterwards.",
+      "inDefinedTermSet": {
+        "@id": "urn:voltron:mission:actionboard-pod-api-actionlists-goals-files:out-of-scope"
+      }
+    },
+    {
+      "@type": "ItemList",
+      "@id": "urn:voltron:mission:actionboard-pod-api-actionlists-goals-files:success-criteria",
+      "name": "Success Criteria",
+      "itemListElement": [
+        {
+          "@id": "urn:voltron:mission:actionboard-pod-api-actionlists-goals-files:criterion:1"
+        },
+        {
+          "@id": "urn:voltron:mission:actionboard-pod-api-actionlists-goals-files:criterion:2"
+        },
+        {
+          "@id": "urn:voltron:mission:actionboard-pod-api-actionlists-goals-files:criterion:3"
+        },
+        {
+          "@id": "urn:voltron:mission:actionboard-pod-api-actionlists-goals-files:criterion:4"
+        },
+        {
+          "@id": "urn:voltron:mission:actionboard-pod-api-actionlists-goals-files:criterion:5"
+        },
+        {
+          "@id": "urn:voltron:mission:actionboard-pod-api-actionlists-goals-files:criterion:6"
+        },
+        {
+          "@id": "urn:voltron:mission:actionboard-pod-api-actionlists-goals-files:criterion:7"
+        }
+      ]
+    },
+    {
+      "@type": "DefinedTerm",
+      "@id": "urn:voltron:mission:actionboard-pod-api-actionlists-goals-files:criterion:1",
+      "name": "Every new GraphQL document is valid against the live schema. graphql.validate() ",
+      "description": "Every new GraphQL document is valid against the live schema. graphql.validate() from graphql-core 3.2.6, the version CI pins, returns zero errors for each new QUERY_* and MUTATION_* constant when checked against the captured schema.json. Checked by Yellow Agent.",
+      "inDefinedTermSet": {
+        "@id": "urn:voltron:mission:actionboard-pod-api-actionlists-goals-files:success-criteria"
+      }
+    },
+    {
+      "@type": "DefinedTerm",
+      "@id": "urn:voltron:mission:actionboard-pod-api-actionlists-goals-files:criterion:2",
+      "name": "The build is clean and every suite passes. python3 scripts/build.py --check exit",
+      "description": "The build is clean and every suite passes. python3 scripts/build.py --check exits 0, and the guard, build, install, maturity, report, and installer unittest suites each report OK, including the new tests/report/test_pod_services.py. Checked by Yellow Agent with exact counts, and re-run by Black Agent.",
+      "inDefinedTermSet": {
+        "@id": "urn:voltron:mission:actionboard-pod-api-actionlists-goals-files:success-criteria"
+      }
+    },
+    {
+      "@type": "DefinedTerm",
+      "@id": "urn:voltron:mission:actionboard-pod-api-actionlists-goals-files:criterion:3",
+      "name": "The CLI surface matches the scope. The --help output of actionlist, action, goal",
+      "description": "The CLI surface matches the scope. The --help output of actionlist, action, goal, and files lists every in-scope verb, and a status or priority value outside the schema enum exits with status 2. Checked by Yellow Agent.",
+      "inDefinedTermSet": {
+        "@id": "urn:voltron:mission:actionboard-pod-api-actionlists-goals-files:success-criteria"
+      }
+    },
+    {
+      "@type": "DefinedTerm",
+      "@id": "urn:voltron:mission:actionboard-pod-api-actionlists-goals-files:criterion:4",
+      "name": "The live round trip works on the board \"Actionboard Mission Board\". Using --no-i",
+      "description": "The live round trip works on the board \"Actionboard Mission Board\". Using --no-input --json, the CLI creates an ActionList, adds an action item, moves the item from New to In_Progress to Done, moves the list to Done, creates a goal and moves it from PENDING to IN_PROGRESS to COMPLETED, uploads a file and downloads it again with an identical SHA-256 digest, and each read-back shows the new status. Every record it created is then deleted and a final listing shows none remain. Checked by Yellow Agent's live smoke test.",
+      "inDefinedTermSet": {
+        "@id": "urn:voltron:mission:actionboard-pod-api-actionlists-goals-files:success-criteria"
+      }
+    },
+    {
+      "@type": "DefinedTerm",
+      "@id": "urn:voltron:mission:actionboard-pod-api-actionlists-goals-files:criterion:5",
+      "name": "No secret leaks. No access token, refresh token, password, or Authorization head",
+      "description": "No secret leaks. No access token, refresh token, password, or Authorization header value appears in command output, --json output, error messages, or test fixtures. Checked by Yellow Agent's security review and a search of the captured outputs.",
+      "inDefinedTermSet": {
+        "@id": "urn:voltron:mission:actionboard-pod-api-actionlists-goals-files:success-criteria"
+      }
+    },
+    {
+      "@type": "DefinedTerm",
+      "@id": "urn:voltron:mission:actionboard-pod-api-actionlists-goals-files:criterion:6",
+      "name": "Downloads cannot escape their directory. A server-supplied file name such as ../",
+      "description": "Downloads cannot escape their directory. A server-supplied file name such as ../../evil is written inside the chosen output directory or refused. Checked by a unit test.",
+      "inDefinedTermSet": {
+        "@id": "urn:voltron:mission:actionboard-pod-api-actionlists-goals-files:success-criteria"
+      }
+    },
+    {
+      "@type": "DefinedTerm",
+      "@id": "urn:voltron:mission:actionboard-pod-api-actionlists-goals-files:criterion:7",
+      "name": "Deletes are never silent. Under --no-input and without --yes, every delete comma",
+      "description": "Deletes are never silent. Under --no-input and without --yes, every delete command exits non-zero and sends no delete mutation. Checked by a unit test that counts delete calls.",
+      "inDefinedTermSet": {
+        "@id": "urn:voltron:mission:actionboard-pod-api-actionlists-goals-files:success-criteria"
+      }
+    },
+    {
+      "@type": "ItemList",
+      "@id": "urn:voltron:mission:actionboard-pod-api-actionlists-goals-files:constraints",
+      "name": "Constraints",
+      "itemListElement": [
+        {
+          "@id": "urn:voltron:mission:actionboard-pod-api-actionlists-goals-files:constraint:1"
+        },
+        {
+          "@id": "urn:voltron:mission:actionboard-pod-api-actionlists-goals-files:constraint:2"
+        },
+        {
+          "@id": "urn:voltron:mission:actionboard-pod-api-actionlists-goals-files:constraint:3"
+        },
+        {
+          "@id": "urn:voltron:mission:actionboard-pod-api-actionlists-goals-files:constraint:4"
+        },
+        {
+          "@id": "urn:voltron:mission:actionboard-pod-api-actionlists-goals-files:constraint:5"
+        },
+        {
+          "@id": "urn:voltron:mission:actionboard-pod-api-actionlists-goals-files:constraint:6"
+        },
+        {
+          "@id": "urn:voltron:mission:actionboard-pod-api-actionlists-goals-files:constraint:7"
+        },
+        {
+          "@id": "urn:voltron:mission:actionboard-pod-api-actionlists-goals-files:constraint:8"
+        },
+        {
+          "@id": "urn:voltron:mission:actionboard-pod-api-actionlists-goals-files:constraint:9"
+        }
+      ]
+    },
+    {
+      "@type": "DefinedTerm",
+      "@id": "urn:voltron:mission:actionboard-pod-api-actionlists-goals-files:constraint:1",
+      "name": "The CLI talks GraphQL through the edge proxy and reuses the existing pod-token p",
+      "description": "The CLI talks GraphQL through the edge proxy and reuses the existing pod-token path (_resolve_pod_token_and_profile); no new runtime dependency is added, and the code stays Python 3.9+ standard library only so it runs on Windows (py), macOS, and Linux.",
+      "inDefinedTermSet": {
+        "@id": "urn:voltron:mission:actionboard-pod-api-actionlists-goals-files:constraints"
+      }
+    },
+    {
+      "@type": "DefinedTerm",
+      "@id": "urn:voltron:mission:actionboard-pod-api-actionlists-goals-files:constraint:2",
+      "name": "src/ is the canonical source and dist/ is regenerated from it by scripts/build.p",
+      "description": "src/ is the canonical source and dist/ is regenerated from it by scripts/build.py; nobody edits dist/ by hand.",
+      "inDefinedTermSet": {
+        "@id": "urn:voltron:mission:actionboard-pod-api-actionlists-goals-files:constraints"
+      }
+    },
+    {
+      "@type": "DefinedTerm",
+      "@id": "urn:voltron:mission:actionboard-pod-api-actionlists-goals-files:constraint:3",
+      "name": "Operation, argument, field, and enum names come only from the live schema captur",
+      "description": "Operation, argument, field, and enum names come only from the live schema captured on 2026-11-26 in the session scratchpad (schema-introspection/schema.json).",
+      "inDefinedTermSet": {
+        "@id": "urn:voltron:mission:actionboard-pod-api-actionlists-goals-files:constraints"
+      }
+    },
+    {
+      "@type": "DefinedTerm",
+      "@id": "urn:voltron:mission:actionboard-pod-api-actionlists-goals-files:constraint:4",
+      "name": "Assumption: ActionList status is actionListStatus and action item status is Acti",
+      "description": "Assumption: ActionList status is actionListStatus and action item status is ActionStatus, both using the Actionlists_Status enum (New, Todo, Active, In_Progress, Done, AutoActionAiAgent, ActionAssistAgent); Goal status uses PENDING, IN_PROGRESS, COMPLETED and Goal priority uses LOW, MEDIUM, HIGH.",
+      "inDefinedTermSet": {
+        "@id": "urn:voltron:mission:actionboard-pod-api-actionlists-goals-files:constraints"
+      }
+    },
+    {
+      "@type": "DefinedTerm",
+      "@id": "urn:voltron:mission:actionboard-pod-api-actionlists-goals-files:constraint:5",
+      "name": "Assumption: update mutations may require the record's current _version for AppSy",
+      "description": "Assumption: update mutations may require the record's current _version for AppSync conflict detection, so update wrappers read the record first and send it.",
+      "inDefinedTermSet": {
+        "@id": "urn:voltron:mission:actionboard-pod-api-actionlists-goals-files:constraints"
+      }
+    },
+    {
+      "@type": "DefinedTerm",
+      "@id": "urn:voltron:mission:actionboard-pod-api-actionlists-goals-files:constraint:6",
+      "name": "Assumption: the required userId on goal creation comes from the signed-in identi",
+      "description": "Assumption: the required userId on goal creation comes from the signed-in identity; Blue Agent confirms which claim and the live smoke test verifies it.",
+      "inDefinedTermSet": {
+        "@id": "urn:voltron:mission:actionboard-pod-api-actionlists-goals-files:constraints"
+      }
+    },
+    {
+      "@type": "DefinedTerm",
+      "@id": "urn:voltron:mission:actionboard-pod-api-actionlists-goals-files:constraint:7",
+      "name": "The live smoke test writes to the operator's real board; every record it creates",
+      "description": "The live smoke test writes to the operator's real board; every record it creates is titled with the prefix [ab-cli smoke] and is deleted at the end. The operator's \"go\" on 2026-11-26 approved these writes.",
+      "inDefinedTermSet": {
+        "@id": "urn:voltron:mission:actionboard-pod-api-actionlists-goals-files:constraints"
+      }
+    },
+    {
+      "@type": "DefinedTerm",
+      "@id": "urn:voltron:mission:actionboard-pod-api-actionlists-goals-files:constraint:8",
+      "name": "The operator's certified maturity level is L4 (from .actionboard/config.json), a",
+      "description": "The operator's certified maturity level is L4 (from .actionboard/config.json), and the mission runs in ActionList mode.",
+      "inDefinedTermSet": {
+        "@id": "urn:voltron:mission:actionboard-pod-api-actionlists-goals-files:constraints"
+      }
+    },
+    {
+      "@type": "DefinedTerm",
+      "@id": "urn:voltron:mission:actionboard-pod-api-actionlists-goals-files:constraint:9",
+      "name": "The operator's uncommitted changes to .actionboard/config.json and .graphifyigno",
+      "description": "The operator's uncommitted changes to .actionboard/config.json and .graphifyignore stay out of the feature.",
+      "inDefinedTermSet": {
+        "@id": "urn:voltron:mission:actionboard-pod-api-actionlists-goals-files:constraints"
+      }
+    }
+  ]
+}

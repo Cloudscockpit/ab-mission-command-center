@@ -98,7 +98,6 @@ query Pods_getMyPods {
       slug
       hostname
       bucketName
-      region
       status
       memberRole
       memberStatus
@@ -703,3 +702,326 @@ mutation Filemanager_createFile($input: Filemanager_CreateFileManagerFileInput!)
 """
 
 
+
+
+# ---------------------------------------------------------------------------
+# Pod services: ActionLists, action items, Goals, and File Manager get/delete.
+# Selection sets are shared; every name here exists in the live schema.
+# ---------------------------------------------------------------------------
+
+_ACTIONLIST_FIELDS = """
+      id
+      podId
+      boardId
+      action
+      Context
+      notes
+      actionListStatus
+      Delegate
+      Ignore
+      isImportant
+      isUrgent
+      dueDate
+      startDate
+      orderRank
+      Tags
+      savedBy
+      profileId
+      assignedProfileIds
+      isBookmarked
+      createdAt
+      updatedAt
+      _version
+      _deleted
+"""
+
+_ACTION_FIELDS = """
+      id
+      actionlistID
+      ActionItem
+      ActionStatus
+      actionListStatus
+      prompt
+      Type
+      Owner
+      Notify
+      Accepted
+      Delegate
+      Ignore
+      Encrypt
+      isImportant
+      isUrgent
+      dueDate
+      startDate
+      orderRank
+      impactScore
+      Notes
+      FileUrls
+      KBLink
+      tags
+      assignedProfileIds
+      createdAt
+      updatedAt
+      _version
+      _deleted
+"""
+
+_GOAL_FIELDS = """
+      id
+      title
+      description
+      priority
+      status
+      assignedUserId
+      assignedUserProfileId
+      dueDate
+      startDate
+      boardId
+      userId
+      profileId
+      createdAt
+      updatedAt
+"""
+
+_FILE_FIELDS = """
+      id
+      boardId
+      folderId
+      fileName
+      fileType
+      fileSize
+      url
+      status
+      note
+      tags
+      s3Object {
+        bucket
+        key
+        size
+        region
+        s3_uri
+      }
+      createdAt
+      updatedAt
+      _version
+"""
+
+MUTATION_CREATE_ACTIONLIST = """
+mutation Actionlists_createActionList($input: Actionlists_CreateActionListInput!) {
+  actionlists_createActionList(input: $input) {
+    success
+    message
+    data {%s    }
+  }
+}
+""" % _ACTIONLIST_FIELDS
+
+MUTATION_UPDATE_ACTIONLIST = """
+mutation Actionlists_updateActionList($input: Actionlists_UpdateActionListInput!) {
+  actionlists_updateActionList(input: $input) {
+    success
+    message
+    data {%s    }
+  }
+}
+""" % _ACTIONLIST_FIELDS
+
+MUTATION_DELETE_ACTIONLIST = """
+mutation Actionlists_deleteActionList($input: Actionlists_DeleteActionListInput!) {
+  actionlists_deleteActionList(input: $input) {
+    success
+    message
+    data {
+      id
+      boardId
+      action
+      _version
+      _deleted
+    }
+  }
+}
+"""
+
+QUERY_GET_ALL_ACTIONLISTS = """
+query Actionlists_getAllActionLists($input: Actionlists_ActionListsInput!) {
+  actionlists_getAllActionLists(input: $input) {
+    success
+    message
+    data {
+      nextToken
+      totalCount
+      items {%s      }
+    }
+  }
+}
+""" % _ACTIONLIST_FIELDS
+
+MUTATION_CREATE_ACTION = """
+mutation Actionlists_createAction($input: Actionlists_CreateActionInput!) {
+  actionlists_createAction(input: $input) {
+    success
+    message
+    data {%s    }
+  }
+}
+""" % _ACTION_FIELDS
+
+MUTATION_UPDATE_ACTION = """
+mutation Actionlists_updateAction($input: Actionlists_UpdateActionInput!) {
+  actionlists_updateAction(input: $input) {
+    success
+    message
+    data {%s    }
+  }
+}
+""" % _ACTION_FIELDS
+
+MUTATION_DELETE_ACTION = """
+mutation Actionlists_deleteAction($input: Actionlists_DeleteActionInput!) {
+  actionlists_deleteAction(input: $input) {
+    success
+    message
+    data {
+      id
+      actionlistID
+      ActionItem
+      _version
+      _deleted
+    }
+  }
+}
+"""
+
+QUERY_GET_ACTION = """
+query Actionlists_getAction($id: ID!) {
+  actionlists_getAction(id: $id) {
+    success
+    message
+    data {%s    }
+  }
+}
+""" % _ACTION_FIELDS
+
+QUERY_GET_ALL_ACTIONS = """
+query Actionlists_getAllActions($input: Actionlists_GetAllActionsInput!) {
+  actionlists_getAllActions(input: $input) {
+    success
+    message
+    data {
+      nextToken
+      totalCount
+      items {%s      }
+    }
+  }
+}
+""" % _ACTION_FIELDS
+
+MUTATION_CREATE_ACTION_GOAL = """
+mutation Actiongoals_createActionGoal($input: Actiongoals_CreateActionGoalInput!) {
+  actiongoals_createActionGoal(input: $input) {
+    success
+    message
+    data {%s    }
+  }
+}
+""" % _GOAL_FIELDS
+
+MUTATION_UPDATE_ACTION_GOAL = """
+mutation Actiongoals_updateActionGoal($input: Actiongoals_UpdateActionGoalInput!) {
+  actiongoals_updateActionGoal(input: $input) {
+    success
+    message
+    data {%s    }
+  }
+}
+""" % _GOAL_FIELDS
+
+MUTATION_DELETE_ACTION_GOAL = """
+mutation Actiongoals_deleteActionGoal($input: Actiongoals_DeleteActionGoalInput!) {
+  actiongoals_deleteActionGoal(input: $input) {
+    success
+    message
+    data {
+      id
+      boardId
+      title
+    }
+  }
+}
+"""
+
+QUERY_GET_ACTION_GOAL = """
+query Actiongoals_getActionGoal($id: ID!, $boardId: ID!) {
+  actiongoals_getActionGoal(id: $id, boardId: $boardId) {
+    success
+    message
+    data {%s    }
+  }
+}
+""" % _GOAL_FIELDS
+
+QUERY_ACTION_GOALS_BY_BOARD = """
+query Actiongoals_queryActionGoalsByBoardIdIndex($boardId: String!, $first: Int) {
+  actiongoals_queryActionGoalsByBoardIdIndex(boardId: $boardId, first: $first) {
+    success
+    message
+    data {
+      nextToken
+      items {%s      }
+    }
+  }
+}
+""" % _GOAL_FIELDS
+
+QUERY_ACTION_GOALS_BY_BOARD_AFTER = """
+query Actiongoals_queryActionGoalsByBoardIdIndexAfter($boardId: String!, $first: Int, $after: String!) {
+  actiongoals_queryActionGoalsByBoardIdIndex(boardId: $boardId, first: $first, after: $after) {
+    success
+    message
+    data {
+      nextToken
+      items {%s      }
+    }
+  }
+}
+""" % _GOAL_FIELDS
+
+QUERY_GET_FILE = """
+query Filemanager_getFile($id: ID!) {
+  filemanager_getFile(id: $id) {
+    success
+    message
+    data {%s    }
+  }
+}
+""" % _FILE_FIELDS
+
+MUTATION_DELETE_FILE = """
+mutation Filemanager_deleteFile($input: Filemanager_DeleteFileManagerFileInput!) {
+  filemanager_deleteFile(input: $input) {
+    success
+    message
+    data {
+      id
+      boardId
+      folderId
+      fileName
+    }
+  }
+}
+"""
+
+QUERY_MY_PODS_STORAGE = """
+query Pods_getMyPodsStorage {
+  pods_getMyPods {
+    success
+    message
+    data {
+      podId
+      podName
+      hostname
+      bucketName
+    }
+  }
+}
+"""

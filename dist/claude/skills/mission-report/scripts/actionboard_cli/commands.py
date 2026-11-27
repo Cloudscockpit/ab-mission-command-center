@@ -1987,6 +1987,9 @@ def build_parser():
     sp_submit.add_argument("--no-input", action="store_true", help="fail instead of prompting interactively")
     sp_submit.add_argument("--json", action="store_true", help="output JSON summary")
 
+    from .pod_commands import register as register_pod_commands
+    register_pod_commands(sub, common_sub)
+
     return p
 
 
@@ -2009,6 +2012,10 @@ def main(argv=None, opener=None):
         "submit": lambda: cmd_submit(args, opener=opener),
         "progress": lambda: cmd_progress(args, opener=opener),
     }
+    from .pod_commands import HANDLERS as pod_handlers
+    from .pod_commands import run as run_pod_command
+    for _name, _handler in pod_handlers.items():
+        dispatch[_name] = lambda _h=_handler: run_pod_command(_h, args, opener=opener)
     try:
         return dispatch[args.subcommand]()
     except RuntimeError as exc:

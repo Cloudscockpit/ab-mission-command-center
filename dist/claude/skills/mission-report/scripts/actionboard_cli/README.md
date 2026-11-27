@@ -9,6 +9,8 @@ Python 3.9+ standard library only.
 - `operations.py`: all GraphQL query and mutation documents
 - `storage.py`: S3 signing, uploads and downloads
 - `documents.py`: local mission documents, metadata and untrusted fetch boundaries
+- `pod_services.py`: ActionList, action item, Goal and File Manager wrappers over the Pod API
+- `pod_commands.py`: `actionlist`, `action`, `goal` and `files` command handlers and parser
 - `commands.py`: command handlers, selection, synchronization and argument parser
 
 Cross-module imports inside functions keep authentication/transport dependencies

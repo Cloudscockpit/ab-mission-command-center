@@ -1,5 +1,5 @@
 {
-  "version": "0.6.0",
+  "version": "0.7.0",
   "description": "ActionBoard V5 AgentFormation actions map — which Agent handles which action type, and what each action requires. Consumed by the skills-registry skill during Skills Gap analysis (mission Step 4).",
   "actionTypes": [
     {
@@ -232,6 +232,22 @@
         "actionboard-devops-mission"
       ],
       "requires": "operator's certified level (L1-L7) from .actionboard/config.json or the user; never assumed",
+      "status": "covered"
+    },
+    {
+      "action": "actionboard-pod-api",
+      "agent": "blue-agent",
+      "description": "Create, read, and update ActionLists, action items, Goals, and board files on an ActionBoard board through the plugin CLI",
+      "requiredTools": [
+        "Bash",
+        "Read"
+      ],
+      "skills": [
+        "ab-actionlist",
+        "ab-goals",
+        "ab-files"
+      ],
+      "requires": "a signed-in ActionBoard session with a default Pod and Board (ab-login); deletes need explicit user confirmation",
       "status": "covered"
     }
   ]

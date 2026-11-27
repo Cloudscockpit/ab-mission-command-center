@@ -1,0 +1,318 @@
+{
+  "mission": "actionboard-pod-api-actionlists-goals-files",
+  "started_at": "2026-11-27T01:26:39Z",
+  "ended_at": "2026-11-27T01:53:50Z",
+  "tests": [
+    {
+      "name": "guard",
+      "command": "python3 -m unittest discover -s tests/guard -v",
+      "passed": 32,
+      "failed": 0,
+      "skipped": 0
+    },
+    {
+      "name": "build",
+      "command": "python3 -m unittest discover -s tests/build -v",
+      "passed": 23,
+      "failed": 0,
+      "skipped": 0
+    },
+    {
+      "name": "install",
+      "command": "python3 -m unittest discover -s tests/install -v",
+      "passed": 54,
+      "failed": 0,
+      "skipped": 1
+    },
+    {
+      "name": "maturity",
+      "command": "python3 -m unittest discover -s tests/maturity -v",
+      "passed": 18,
+      "failed": 0,
+      "skipped": 0
+    },
+    {
+      "name": "report",
+      "command": "python3 -m unittest discover -s tests/report -v",
+      "passed": 269,
+      "failed": 0,
+      "skipped": 1
+    },
+    {
+      "name": "installer",
+      "command": "python3 -m unittest discover -s tests/installer -v",
+      "passed": 23,
+      "failed": 0,
+      "skipped": 0
+    },
+    {
+      "name": "contract (graphql-core 3.2.6 venv)",
+      "command": "python -m unittest discover -s tests/contract -v",
+      "passed": 5,
+      "failed": 0,
+      "skipped": 0
+    }
+  ],
+  "files": [
+    {
+      "path": ".actionboard/config.json",
+      "status": "edit"
+    },
+    {
+      "path": ".actionboard/registry.json",
+      "status": "edit"
+    },
+    {
+      "path": "CHANGELOG.md",
+      "status": "edit"
+    },
+    {
+      "path": "README.md",
+      "status": "edit"
+    },
+    {
+      "path": "dist/antigravity/skills/mission-report/scripts/actionboard_cli/README.md",
+      "status": "edit"
+    },
+    {
+      "path": "dist/antigravity/skills/mission-report/scripts/actionboard_cli/commands.py",
+      "status": "edit"
+    },
+    {
+      "path": "dist/antigravity/skills/mission-report/scripts/actionboard_cli/operations.py",
+      "status": "edit"
+    },
+    {
+      "path": "dist/antigravity/skills/skills-registry/actions-map.json",
+      "status": "edit"
+    },
+    {
+      "path": "dist/antigravity/skills/submit-mission/references/cli-reference.md",
+      "status": "edit"
+    },
+    {
+      "path": "dist/claude/skills/mission-report/scripts/actionboard_cli/README.md",
+      "status": "edit"
+    },
+    {
+      "path": "dist/claude/skills/mission-report/scripts/actionboard_cli/commands.py",
+      "status": "edit"
+    },
+    {
+      "path": "dist/claude/skills/mission-report/scripts/actionboard_cli/operations.py",
+      "status": "edit"
+    },
+    {
+      "path": "dist/claude/skills/skills-registry/actions-map.json",
+      "status": "edit"
+    },
+    {
+      "path": "dist/claude/skills/submit-mission/references/cli-reference.md",
+      "status": "edit"
+    },
+    {
+      "path": "dist/codex/.agents/skills/mission-report/scripts/actionboard_cli/README.md",
+      "status": "edit"
+    },
+    {
+      "path": "dist/codex/.agents/skills/mission-report/scripts/actionboard_cli/commands.py",
+      "status": "edit"
+    },
+    {
+      "path": "dist/codex/.agents/skills/mission-report/scripts/actionboard_cli/operations.py",
+      "status": "edit"
+    },
+    {
+      "path": "dist/codex/.agents/skills/skills-registry/actions-map.json",
+      "status": "edit"
+    },
+    {
+      "path": "dist/codex/.agents/skills/submit-mission/references/cli-reference.md",
+      "status": "edit"
+    },
+    {
+      "path": "dist/opencode/skills/mission-report/scripts/actionboard_cli/README.md",
+      "status": "edit"
+    },
+    {
+      "path": "dist/opencode/skills/mission-report/scripts/actionboard_cli/commands.py",
+      "status": "edit"
+    },
+    {
+      "path": "dist/opencode/skills/mission-report/scripts/actionboard_cli/operations.py",
+      "status": "edit"
+    },
+    {
+      "path": "dist/opencode/skills/skills-registry/actions-map.json",
+      "status": "edit"
+    },
+    {
+      "path": "dist/opencode/skills/submit-mission/references/cli-reference.md",
+      "status": "edit"
+    },
+    {
+      "path": "src/skills/mission-report/scripts/actionboard_cli/README.md",
+      "status": "edit"
+    },
+    {
+      "path": "src/skills/mission-report/scripts/actionboard_cli/commands.py",
+      "status": "edit"
+    },
+    {
+      "path": "src/skills/mission-report/scripts/actionboard_cli/operations.py",
+      "status": "edit"
+    },
+    {
+      "path": "src/skills/skills-registry/actions-map.json",
+      "status": "edit"
+    },
+    {
+      "path": "src/skills/submit-mission/references/cli-reference.md",
+      "status": "edit"
+    },
+    {
+      "path": ".graphifyignore",
+      "status": "add"
+    },
+    {
+      "path": "dist/antigravity/skills/ab-actionlist/SKILL.md",
+      "status": "add"
+    },
+    {
+      "path": "dist/antigravity/skills/ab-files/SKILL.md",
+      "status": "add"
+    },
+    {
+      "path": "dist/antigravity/skills/ab-goals/SKILL.md",
+      "status": "add"
+    },
+    {
+      "path": "dist/antigravity/skills/mission-report/scripts/actionboard_cli/pod_commands.py",
+      "status": "add"
+    },
+    {
+      "path": "dist/antigravity/skills/mission-report/scripts/actionboard_cli/pod_services.py",
+      "status": "add"
+    },
+    {
+      "path": "dist/claude/skills/ab-actionlist/SKILL.md",
+      "status": "add"
+    },
+    {
+      "path": "dist/claude/skills/ab-files/SKILL.md",
+      "status": "add"
+    },
+    {
+      "path": "dist/claude/skills/ab-goals/SKILL.md",
+      "status": "add"
+    },
+    {
+      "path": "dist/claude/skills/mission-report/scripts/actionboard_cli/pod_commands.py",
+      "status": "add"
+    },
+    {
+      "path": "dist/claude/skills/mission-report/scripts/actionboard_cli/pod_services.py",
+      "status": "add"
+    },
+    {
+      "path": "dist/codex/.agents/skills/ab-actionlist/SKILL.md",
+      "status": "add"
+    },
+    {
+      "path": "dist/codex/.agents/skills/ab-files/SKILL.md",
+      "status": "add"
+    },
+    {
+      "path": "dist/codex/.agents/skills/ab-goals/SKILL.md",
+      "status": "add"
+    },
+    {
+      "path": "dist/codex/.agents/skills/mission-report/scripts/actionboard_cli/pod_commands.py",
+      "status": "add"
+    },
+    {
+      "path": "dist/codex/.agents/skills/mission-report/scripts/actionboard_cli/pod_services.py",
+      "status": "add"
+    },
+    {
+      "path": "dist/opencode/commands/ab-actionlist.md",
+      "status": "add"
+    },
+    {
+      "path": "dist/opencode/commands/ab-files.md",
+      "status": "add"
+    },
+    {
+      "path": "dist/opencode/commands/ab-goals.md",
+      "status": "add"
+    },
+    {
+      "path": "dist/opencode/skills/ab-actionlist/SKILL.md",
+      "status": "add"
+    },
+    {
+      "path": "dist/opencode/skills/ab-files/SKILL.md",
+      "status": "add"
+    },
+    {
+      "path": "dist/opencode/skills/ab-goals/SKILL.md",
+      "status": "add"
+    },
+    {
+      "path": "dist/opencode/skills/mission-report/scripts/actionboard_cli/pod_commands.py",
+      "status": "add"
+    },
+    {
+      "path": "dist/opencode/skills/mission-report/scripts/actionboard_cli/pod_services.py",
+      "status": "add"
+    },
+    {
+      "path": "docs/missions/2026-11-26-actionboard-pod-api-actionlists-goals-files/mission-brief.jsonld",
+      "status": "add"
+    },
+    {
+      "path": "docs/missions/2026-11-26-actionboard-pod-api-actionlists-goals-files/mission-brief.md",
+      "status": "add"
+    },
+    {
+      "path": "docs/missions/2026-11-26-actionboard-pod-api-actionlists-goals-files/mission-plan.jsonld",
+      "status": "add"
+    },
+    {
+      "path": "docs/missions/2026-11-26-actionboard-pod-api-actionlists-goals-files/mission-plan.md",
+      "status": "add"
+    },
+    {
+      "path": "docs/missions/2026-11-26-actionboard-pod-api-actionlists-goals-files/mission-report.jsonld",
+      "status": "add"
+    },
+    {
+      "path": "docs/missions/2026-11-26-actionboard-pod-api-actionlists-goals-files/mission-report.md",
+      "status": "add"
+    },
+    {
+      "path": "src/skills/ab-actionlist/SKILL.md",
+      "status": "add"
+    },
+    {
+      "path": "src/skills/ab-files/SKILL.md",
+      "status": "add"
+    },
+    {
+      "path": "src/skills/ab-goals/SKILL.md",
+      "status": "add"
+    },
+    {
+      "path": "src/skills/mission-report/scripts/actionboard_cli/pod_commands.py",
+      "status": "add"
+    },
+    {
+      "path": "src/skills/mission-report/scripts/actionboard_cli/pod_services.py",
+      "status": "add"
+    },
+    {
+      "path": "tests/report/test_pod_services.py",
+      "status": "add"
+    }
+  ]
+}
