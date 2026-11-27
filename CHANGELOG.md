@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 1.4.0 — 2026-11-26
 
 ### Added
 - `/ab-actionlist`, `/ab-goals` and `/ab-files` skills with matching `actionlist`, `action`, `goal`
@@ -15,6 +15,12 @@
   so `signup --region us` only reports the sign-up link and exits non-zero.
 
 ### Fixed
+- `submit-mission` uploads mission files to the selected Pod's bucket again. The pods query asked
+  for a `region` field the API does not have, so it always failed and uploads fell back to a
+  default bucket in another region, which S3 rejected with `301 PermanentRedirect`. (#18)
+- CLI error messages no longer pass terminal control characters through. Escape sequences, bidi
+  controls and line separators in server error text are replaced with spaces before printing.
+  (#18)
 - OpenShell policy templates now allow writes to `/dev/null`. Eight of the nine bundled templates
   (all but `actionboard-okf.yaml`) left it out, so `> /dev/null` failed with `Permission denied`
   inside the sandbox and `sh` skipped the redirected command. The policy recipes and
