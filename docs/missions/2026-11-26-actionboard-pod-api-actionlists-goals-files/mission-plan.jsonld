@@ -1,0 +1,821 @@
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Project",
+      "@id": "urn:voltron:mission:actionboard-pod-api-actionlists-goals-files",
+      "name": "ActionBoard Pod API integration: ActionLists, action items, Goals, and Files",
+      "description": "ActionBoard Pod API integration: ActionLists, action items, Goals, and Files",
+      "identifier": "actionboard-pod-api-actionlists-goals-files",
+      "startDate": "2026-11-26",
+      "subjectOf": [
+        {
+          "@id": "urn:voltron:mission:actionboard-pod-api-actionlists-goals-files:brief"
+        },
+        {
+          "@id": "urn:voltron:mission:actionboard-pod-api-actionlists-goals-files:plan"
+        }
+      ],
+      "member": [
+        {
+          "@id": "urn:voltron:lion:blue"
+        },
+        {
+          "@id": "urn:voltron:lion:red"
+        },
+        {
+          "@id": "urn:voltron:lion:yellow"
+        }
+      ]
+    },
+    {
+      "@type": "Report",
+      "@id": "urn:voltron:mission:actionboard-pod-api-actionlists-goals-files:plan",
+      "name": "Mission Plan \u2014 ActionBoard Pod API integration: ActionLists, action items, Goals, and Files",
+      "about": {
+        "@id": "urn:voltron:mission:actionboard-pod-api-actionlists-goals-files"
+      },
+      "datePublished": "2026-11-26",
+      "creator": {
+        "@id": "urn:voltron:lion:main"
+      },
+      "abstract": "4 assignments, 10 skills-gap entries, 12 risks. Awaiting go/no-go.",
+      "mainEntity": {
+        "@type": "ItemList",
+        "itemListElement": [
+          {
+            "@id": "urn:voltron:mission:actionboard-pod-api-actionlists-goals-files:assignment:1"
+          },
+          {
+            "@id": "urn:voltron:mission:actionboard-pod-api-actionlists-goals-files:assignment:2"
+          },
+          {
+            "@id": "urn:voltron:mission:actionboard-pod-api-actionlists-goals-files:assignment:3"
+          },
+          {
+            "@id": "urn:voltron:mission:actionboard-pod-api-actionlists-goals-files:assignment:4"
+          },
+          {
+            "@id": "urn:voltron:mission:actionboard-pod-api-actionlists-goals-files:gap:1"
+          },
+          {
+            "@id": "urn:voltron:mission:actionboard-pod-api-actionlists-goals-files:gap:2"
+          },
+          {
+            "@id": "urn:voltron:mission:actionboard-pod-api-actionlists-goals-files:gap:3"
+          },
+          {
+            "@id": "urn:voltron:mission:actionboard-pod-api-actionlists-goals-files:gap:4"
+          },
+          {
+            "@id": "urn:voltron:mission:actionboard-pod-api-actionlists-goals-files:gap:5"
+          },
+          {
+            "@id": "urn:voltron:mission:actionboard-pod-api-actionlists-goals-files:gap:6"
+          },
+          {
+            "@id": "urn:voltron:mission:actionboard-pod-api-actionlists-goals-files:gap:7"
+          },
+          {
+            "@id": "urn:voltron:mission:actionboard-pod-api-actionlists-goals-files:gap:8"
+          },
+          {
+            "@id": "urn:voltron:mission:actionboard-pod-api-actionlists-goals-files:gap:9"
+          },
+          {
+            "@id": "urn:voltron:mission:actionboard-pod-api-actionlists-goals-files:gap:10"
+          },
+          {
+            "@id": "urn:voltron:mission:actionboard-pod-api-actionlists-goals-files:risk:1"
+          },
+          {
+            "@id": "urn:voltron:mission:actionboard-pod-api-actionlists-goals-files:risk:2"
+          },
+          {
+            "@id": "urn:voltron:mission:actionboard-pod-api-actionlists-goals-files:risk:3"
+          },
+          {
+            "@id": "urn:voltron:mission:actionboard-pod-api-actionlists-goals-files:risk:4"
+          },
+          {
+            "@id": "urn:voltron:mission:actionboard-pod-api-actionlists-goals-files:risk:5"
+          },
+          {
+            "@id": "urn:voltron:mission:actionboard-pod-api-actionlists-goals-files:risk:6"
+          },
+          {
+            "@id": "urn:voltron:mission:actionboard-pod-api-actionlists-goals-files:risk:7"
+          },
+          {
+            "@id": "urn:voltron:mission:actionboard-pod-api-actionlists-goals-files:risk:8"
+          },
+          {
+            "@id": "urn:voltron:mission:actionboard-pod-api-actionlists-goals-files:risk:9"
+          },
+          {
+            "@id": "urn:voltron:mission:actionboard-pod-api-actionlists-goals-files:risk:10"
+          },
+          {
+            "@id": "urn:voltron:mission:actionboard-pod-api-actionlists-goals-files:risk:11"
+          },
+          {
+            "@id": "urn:voltron:mission:actionboard-pod-api-actionlists-goals-files:risk:12"
+          }
+        ]
+      }
+    },
+    {
+      "@type": "Organization",
+      "@id": "urn:voltron:lion:main",
+      "additionalType": "https://schema.org/SoftwareApplication",
+      "name": "Black Agent",
+      "description": "Mission commander (Black Agent). Plans, delegates, gates, reports."
+    },
+    {
+      "@type": "Organization",
+      "@id": "urn:voltron:lion:blue",
+      "additionalType": "https://schema.org/SoftwareApplication",
+      "name": "Blue Agent",
+      "description": "Data, infrastructure, and integration specialist (Blue Agent)."
+    },
+    {
+      "@type": "Organization",
+      "@id": "urn:voltron:lion:red",
+      "additionalType": "https://schema.org/SoftwareApplication",
+      "name": "Red Agent",
+      "description": "Rapid execution specialist (Red Agent). Builds features and ships code."
+    },
+    {
+      "@type": "Organization",
+      "@id": "urn:voltron:lion:yellow",
+      "additionalType": "https://schema.org/SoftwareApplication",
+      "name": "Yellow Agent",
+      "description": "Quality and defense specialist (Yellow Agent). Tests and security reviews."
+    },
+    {
+      "@type": "SoftwareSourceCode",
+      "@id": "urn:voltron:file:src/skills/mission-report/scripts/actionboard_cli/operations.py",
+      "name": "src/skills/mission-report/scripts/actionboard_cli/operations.py"
+    },
+    {
+      "@type": "SoftwareSourceCode",
+      "@id": "urn:voltron:file:src/skills/mission-report/scripts/actionboard_cli/pod_services.py",
+      "name": "src/skills/mission-report/scripts/actionboard_cli/pod_services.py"
+    },
+    {
+      "@type": "SoftwareSourceCode",
+      "@id": "urn:voltron:file:src/skills/mission-report/scripts/actionboard_cli/pod_commands.py",
+      "name": "src/skills/mission-report/scripts/actionboard_cli/pod_commands.py"
+    },
+    {
+      "@type": "SoftwareSourceCode",
+      "@id": "urn:voltron:file:src/skills/mission-report/scripts/actionboard_cli/commands.py",
+      "name": "src/skills/mission-report/scripts/actionboard_cli/commands.py"
+    },
+    {
+      "@type": "SoftwareSourceCode",
+      "@id": "urn:voltron:file:src/skills/ab-actionlist/SKILL.md",
+      "name": "src/skills/ab-actionlist/SKILL.md"
+    },
+    {
+      "@type": "SoftwareSourceCode",
+      "@id": "urn:voltron:file:src/skills/ab-goals/SKILL.md",
+      "name": "src/skills/ab-goals/SKILL.md"
+    },
+    {
+      "@type": "SoftwareSourceCode",
+      "@id": "urn:voltron:file:src/skills/ab-files/SKILL.md",
+      "name": "src/skills/ab-files/SKILL.md"
+    },
+    {
+      "@type": "SoftwareSourceCode",
+      "@id": "urn:voltron:file:src/skills/submit-mission/references/cli-reference.md",
+      "name": "src/skills/submit-mission/references/cli-reference.md"
+    },
+    {
+      "@type": "SoftwareSourceCode",
+      "@id": "urn:voltron:file:src/skills/mission-report/scripts/actionboard_cli/README.md",
+      "name": "src/skills/mission-report/scripts/actionboard_cli/README.md"
+    },
+    {
+      "@type": "SoftwareSourceCode",
+      "@id": "urn:voltron:file:README.md",
+      "name": "README.md"
+    },
+    {
+      "@type": "SoftwareSourceCode",
+      "@id": "urn:voltron:file:CHANGELOG.md",
+      "name": "CHANGELOG.md"
+    },
+    {
+      "@type": "SoftwareSourceCode",
+      "@id": "urn:voltron:file:src/skills/skills-registry/actions-map.json",
+      "name": "src/skills/skills-registry/actions-map.json"
+    },
+    {
+      "@type": "SoftwareSourceCode",
+      "@id": "urn:voltron:file:dist/",
+      "name": "dist/"
+    },
+    {
+      "@type": "SoftwareSourceCode",
+      "@id": "urn:voltron:file:tests/report/test_pod_services.py",
+      "name": "tests/report/test_pod_services.py"
+    },
+    {
+      "@type": "Action",
+      "@id": "urn:voltron:mission:actionboard-pod-api-actionlists-goals-files:assignment:1",
+      "name": "Add GraphQL documents for every in-scope ActionList, action item, Goal, and File Service operation, using exact live-schema names, and a service module of wrappers that unwrap the {success, message, data} envelope. Upload and download reuse the existing edge presign, upload, and download helpers.",
+      "description": "Add GraphQL documents for every in-scope ActionList, action item, Goal, and File Service operation, using exact live-schema names, and a service module of wrappers that unwrap the {success, message, data} envelope. Upload and download reuse the existing edge presign, upload, and download helpers.",
+      "agent": {
+        "@id": "urn:voltron:lion:blue"
+      },
+      "actionStatus": "https://schema.org/PotentialActionStatus",
+      "object": [
+        {
+          "@id": "urn:voltron:file:src/skills/mission-report/scripts/actionboard_cli/operations.py"
+        },
+        {
+          "@id": "urn:voltron:file:src/skills/mission-report/scripts/actionboard_cli/pod_services.py"
+        }
+      ],
+      "result": [
+        {
+          "@type": "DefinedTerm",
+          "name": "acceptance",
+          "description": "Every new constant uses only fields present in the captured schema. A success: false response raises RuntimeError carrying the server's message. Update wrappers send the record's _version. Downloads are confined to the output directory. The module docstring lists every public function with its arguments and return shape. Verified by Yellow Agent in A3."
+        }
+      ]
+    },
+    {
+      "@type": "Action",
+      "@id": "urn:voltron:mission:actionboard-pod-api-actionlists-goals-files:assignment:2",
+      "name": "Add the actionlist, action, goal, and files subcommand groups, with handlers in a new module that commands.py only registers and dispatches. Status and priority arguments use the schema enums as choices; deletes require --yes under --no-input and an interactive confirmation otherwise. Write the three skills, the documentation, and the registry entry, then regenerate dist/ with python3 scripts/build.py.",
+      "description": "Add the actionlist, action, goal, and files subcommand groups, with handlers in a new module that commands.py only registers and dispatches. Status and priority arguments use the schema enums as choices; deletes require --yes under --no-input and an interactive confirmation otherwise. Write the three skills, the documentation, and the registry entry, then regenerate dist/ with python3 scripts/build.py.",
+      "agent": {
+        "@id": "urn:voltron:lion:red"
+      },
+      "actionStatus": "https://schema.org/PotentialActionStatus",
+      "object": [
+        {
+          "@id": "urn:voltron:file:src/skills/mission-report/scripts/actionboard_cli/pod_commands.py"
+        },
+        {
+          "@id": "urn:voltron:file:src/skills/mission-report/scripts/actionboard_cli/commands.py"
+        },
+        {
+          "@id": "urn:voltron:file:src/skills/ab-actionlist/SKILL.md"
+        },
+        {
+          "@id": "urn:voltron:file:src/skills/ab-goals/SKILL.md"
+        },
+        {
+          "@id": "urn:voltron:file:src/skills/ab-files/SKILL.md"
+        },
+        {
+          "@id": "urn:voltron:file:src/skills/submit-mission/references/cli-reference.md"
+        },
+        {
+          "@id": "urn:voltron:file:src/skills/mission-report/scripts/actionboard_cli/README.md"
+        },
+        {
+          "@id": "urn:voltron:file:README.md"
+        },
+        {
+          "@id": "urn:voltron:file:CHANGELOG.md"
+        },
+        {
+          "@id": "urn:voltron:file:src/skills/skills-registry/actions-map.json"
+        },
+        {
+          "@id": "urn:voltron:file:dist/"
+        }
+      ],
+      "result": [
+        {
+          "@type": "DefinedTerm",
+          "name": "acceptance",
+          "description": "The --help output of each group lists its verbs. Enum values are enforced and a bad value exits with status 2. The board defaults from .actionboard/config.json and --board overrides it. python3 scripts/build.py --check exits 0 and the existing suites still pass. Verified by Yellow Agent in A3."
+        }
+      ],
+      "additionalProperty": [
+        {
+          "@type": "PropertyValue",
+          "name": "dependsOn",
+          "value": "A1"
+        }
+      ]
+    },
+    {
+      "@type": "Action",
+      "@id": "urn:voltron:mission:actionboard-pod-api-actionlists-goals-files:assignment:3",
+      "name": "Write tests/report/test_pod_services.py with a mocked opener, asserting the operation name and variables for every subcommand, plus envelope failure, enum rejection, --json output shape, deletes without --yes, path traversal, and _version on update. Validate every new constant against the captured schema with graphql-core 3.2.6 in a scratchpad virtual environment. Run the build check and all six suites. Run the live smoke test last, with cleanup.",
+      "description": "Write tests/report/test_pod_services.py with a mocked opener, asserting the operation name and variables for every subcommand, plus envelope failure, enum rejection, --json output shape, deletes without --yes, path traversal, and _version on update. Validate every new constant against the captured schema with graphql-core 3.2.6 in a scratchpad virtual environment. Run the build check and all six suites. Run the live smoke test last, with cleanup.",
+      "agent": {
+        "@id": "urn:voltron:lion:yellow"
+      },
+      "actionStatus": "https://schema.org/PotentialActionStatus",
+      "object": [
+        {
+          "@id": "urn:voltron:file:tests/report/test_pod_services.py"
+        }
+      ],
+      "result": [
+        {
+          "@type": "DefinedTerm",
+          "name": "acceptance",
+          "description": "The report gives the exact test commands with pass, fail, and skip counts, marks success criteria 1, 2, 3, 4, 6, and 7 as met or unmet with evidence, and lists by id any record left on the board after cleanup. Black Agent re-runs Yellow Agent's test command to verify it."
+        }
+      ],
+      "additionalProperty": [
+        {
+          "@type": "PropertyValue",
+          "name": "dependsOn",
+          "value": "A1, A2"
+        }
+      ]
+    },
+    {
+      "@type": "Action",
+      "@id": "urn:voltron:mission:actionboard-pod-api-actionlists-goals-files:assignment:4",
+      "name": "Security review of A1 and A2: token handling and redaction in output and errors, delete confirmation, download path safety, server-supplied text echoed to the terminal, and any new dependency. Runs before A3's live smoke test.",
+      "description": "Security review of A1 and A2: token handling and redaction in output and errors, delete confirmation, download path safety, server-supplied text echoed to the terminal, and any new dependency. Runs before A3's live smoke test.",
+      "agent": {
+        "@id": "urn:voltron:lion:yellow"
+      },
+      "actionStatus": "https://schema.org/PotentialActionStatus",
+      "result": [
+        {
+          "@type": "DefinedTerm",
+          "name": "acceptance",
+          "description": "Findings are rated by severity with file:line references, success criterion 5 is marked met or unmet with evidence, and no High finding is open when the live smoke test starts."
+        }
+      ],
+      "additionalProperty": [
+        {
+          "@type": "PropertyValue",
+          "name": "dependsOn",
+          "value": "A1, A2"
+        }
+      ]
+    },
+    {
+      "@type": "DefinedTerm",
+      "@id": "urn:voltron:mission:actionboard-pod-api-actionlists-goals-files:gap:1",
+      "name": "GraphQL wrappers for actionlists_*, actiongoals_*, and filemanager_*",
+      "additionalProperty": [
+        {
+          "@type": "PropertyValue",
+          "name": "status",
+          "value": "covered"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "notes",
+          "value": "Registry action api-integration, owned by Blue Agent. Reuses api.graphql_request and the edge presign helpers already in the CLI."
+        }
+      ]
+    },
+    {
+      "@type": "DefinedTerm",
+      "@id": "urn:voltron:mission:actionboard-pod-api-actionlists-goals-files:gap:2",
+      "name": "CLI subcommands, handlers, documentation, and the dist/ rebuild",
+      "additionalProperty": [
+        {
+          "@type": "PropertyValue",
+          "name": "status",
+          "value": "covered"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "notes",
+          "value": "Registry actions code-implementation and file-scaffolding, owned by Red Agent."
+        }
+      ]
+    },
+    {
+      "@type": "DefinedTerm",
+      "@id": "urn:voltron:mission:actionboard-pod-api-actionlists-goals-files:gap:3",
+      "name": "The three new SKILL.md files",
+      "additionalProperty": [
+        {
+          "@type": "PropertyValue",
+          "name": "status",
+          "value": "covered"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "notes",
+          "value": "These are product files written to the existing pattern, like ab-signup, not skills the Agents need, so skill-creator is not used."
+        }
+      ]
+    },
+    {
+      "@type": "DefinedTerm",
+      "@id": "urn:voltron:mission:actionboard-pod-api-actionlists-goals-files:gap:4",
+      "name": "An authoritative API contract",
+      "additionalProperty": [
+        {
+          "@type": "PropertyValue",
+          "name": "status",
+          "value": "covered"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "notes",
+          "value": "Registry action codebase-recon plus live introspection, both completed by Green Agent; schema.json and schema.graphql are saved in the session scratchpad."
+        }
+      ]
+    },
+    {
+      "@type": "DefinedTerm",
+      "@id": "urn:voltron:mission:actionboard-pod-api-actionlists-goals-files:gap:5",
+      "name": "Validating new operations against the schema",
+      "additionalProperty": [
+        {
+          "@type": "PropertyValue",
+          "name": "status",
+          "value": "covered"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "notes",
+          "value": "Registry action test-authoring, owned by Yellow Agent, using graphql-core 3.2.6 as pinned by CI's schema-contract.yml. It is installed only in a scratchpad virtual environment after a version-lookup check; that action's precondition, a working Context7 MCP, is met."
+        }
+      ]
+    },
+    {
+      "@type": "DefinedTerm",
+      "@id": "urn:voltron:mission:actionboard-pod-api-actionlists-goals-files:gap:6",
+      "name": "Mocked-transport unit tests",
+      "additionalProperty": [
+        {
+          "@type": "PropertyValue",
+          "name": "status",
+          "value": "covered"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "notes",
+          "value": "Registry action test-authoring, reusing the MockActionBoardTransport and opener pattern from tests/report/test_submit_mission.py."
+        }
+      ]
+    },
+    {
+      "@type": "DefinedTerm",
+      "@id": "urn:voltron:mission:actionboard-pod-api-actionlists-goals-files:gap:7",
+      "name": "A live smoke test on the operator's real board",
+      "additionalProperty": [
+        {
+          "@type": "PropertyValue",
+          "name": "status",
+          "value": "covered"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "notes",
+          "value": "Registry action test-authoring. Its precondition, the operator's approval of board writes with cleanup, was met by \"go\"; the token is fresh from the operator's sign-in on 2026-11-26."
+        }
+      ]
+    },
+    {
+      "@type": "DefinedTerm",
+      "@id": "urn:voltron:mission:actionboard-pod-api-actionlists-goals-files:gap:8",
+      "name": "Security review",
+      "additionalProperty": [
+        {
+          "@type": "PropertyValue",
+          "name": "status",
+          "value": "covered"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "notes",
+          "value": "Registry action security-review, owned by Yellow Agent. This is its first scored run, so its risk tier is classified when the report is written."
+        }
+      ]
+    },
+    {
+      "@type": "DefinedTerm",
+      "@id": "urn:voltron:mission:actionboard-pod-api-actionlists-goals-files:gap:9",
+      "name": "Mission documents, maturity scoring, and the dashboard",
+      "additionalProperty": [
+        {
+          "@type": "PropertyValue",
+          "name": "status",
+          "value": "covered"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "notes",
+          "value": "Skills mission-brief, mission-plan, and mission-report, with maturity.py and render_dashboard.py; the operator level is L4."
+        }
+      ]
+    },
+    {
+      "@type": "DefinedTerm",
+      "@id": "urn:voltron:mission:actionboard-pod-api-actionlists-goals-files:gap:10",
+      "name": "Board sync",
+      "additionalProperty": [
+        {
+          "@type": "PropertyValue",
+          "name": "status",
+          "value": "covered"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "notes",
+          "value": "Skill submit-mission; mission_sync is ask and the operator chose to sync this mission."
+        }
+      ]
+    },
+    {
+      "@type": "Thing",
+      "@id": "urn:voltron:mission:actionboard-pod-api-actionlists-goals-files:risk:1",
+      "additionalType": "Risk",
+      "name": "Updates are rejected without the record's current _version, so status changes fa",
+      "description": "Updates are rejected without the record's current _version, so status changes fail live even though mocked tests pass.",
+      "additionalProperty": [
+        {
+          "@type": "PropertyValue",
+          "name": "category",
+          "value": "integration"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "severity",
+          "value": "H"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "mitigation",
+          "value": "Update wrappers read the record and send _version; success criterion 4 reads each status back; the mocks assert that _version is sent."
+        }
+      ]
+    },
+    {
+      "@type": "Thing",
+      "@id": "urn:voltron:mission:actionboard-pod-api-actionlists-goals-files:risk:2",
+      "additionalType": "Risk",
+      "name": "Delete subcommands permanently remove board data.",
+      "description": "Delete subcommands permanently remove board data.",
+      "additionalProperty": [
+        {
+          "@type": "PropertyValue",
+          "name": "category",
+          "value": "data-loss"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "severity",
+          "value": "H"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "mitigation",
+          "value": "--yes is required under --no-input and an interactive confirmation otherwise; the target is shown before deletion; success criterion 7's test proves no unconfirmed delete call is sent."
+        }
+      ]
+    },
+    {
+      "@type": "Thing",
+      "@id": "urn:voltron:mission:actionboard-pod-api-actionlists-goals-files:risk:3",
+      "additionalType": "Risk",
+      "name": "Introspection does not expose per-field authorization or RBAC, so some operation",
+      "description": "Introspection does not expose per-field authorization or RBAC, so some operations may need the main token or a role the pod token lacks.",
+      "additionalProperty": [
+        {
+          "@type": "PropertyValue",
+          "name": "category",
+          "value": "integration"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "severity",
+          "value": "M"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "mitigation",
+          "value": "Follow the existing pod-token convention; the live smoke test exercises every operation class and reports the server's message verbatim on failure."
+        }
+      ]
+    },
+    {
+      "@type": "Thing",
+      "@id": "urn:voltron:mission:actionboard-pod-api-actionlists-goals-files:risk:4",
+      "additionalType": "Risk",
+      "name": "Goal creation requires userId; the wrong identity source fails or attaches the g",
+      "description": "Goal creation requires userId; the wrong identity source fails or attaches the goal to the wrong user.",
+      "additionalProperty": [
+        {
+          "@type": "PropertyValue",
+          "name": "category",
+          "value": "integration"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "severity",
+          "value": "M"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "mitigation",
+          "value": "Blue Agent derives it from the signed-in identity, and the live read-back checks userId and profileId."
+        }
+      ]
+    },
+    {
+      "@type": "Thing",
+      "@id": "urn:voltron:mission:actionboard-pod-api-actionlists-goals-files:risk:5",
+      "additionalType": "Risk",
+      "name": "ActionGraph was requested but is absent from the live schema.",
+      "description": "ActionGraph was requested but is absent from the live schema.",
+      "additionalProperty": [
+        {
+          "@type": "PropertyValue",
+          "name": "category",
+          "value": "scope"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "severity",
+          "value": "M"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "mitigation",
+          "value": "It is explicitly deferred with the evidence and resumes when the operator provides its endpoint and contract."
+        }
+      ]
+    },
+    {
+      "@type": "Thing",
+      "@id": "urn:voltron:mission:actionboard-pod-api-actionlists-goals-files:risk:6",
+      "additionalType": "Risk",
+      "name": "commands.py is already 2,018 lines and four new groups would bloat it further.",
+      "description": "commands.py is already 2,018 lines and four new groups would bloat it further.",
+      "additionalProperty": [
+        {
+          "@type": "PropertyValue",
+          "name": "category",
+          "value": "scope"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "severity",
+          "value": "M"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "mitigation",
+          "value": "Handlers go in the new pod_commands.py and logic in pod_services.py; commands.py receives registration and dispatch lines only."
+        }
+      ]
+    },
+    {
+      "@type": "Thing",
+      "@id": "urn:voltron:mission:actionboard-pod-api-actionlists-goals-files:risk:7",
+      "additionalType": "Risk",
+      "name": "A smoke test that fails midway leaves test records on the operator's board.",
+      "description": "A smoke test that fails midway leaves test records on the operator's board.",
+      "additionalProperty": [
+        {
+          "@type": "PropertyValue",
+          "name": "category",
+          "value": "data-loss"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "severity",
+          "value": "M"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "mitigation",
+          "value": "Records carry the [ab-cli smoke] prefix, cleanup always runs, and any leftover ids are reported for manual removal."
+        }
+      ]
+    },
+    {
+      "@type": "Thing",
+      "@id": "urn:voltron:mission:actionboard-pod-api-actionlists-goals-files:risk:8",
+      "additionalType": "Risk",
+      "name": "A server-supplied file name could write outside the download directory.",
+      "description": "A server-supplied file name could write outside the download directory.",
+      "additionalProperty": [
+        {
+          "@type": "PropertyValue",
+          "name": "category",
+          "value": "technical"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "severity",
+          "value": "M"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "mitigation",
+          "value": "Downloads are confined to the output directory and success criterion 6 tests a ../ name."
+        }
+      ]
+    },
+    {
+      "@type": "Thing",
+      "@id": "urn:voltron:mission:actionboard-pod-api-actionlists-goals-files:risk:9",
+      "additionalType": "Risk",
+      "name": "The known swallowed token-refresh error could make agents see \"not logged in\" mi",
+      "description": "The known swallowed token-refresh error could make agents see \"not logged in\" mid-mission.",
+      "additionalProperty": [
+        {
+          "@type": "PropertyValue",
+          "name": "category",
+          "value": "technical"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "severity",
+          "value": "M"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "mitigation",
+          "value": "The operator signed in fresh on 2026-11-26; if it recurs, re-run the browser login. The defect itself stays out of scope."
+        }
+      ]
+    },
+    {
+      "@type": "Thing",
+      "@id": "urn:voltron:mission:actionboard-pod-api-actionlists-goals-files:risk:10",
+      "additionalType": "Risk",
+      "name": "Secrets appear in --json output or error text.",
+      "description": "Secrets appear in --json output or error text.",
+      "additionalProperty": [
+        {
+          "@type": "PropertyValue",
+          "name": "category",
+          "value": "technical"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "severity",
+          "value": "M"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "mitigation",
+          "value": "Yellow Agent's A4 review and a search of captured outputs, recorded against success criterion 5."
+        }
+      ]
+    },
+    {
+      "@type": "Thing",
+      "@id": "urn:voltron:mission:actionboard-pod-api-actionlists-goals-files:risk:11",
+      "additionalType": "Risk",
+      "name": "The local Python is 3.14 while CI also runs 3.9, so newer syntax would break CI.",
+      "description": "The local Python is 3.14 while CI also runs 3.9, so newer syntax would break CI.",
+      "additionalProperty": [
+        {
+          "@type": "PropertyValue",
+          "name": "category",
+          "value": "technical"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "severity",
+          "value": "L"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "mitigation",
+          "value": "No match statements or PEP 604 union annotations; the CI matrix confirms when a pull request is opened."
+        }
+      ]
+    },
+    {
+      "@type": "Thing",
+      "@id": "urn:voltron:mission:actionboard-pod-api-actionlists-goals-files:risk:12",
+      "additionalType": "Risk",
+      "name": "The backend schema changes after the 2026-11-26 capture.",
+      "description": "The backend schema changes after the 2026-11-26 capture.",
+      "additionalProperty": [
+        {
+          "@type": "PropertyValue",
+          "name": "category",
+          "value": "technical"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "severity",
+          "value": "L"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "mitigation",
+          "value": "CI's live schema-contract check catches drift, and the captured schema is dated."
+        }
+      ]
+    }
+  ]
+}

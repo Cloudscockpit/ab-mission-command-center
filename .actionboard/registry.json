@@ -80,7 +80,8 @@
         "verify-and-release-multi-cli-agent-formation-v1",
         "zero-footprint-installer-npx-zero-clone-v1-1-0",
         "mission-analytics-dashboard-v1-2-0",
-        "regional-actionboard-signup-from-plugin"
+        "regional-actionboard-signup-from-plugin",
+        "actionboard-pod-api-actionlists-goals-files"
       ],
       "runs": [
         {
@@ -181,6 +182,27 @@
           },
           "notes": "A2 SIGNUP_REGIONS plus signup_url/open_signup_page/SignupRegionPending in auth.py and common.py. Acceptance met first time and covered by Yellow's tests; needed a rework round (A2b) to widen the browser catch to OSError and fix spacing.",
           "mission": "regional-actionboard-signup-from-plugin"
+        },
+        {
+          "run_id": "actionboard-pod-api-actionlists-goals-files-1",
+          "completed_at": "2026-11-27T01:52:05Z",
+          "mode": "actionlist",
+          "stages": {
+            "orchestrator": false,
+            "data": true,
+            "analysis": false,
+            "action": true,
+            "defense": true
+          },
+          "first_attempt": true,
+          "provenance": "scored",
+          "session_id": "02004bf2-ca0a-4dba-bd6b-03a6057b2882",
+          "environment": {
+            "model": "claude-opus-5-5",
+            "target": "claude"
+          },
+          "notes": "Blue A1: 21 new operations and pod_services.py; Yellow validated 52/52 constants with graphql-core 3.2.6 and 50 mocked tests, and the live round trip passed. Orchestrator fail: mid-mission scope amendment (operator-approved fix of invalid region field in QUERY_MY_PODS). Analysis fail: rework for Yellow finding 2 (unvalidated server bucket in S3 HEAD host).",
+          "mission": "actionboard-pod-api-actionlists-goals-files"
         }
       ]
     },
@@ -193,7 +215,8 @@
         "verify-and-release-multi-cli-agent-formation-v1",
         "zero-footprint-installer-npx-zero-clone-v1-1-0",
         "mission-analytics-dashboard-v1-2-0",
-        "regional-actionboard-signup-from-plugin"
+        "regional-actionboard-signup-from-plugin",
+        "actionboard-pod-api-actionlists-goals-files"
       ],
       "runs": [
         {
@@ -330,6 +353,27 @@
           },
           "notes": "A4 34 new tests in tests/report/test_signup.py plus security review (2 M, 3 L, all resolved). Black Agent re-ran all six CI suites: guard 32, build 23, install 55 (1 skip), maturity 18, report 220 (1 skip), installer 23, all OK; build.py --check clean.",
           "mission": "regional-actionboard-signup-from-plugin"
+        },
+        {
+          "run_id": "actionboard-pod-api-actionlists-goals-files-3",
+          "completed_at": "2026-11-27T01:52:05Z",
+          "mode": "actionlist",
+          "stages": {
+            "orchestrator": true,
+            "data": true,
+            "analysis": true,
+            "action": true,
+            "defense": true
+          },
+          "first_attempt": true,
+          "provenance": "scored",
+          "session_id": "02004bf2-ca0a-4dba-bd6b-03a6057b2882",
+          "environment": {
+            "model": "claude-opus-5-5",
+            "target": "claude"
+          },
+          "notes": "Yellow A3: tests/report/test_pod_services.py (50 tests), SC1 52/52 valid, live smoke all steps pass with zero leftovers. Black re-ran: build.py --check up to date; tests/report Ran 270 OK (skipped=1); test_pod_services.py Ran 50 OK.",
+          "mission": "actionboard-pod-api-actionlists-goals-files"
         }
       ]
     },
@@ -342,7 +386,8 @@
         "verify-and-release-multi-cli-agent-formation-v1",
         "zero-footprint-installer-npx-zero-clone-v1-1-0",
         "mission-analytics-dashboard-v1-2-0",
-        "regional-actionboard-signup-from-plugin"
+        "regional-actionboard-signup-from-plugin",
+        "actionboard-pod-api-actionlists-goals-files"
       ],
       "runs": [
         {
@@ -480,6 +525,59 @@
           },
           "notes": "A3 signup command, ab-signup skill, docs, dist. Plan missed two docs that route users to ab-login (re-plan A3b). Yellow found two Medium interrupt-handling defects; green only after fix round A3c.",
           "mission": "regional-actionboard-signup-from-plugin"
+        },
+        {
+          "run_id": "actionboard-pod-api-actionlists-goals-files-2",
+          "completed_at": "2026-11-27T01:52:05Z",
+          "mode": "actionlist",
+          "stages": {
+            "orchestrator": true,
+            "data": true,
+            "analysis": false,
+            "action": false,
+            "defense": true
+          },
+          "first_attempt": false,
+          "provenance": "scored",
+          "session_id": "02004bf2-ca0a-4dba-bd6b-03a6057b2882",
+          "environment": {
+            "model": "claude-opus-5-5",
+            "target": "claude"
+          },
+          "notes": "Red A2: actionlist/action/goal/files command groups, three skills, docs, registry entry, dist rebuild. First Yellow verification failed: delete --json printed a stdout preamble (finding 1, Medium) and control-char strip missed bidi (finding 3). Fixed on second attempt; Yellow re-verified 270 report tests OK and live delete --json parses.",
+          "mission": "actionboard-pod-api-actionlists-goals-files"
+        }
+      ]
+    },
+    {
+      "id": "security-review",
+      "name": "Security review",
+      "risk_tier": "T3",
+      "end_condition": "Severity-rated findings with file:line, no High finding open before dependent live work runs, and each finding independently confirmed or fixed",
+      "missions": [
+        "actionboard-pod-api-actionlists-goals-files"
+      ],
+      "runs": [
+        {
+          "run_id": "actionboard-pod-api-actionlists-goals-files-4",
+          "completed_at": "2026-11-27T01:52:05Z",
+          "mode": "actionlist",
+          "stages": {
+            "orchestrator": true,
+            "data": true,
+            "analysis": true,
+            "action": true,
+            "defense": true
+          },
+          "first_attempt": true,
+          "provenance": "scored",
+          "session_id": "02004bf2-ca0a-4dba-bd6b-03a6057b2882",
+          "environment": {
+            "model": "claude-opus-5-5",
+            "target": "claude"
+          },
+          "notes": "Yellow A4: 0 High, 1 Medium, 7 Low. Medium confirmed by failing test then fixed; Black spot-checked no string-built GraphQL documents and delete preamble on stderr.",
+          "mission": "actionboard-pod-api-actionlists-goals-files"
         }
       ]
     }
