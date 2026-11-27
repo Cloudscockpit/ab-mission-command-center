@@ -1,6 +1,7 @@
 """ActionBoard CLI: common."""
 import json
 import os
+import re
 import stat
 import sys
 import tempfile
@@ -61,8 +62,15 @@ MISSION_FILES = [
 ]
 
 
+_TERMINAL_UNSAFE = re.compile(
+    "[\x00-\x1f\x7f\x80-\x9f\u200e\u200f\u202a-\u202e\u2066-\u2069\u2028\u2029]"
+)
+
+
 def fail(message, code=2):
-    sys.stderr.write("submit_mission: %s\n" % " ".join(str(message).split()))
+    # Server-supplied text may carry terminal escapes or bidi controls; blank them out.
+    text = _TERMINAL_UNSAFE.sub(" ", str(message))
+    sys.stderr.write("submit_mission: %s\n" % " ".join(text.split()))
     sys.exit(code)
 
 

@@ -81,6 +81,7 @@ import json
 import mimetypes
 import os
 import re
+import tempfile
 import time
 import urllib.error
 import urllib.request
@@ -409,7 +410,8 @@ def safe_basename(name):
     """Return a safe file name from a server-supplied name, or raise ValueError.
 
     Rejects empty names, ".", "..", separator-only names, absolute paths (leading slash or
-    drive letter), and any ".." path component. Otherwise returns the last path component.
+    drive letter), and any ".." path component. Otherwise returns the last path component,
+    with leading dots replaced by "_" so a server cannot create a dotfile (".zshenv" -> "_zshenv").
     """
     raw = str(name or "").replace("\\", "/").replace("\x00", "")
     parts = raw.split("/")
@@ -424,7 +426,8 @@ def safe_basename(name):
     base = raw.rstrip("/").split("/")[-1].strip()
     if not base or base == ".":
         raise ValueError("unsafe or empty file name: %r" % raw[:80])
-    return base
+    stripped = base.lstrip(".")
+    return "_" * (len(base) - len(stripped)) + stripped
 
 
 _BUCKET_RE = re.compile(r"^[a-z0-9][a-z0-9.-]{1,61}[a-z0-9]$")
@@ -572,6 +575,27 @@ def download_file(settings, pod_token, file_id, out_dir, overwrite=False, opener
         if not real or real == region:
             raise RuntimeError(_scrub(first))
         data = download_bytes_via_edge(settings, s3["bucket"], s3["key"], opener=opener, region=real)
-    with open(target, "wb") as fh:
-        fh.write(data)
+    if overwrite:
+        fd, tmp = tempfile.mkstemp(dir=root)
+        try:
+            with os.fdopen(fd, "wb") as fh:
+                fh.write(data)
+            os.chmod(tmp, 0o644)
+            if os.path.islink(target):
+                raise ValueError("refusing to write through a symbolic link: %s" % target)
+            os.replace(tmp, target)
+        except BaseException:
+            try:
+                os.remove(tmp)
+            except OSError:
+                pass
+            raise
+    else:
+        flags = os.O_WRONLY | os.O_CREAT | os.O_EXCL | getattr(os, "O_NOFOLLOW", 0) | getattr(os, "O_BINARY", 0)
+        try:
+            fd = os.open(target, flags, 0o644)
+        except FileExistsError:
+            raise FileExistsError("%s already exists; pass overwrite to replace it" % target)
+        with os.fdopen(fd, "wb") as fh:
+            fh.write(data)
     return {"path": target, "fileName": name, "size": len(data), "id": file_id}

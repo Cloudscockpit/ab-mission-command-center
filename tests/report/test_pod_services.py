@@ -492,6 +492,57 @@ class DownloadSafetyTests(PodCliCase):
         self.assertNotEqual(rc, 0)
         self.assertEqual(self.listing(), [])
 
+    def test_dotfile_names_are_saved_with_underscore(self):
+        for name, saved in ((".zshenv", "_zshenv"), ("x/.bashrc", "_bashrc"), ("..hidden", "__hidden")):
+            with self.subTest(name=name):
+                self.serve_name(name)
+                rc, out, err = self.run_cli("files", "download", "f-1", "--out", self.out, "--no-input", "--json")
+                self.assertEqual(rc, 0, err)
+                res = json.loads(out)
+                self.assertEqual(res["fileName"], saved)
+                self.assertEqual(res["path"], os.path.join(os.path.realpath(self.out), saved))
+                self.assertIn(saved, self.listing())
+                self.assertEqual([n for n in self.listing() if n.startswith(".")], [])
+                os.remove(res["path"])
+
+    def test_overwrite_replaces_content_and_leaves_no_temp_files(self):
+        target = os.path.join(self.out, "report.txt")
+        with open(target, "wb") as fh:
+            fh.write(b"original")
+        rc, _o, err = self.run_cli("files", "download", "f-1", "--out", self.out, "--no-input", "--overwrite")
+        self.assertEqual(rc, 0, err)
+        with open(target, "rb") as fh:
+            self.assertEqual(fh.read(), b"hello")
+        self.assertEqual(self.listing(), ["report.txt"])
+
+    def test_failed_download_with_overwrite_keeps_original_and_no_temp(self):
+        target = os.path.join(self.out, "report.txt")
+        with open(target, "wb") as fh:
+            fh.write(b"original")
+        self.dl.side_effect = RuntimeError("S3 GET HTTP 500")
+        rc, _o, _e = self.run_cli("files", "download", "f-1", "--out", self.out, "--no-input", "--overwrite")
+        self.assertNotEqual(rc, 0)
+        with open(target, "rb") as fh:
+            self.assertEqual(fh.read(), b"original")
+        self.assertEqual(self.listing(), ["report.txt"])
+
+    def test_failed_write_with_overwrite_cleans_temp_file(self):
+        target = os.path.join(self.out, "report.txt")
+        with open(target, "wb") as fh:
+            fh.write(b"original")
+        with mock.patch("os.replace", side_effect=OSError("disk full")):
+            rc, _o, _e = self.run_cli("files", "download", "f-1", "--out", self.out, "--no-input", "--overwrite")
+        self.assertNotEqual(rc, 0)
+        with open(target, "rb") as fh:
+            self.assertEqual(fh.read(), b"original")
+        self.assertEqual(self.listing(), ["report.txt"])
+
+    def test_failed_download_without_overwrite_leaves_nothing(self):
+        self.dl.side_effect = RuntimeError("S3 GET HTTP 500")
+        rc, _o, _e = self.run_cli("files", "download", "f-1", "--out", self.out, "--no-input")
+        self.assertNotEqual(rc, 0)
+        self.assertEqual(self.listing(), [])
+
     def test_safe_basename_unit(self):
         self.assertEqual(pod_services.safe_basename("a.txt"), "a.txt")
         self.assertEqual(pod_services.safe_basename("x/y.txt"), "y.txt")
@@ -529,6 +580,17 @@ class OutputHygieneTests(PodCliCase):
             self.assertNotIn(ch, out)
         self.assertEqual(len(out.strip().splitlines()), 1)
         self.assertIn("a b c d e f g h i", out)
+
+    def test_error_path_strips_terminal_control_characters(self):
+        nasty = "bad\x1b[31mRED\x1b]0;title\x07 x\u202ey\u2028z\x7f\x9b\u200f\u2066w"
+        self.transport.responders["actiongoals_getActionGoal"] = lambda v: envelope(None, success=False, message=nasty)
+        rc, out, err = self.run_cli("goal", "get", "g-1", "--no-input")
+        self.assertNotEqual(rc, 0)
+        self.assertTrue(err.startswith("submit_mission: "))
+        for ch in ("\x1b", "\x07", "\x7f", "\x9b", "\u202e", "\u2028", "\u200f", "\u2066"):
+            self.assertNotIn(ch, err)
+        self.assertIn("bad", err)
+        self.assertEqual(len(err.strip().splitlines()), 1)
 
     def test_clean_helper(self):
         self.assertEqual(pod_commands._clean(None), "")
